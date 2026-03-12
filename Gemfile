@@ -78,3 +78,7 @@ gem "dotenv-rails", "~> 3.2"
 gem "faker", "~> 3.6"
 
 gem "active_storage_validations", "~> 3.0"
+
+gem "bootstrap", "~> 5.3"
+
+gem "sassc-rails", "~> 2.1"

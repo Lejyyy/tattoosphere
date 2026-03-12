@@ -1,0 +1,347 @@
+// Variables dark theme — AVANT l'import Bootstrap
+$body-bg: #0f0f0f;
+$body-color: #e0e0e0;
+$primary: #c9a84c;        // or/doré — couleur signature tatouage
+$secondary: #2a2a2a;
+$dark: #1a1a1a;
+$card-bg: #1e1e1e;
+$card-border-color: #2e2e2e;
+$navbar-dark-color: #e0e0e0;
+$border-radius: 0.5rem;
+$font-family-base: 'Inter', sans-serif;
+
+// Import Bootstrap
+@import "bootstrap";
+
+// ================================
+// GLOBAL
+// ================================
+body {
+  background-color: $body-bg;
+  color: $body-color;
+}
+
+a {
+  color: $primary;
+  text-decoration: none;
+  &:hover { color: lighten($primary, 15%); }
+}
+
+// ================================
+// NAVBAR
+// ================================
+.navbar {
+  background-color: #111111 !important;
+  border-bottom: 1px solid #2a2a2a;
+  padding: 1rem 2rem;
+
+  .navbar-brand {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: $primary !important;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .nav-link {
+    color: #cccccc !important;
+    font-size: 0.9rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: color 0.2s;
+    &:hover { color: $primary !important; }
+  }
+}
+
+// ================================
+// HERO
+// ================================
+.hero {
+  min-height: 90vh;
+  background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 50%, #0f0f0f 100%);
+  display: flex;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: radial-gradient(ellipse at 60% 50%, rgba(201, 168, 76, 0.08) 0%, transparent 70%);
+  }
+
+  .hero-title {
+    font-size: clamp(3rem, 8vw, 6rem);
+    font-weight: 900;
+    line-height: 1;
+    letter-spacing: -2px;
+    color: #ffffff;
+
+    span {
+      color: $primary;
+      display: block;
+    }
+  }
+
+  .hero-subtitle {
+    font-size: 1.1rem;
+    color: #888888;
+    max-width: 500px;
+    line-height: 1.8;
+  }
+
+  .hero-cta {
+    display: inline-block;
+    background: $primary;
+    color: #000000;
+    font-weight: 700;
+    font-size: 0.9rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 1rem 2.5rem;
+    border-radius: 0;
+    transition: all 0.3s;
+
+    &:hover {
+      background: lighten($primary, 10%);
+      color: #000000;
+      transform: translateY(-2px);
+    }
+  }
+
+  .hero-decoration {
+    font-size: clamp(8rem, 20vw, 16rem);
+    font-weight: 900;
+    color: rgba(255,255,255,0.02);
+    position: absolute;
+    right: -2rem;
+    top: 50%;
+    transform: translateY(-50%);
+    line-height: 1;
+    pointer-events: none;
+    user-select: none;
+  }
+}
+
+// ================================
+// SEARCH BAR
+// ================================
+.search-section {
+  background-color: #141414;
+  border-top: 1px solid #2a2a2a;
+  border-bottom: 1px solid #2a2a2a;
+  padding: 2rem 0;
+
+  .search-input {
+    background-color: #1e1e1e;
+    border: 1px solid #333333;
+    color: #e0e0e0;
+    padding: 0.9rem 1.5rem;
+    font-size: 1rem;
+    border-radius: 0;
+
+    &::placeholder { color: #555555; }
+    &:focus {
+      background-color: #252525;
+      border-color: $primary;
+      color: #e0e0e0;
+      box-shadow: 0 0 0 0.2rem rgba(201, 168, 76, 0.15);
+    }
+  }
+
+  .search-btn {
+    background-color: $primary;
+    color: #000000;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border-radius: 0;
+    padding: 0.9rem 2rem;
+    border: none;
+    transition: all 0.2s;
+    &:hover { background-color: lighten($primary, 10%); }
+  }
+}
+
+// ================================
+// SECTIONS
+// ================================
+.section {
+  padding: 5rem 0;
+
+  .section-title {
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+    color: #ffffff;
+    margin-bottom: 0.5rem;
+
+    &::after {
+      content: '';
+      display: block;
+      width: 40px;
+      height: 3px;
+      background: $primary;
+      margin-top: 0.75rem;
+    }
+  }
+
+  .section-subtitle {
+    color: #666666;
+    font-size: 0.95rem;
+    margin-bottom: 3rem;
+  }
+}
+
+// ================================
+// CARDS
+// ================================
+.card-dark {
+  background-color: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  transition: all 0.3s;
+
+  &:hover {
+    border-color: $primary;
+    transform: translateY(-4px);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+  }
+
+  .card-img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    background-color: #252525;
+  }
+
+  .card-img-placeholder {
+    width: 100%;
+    height: 200px;
+    background: linear-gradient(135deg, #1e1e1e, #2a2a2a);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    color: #333333;
+  }
+
+  .card-body {
+    padding: 1.5rem;
+  }
+
+  .card-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 0.25rem;
+  }
+
+  .card-meta {
+    font-size: 0.85rem;
+    color: #666666;
+  }
+
+  .card-badge {
+    display: inline-block;
+    background-color: rgba(201, 168, 76, 0.15);
+    color: $primary;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.2rem 0.6rem;
+    border-radius: 2rem;
+    margin: 0.15rem;
+  }
+
+  .card-link {
+    display: inline-block;
+    margin-top: 1rem;
+    color: $primary;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    &:hover { color: lighten($primary, 15%); }
+  }
+}
+
+// ================================
+// EVENTS
+// ================================
+.event-item {
+  background-color: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-left: 3px solid $primary;
+  padding: 1.5rem;
+  border-radius: 0 0.5rem 0.5rem 0;
+  margin-bottom: 1rem;
+  transition: all 0.2s;
+
+  &:hover {
+    background-color: #202020;
+    transform: translateX(4px);
+  }
+
+  .event-date {
+    font-size: 0.8rem;
+    color: $primary;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .event-name {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0.25rem 0;
+  }
+
+  .event-location {
+    font-size: 0.85rem;
+    color: #666666;
+  }
+}
+
+// ================================
+// FLASH MESSAGES
+// ================================
+.flash-notice {
+  background-color: rgba(201, 168, 76, 0.1);
+  border: 1px solid rgba(201, 168, 76, 0.3);
+  color: $primary;
+  padding: 1rem 1.5rem;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+}
+
+.flash-alert {
+  background-color: rgba(220, 53, 69, 0.1);
+  border: 1px solid rgba(220, 53, 69, 0.3);
+  color: #dc3545;
+  padding: 1rem 1.5rem;
+  border-radius: 0.5rem;
+  margin: 1rem 0;
+}
+
+// ================================
+// FOOTER
+// ================================
+footer {
+  background-color: #111111;
+  border-top: 1px solid #2a2a2a;
+  padding: 3rem 0;
+  color: #555555;
+  font-size: 0.85rem;
+
+  .footer-brand {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: $primary;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+}

@@ -1,2 +1,166 @@
-<h1>Pages#home</h1>
-<p>Find me in app/views/pages/home.html.erb</p>
+<%# ================================ %>
+<%# HERO %>
+<%# ================================ %>
+<section class="hero">
+  <div class="container position-relative">
+    <div class="row align-items-center">
+      <div class="col-lg-7">
+        <h1 class="hero-title">
+          Trouve ton
+          <span>artiste.</span>
+        </h1>
+        <p class="hero-subtitle mt-4">
+          Explore les meilleurs tatoueurs et shops près de chez toi.
+          Réserve en ligne, simplement.
+        </p>
+        <div class="d-flex gap-3 mt-5">
+          <%= link_to "Explorer les tatoueurs", tatoueurs_path, class: "hero-cta" %>
+          <%= link_to "Voir les shops", shops_path, class: "hero-cta", style: "background: transparent; color: #c9a84c; border: 1px solid #c9a84c;" %>
+        </div>
+      </div>
+    </div>
+    <div class="hero-decoration">INK</div>
+  </div>
+</section>
+
+<%# ================================ %>
+<%# SEARCH BAR %>
+<%# ================================ %>
+<section class="search-section">
+  <div class="container">
+    <%= form_with url: tatoueurs_path, method: :get do |f| %>
+      <div class="row g-2 align-items-center">
+        <div class="col-md-8">
+          <%= f.text_field :query,
+              placeholder: "Rechercher un tatoueur, un style, une ville...",
+              class: "form-control search-input w-100" %>
+        </div>
+        <div class="col-md-2">
+          <%= f.select :style_id,
+              TattooStyle.all.map { |s| [s.name, s.id] },
+              { include_blank: "Tous les styles" },
+              { class: "form-control search-input w-100" } %>
+        </div>
+        <div class="col-md-2">
+          <%= f.submit "Rechercher", class: "btn search-btn w-100" %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+</section>
+
+<%# ================================ %>
+<%# TATOUEURS MIS EN AVANT %>
+<%# ================================ %>
+<section class="section">
+  <div class="container">
+    <h2 class="section-title">Tatoueurs</h2>
+    <p class="section-subtitle">Découvrez nos artistes</p>
+
+    <div class="row g-4">
+      <% @tatoueurs.each do |t| %>
+        <div class="col-sm-6 col-lg-3">
+          <div class="card-dark h-100">
+            <div class="card-img-placeholder">
+              <% if t.avatar.attached? %>
+                <%= image_tag t.avatar, class: "card-img" %>
+              <% else %>
+                💉
+              <% end %>
+            </div>
+            <div class="card-body">
+              <div class="card-name"><%= t.nickname %></div>
+              <div class="card-meta mb-2"><%= t.first_name %> <%= t.last_name %></div>
+              <div>
+                <% t.tattoo_styles.each do |style| %>
+                  <span class="card-badge"><%= style.name %></span>
+                <% end %>
+              </div>
+              <%= link_to "Voir le profil →", tatoueur_path(t), class: "card-link" %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="text-center mt-5">
+      <%= link_to "Voir tous les tatoueurs", tatoueurs_path, class: "hero-cta" %>
+    </div>
+  </div>
+</section>
+
+<%# ================================ %>
+<%# SHOPS MIS EN AVANT %>
+<%# ================================ %>
+<section class="section" style="background-color: #141414;">
+  <div class="container">
+    <h2 class="section-title">Shops</h2>
+    <p class="section-subtitle">Les meilleures boutiques</p>
+
+    <div class="row g-4">
+      <% @shops.each do |shop| %>
+        <div class="col-md-6">
+          <div class="card-dark h-100">
+            <div class="card-img-placeholder">
+              <% if shop.cover.attached? %>
+                <%= image_tag shop.cover, class: "card-img" %>
+              <% else %>
+                🏪
+              <% end %>
+            </div>
+            <div class="card-body">
+              <div class="card-name"><%= shop.name %></div>
+              <div class="card-meta">📍 <%= shop.address %></div>
+              <div class="card-meta mt-1">🕐 <%= shop.open_hours %></div>
+              <%= link_to "Voir le shop →", shop_path(shop), class: "card-link" %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <div class="text-center mt-5">
+      <%= link_to "Voir tous les shops", shops_path, class: "hero-cta" %>
+    </div>
+  </div>
+</section>
+
+<%# ================================ %>
+<%# ÉVÉNEMENTS %>
+<%# ================================ %>
+<section class="section">
+  <div class="container">
+    <div class="row">
+      <div class="col-lg-8">
+        <h2 class="section-title">Prochains événements</h2>
+        <p class="section-subtitle">Conventions, flash days et plus</p>
+
+        <% if @events.any? %>
+          <% @events.each do |e| %>
+            <div class="event-item">
+              <div class="event-date">
+                <%= e.start_date.strftime("%d %b %Y") %>
+              </div>
+              <div class="event-name"><%= e.name %></div>
+              <div class="event-location">
+                📍 <%= e.location %>
+                <% if e.shop %>
+                  · <%= link_to e.shop.name, shop_path(e.shop) %>
+                <% end %>
+                <% if e.tatoueur %>
+                  · <%= link_to e.tatoueur.nickname, tatoueur_path(e.tatoueur) %>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        <% else %>
+          <p class="text-muted">Aucun événement à venir pour le moment.</p>
+        <% end %>
+
+        <div class="mt-4">
+          <%= link_to "Voir tous les événements →", events_path, class: "card-link" %>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
