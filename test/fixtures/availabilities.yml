@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  tatoueur: one
+  day_of_week: 1
+  start_time: 2026-03-12 18:39:47
+  end_time: 2026-03-12 18:39:47
+
+two:
+  tatoueur: two
+  day_of_week: 1
+  start_time: 2026-03-12 18:39:47
+  end_time: 2026-03-12 18:39:47

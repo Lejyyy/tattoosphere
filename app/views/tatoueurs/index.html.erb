@@ -1,0 +1,16 @@
+<h1>Tous les tatoueurs</h1>
+
+<%= form_with url: tatoueurs_path, method: :get do |f| %>
+  <%= f.select :style_id, TattooStyle.all.map { |s| [s.name, s.id] }, include_blank: "Tous les styles" %>
+  <%= f.submit "Filtrer" %>
+<% end %>
+
+<% @tatoueurs.each do |t| %>
+  <div class="tatoueur-card">
+    <h2><%= link_to t.nickname, tatoueur_path(t) %></h2>
+    <p><%= t.first_name %> <%= t.last_name %></p>
+    <p><%= t.tattoo_styles.map(&:name).join(", ") %></p>
+  </div>
+<% end %>
+
+<%= link_to "Ajouter un tatoueur", new_tatoueur_path %>

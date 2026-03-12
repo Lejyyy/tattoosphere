@@ -1,0 +1,16 @@
+<h1><%= @portfolio.name %></h1>
+<p><%= @portfolio.description %></p>
+
+<h2>Réalisations</h2>
+<% @items.each do |item| %>
+  <div class="portfolio-item">
+    <p><%= item.description %></p>
+    <p><strong>Styles :</strong> <%= item.tattoo_styles.map(&:name).join(", ") %></p>
+    <p><strong>Prix :</strong> <%= item.price %> €</p>
+    <%= link_to "Modifier", edit_tatoueur_portfolio_portfolio_item_path(@tatoueur, @portfolio, item) %>
+    <%= link_to "Supprimer", tatoueur_portfolio_portfolio_item_path(@tatoueur, @portfolio, item), method: :delete, data: { confirm: "Supprimer ?" } %>
+  </div>
+<% end %>
+
+<%= link_to "Ajouter une réalisation", new_tatoueur_portfolio_portfolio_item_path(@tatoueur, @portfolio) %>
+<%= link_to "Retour", tatoueur_portfolios_path(@tatoueur) %>

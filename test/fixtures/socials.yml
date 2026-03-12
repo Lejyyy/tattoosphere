@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  shop: one
+  tatoueur: one
+  platform: MyString
+  url: MyString
+
+two:
+  shop: two
+  tatoueur: two
+  platform: MyString
+  url: MyString

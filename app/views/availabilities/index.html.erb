@@ -1,0 +1,30 @@
+<h1>Disponibilités de <%= @tatoueur.nickname %></h1>
+
+<% days = %w[Dimanche Lundi Mardi Mercredi Jeudi Vendredi Samedi] %>
+<% @availabilities.each do |a| %>
+  <div>
+    <strong><%= days[a.day_of_week] %></strong>
+    <%= a.start_time.strftime("%H:%M") %> - <%= a.end_time.strftime("%H:%M") %>
+    <%= link_to "Supprimer", tatoueur_availability_path(@tatoueur, a), method: :delete, data: { confirm: "Supprimer ?" } %>
+  </div>
+<% end %>
+
+<h2>Ajouter une disponibilité</h2>
+<%= render "form" %>
+
+# app/views/availabilities/_form.html.erb
+<%= form_with model: [@tatoueur, @availability] do |f| %>
+  <div>
+    <%= f.label :day_of_week, "Jour" %>
+    <%= f.select :day_of_week, [["Dimanche", 0], ["Lundi", 1], ["Mardi", 2], ["Mercredi", 3], ["Jeudi", 4], ["Vendredi", 5], ["Samedi", 6]] %>
+  </div>
+  <div>
+    <%= f.label :start_time, "Heure de début" %>
+    <%= f.time_field :start_time %>
+  </div>
+  <div>
+    <%= f.label :end_time, "Heure de fin" %>
+    <%= f.time_field :end_time %>
+  </div>
+  <%= f.submit "Ajouter" %>
+<% end %>

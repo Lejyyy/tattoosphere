@@ -1,0 +1,23 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  user: one
+  shop: one
+  tatoueur: one
+  date: 2026-03-12
+  status: MyString
+  description: MyText
+  price_estimated: 9.99
+  start_time: 2026-03-12 18:39:46
+  end_time: 2026-03-12 18:39:46
+
+two:
+  user: two
+  shop: two
+  tatoueur: two
+  date: 2026-03-12
+  status: MyString
+  description: MyText
+  price_estimated: 9.99
+  start_time: 2026-03-12 18:39:46
+  end_time: 2026-03-12 18:39:46

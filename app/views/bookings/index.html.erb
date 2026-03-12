@@ -1,0 +1,14 @@
+<h1>Mes réservations</h1>
+
+<% @bookings.each do |b| %>
+  <div class="booking-card">
+    <p><strong>Shop :</strong> <%= b.shop.name %></p>
+    <p><strong>Tatoueur :</strong> <%= b.tatoueur.nickname %></p>
+    <p><strong>Date :</strong> <%= b.date.strftime("%d/%m/%Y") %></p>
+    <p><strong>Statut :</strong> <%= b.status %></p>
+    <%= link_to "Voir", b %>
+    <% if b.status == "done" && b.review.nil? %>
+      <%= link_to "Laisser un avis", new_booking_review_path(b) %>
+    <% end %>
+  </div>
+<% end %>

@@ -1,0 +1,19 @@
+<%= form_with model: [@tatoueur, @portfolio] do |f| %>
+  <% if @portfolio.errors.any? %>
+    <div class="errors">
+      <% @portfolio.errors.full_messages.each do |msg| %>
+        <p><%= msg %></p>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div>
+    <%= f.label :name, "Nom du portfolio" %>
+    <%= f.text_field :name %>
+  </div>
+  <div>
+    <%= f.label :description %>
+    <%= f.text_area :description %>
+  </div>
+  <%= f.submit %>
+<% end %>

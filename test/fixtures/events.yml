@@ -1,0 +1,21 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  shop: one
+  tatoueur: one
+  name: MyString
+  description: MyText
+  location: MyString
+  start_date: 2026-03-12 18:40:19
+  end_date: 2026-03-12 18:40:19
+  is_public: false
+
+two:
+  shop: two
+  tatoueur: two
+  name: MyString
+  description: MyText
+  location: MyString
+  start_date: 2026-03-12 18:40:19
+  end_date: 2026-03-12 18:40:19
+  is_public: false

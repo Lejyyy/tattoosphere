@@ -1,0 +1,8 @@
+<h1>Styles de tatouage</h1>
+
+<% @tattoo_styles.each do |style| %>
+  <div>
+    <h2><%= style.name %></h2>
+    <p><%= link_to "Voir les tatoueurs", tatoueurs_path(style_id: style.id) %></p>
+  </div>
+<% end %>

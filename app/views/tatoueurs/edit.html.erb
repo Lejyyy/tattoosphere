@@ -1,0 +1,39 @@
+<h1>Modifier <%= @tatoueur.nickname %></h1>
+<%= render "form" %>
+
+# app/views/tatoueurs/_form.html.erb
+<%= form_with model: @tatoueur do |f| %>
+  <% if @tatoueur.errors.any? %>
+    <div class="errors">
+      <% @tatoueur.errors.full_messages.each do |msg| %>
+        <p><%= msg %></p>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div>
+    <%= f.label :nickname, "Pseudo" %>
+    <%= f.text_field :nickname %>
+  </div>
+  <div>
+    <%= f.label :first_name, "Prénom" %>
+    <%= f.text_field :first_name %>
+  </div>
+  <div>
+    <%= f.label :last_name, "Nom" %>
+    <%= f.text_field :last_name %>
+  </div>
+  <div>
+    <%= f.label :email %>
+    <%= f.email_field :email %>
+  </div>
+  <div>
+    <%= f.label :description %>
+    <%= f.text_area :description %>
+  </div>
+  <div>
+    <%= f.label :tattoo_style_ids, "Styles" %>
+    <%= f.collection_check_boxes :tattoo_style_ids, TattooStyle.all, :id, :name %>
+  </div>
+  <%= f.submit %>
+<% end %>

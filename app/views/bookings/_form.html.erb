@@ -1,0 +1,35 @@
+<%= form_with model: [@shop, @booking] do |f| %>
+  <% if @booking.errors.any? %>
+    <div class="errors">
+      <% @booking.errors.full_messages.each do |msg| %>
+        <p><%= msg %></p>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div>
+    <%= f.label :tatoueur_id, "Tatoueur" %>
+    <%= f.collection_select :tatoueur_id, @tatoueurs, :id, :nickname, include_blank: "Choisir un tatoueur" %>
+  </div>
+  <div>
+    <%= f.label :date, "Date" %>
+    <%= f.date_field :date %>
+  </div>
+  <div>
+    <%= f.label :start_time, "Heure de début" %>
+    <%= f.time_field :start_time %>
+  </div>
+  <div>
+    <%= f.label :end_time, "Heure de fin" %>
+    <%= f.time_field :end_time %>
+  </div>
+  <div>
+    <%= f.label :description, "Description du projet" %>
+    <%= f.text_area :description %>
+  </div>
+  <div>
+    <%= f.label :price_estimated, "Budget estimé (€)" %>
+    <%= f.number_field :price_estimated, step: 0.01 %>
+  </div>
+  <%= f.submit "Réserver" %>
+<% end %>

@@ -1,0 +1,14 @@
+<h1><%= @event.name %></h1>
+<p><%= @event.description %></p>
+<p><strong>Lieu :</strong> <%= @event.location %></p>
+<p><strong>Début :</strong> <%= @event.start_date.strftime("%d/%m/%Y à %H:%M") %></p>
+<p><strong>Fin :</strong> <%= @event.end_date.strftime("%d/%m/%Y à %H:%M") %></p>
+<% if @event.shop %>
+  <p><strong>Shop :</strong> <%= link_to @event.shop.name, @event.shop %></p>
+<% end %>
+<% if @event.tatoueur %>
+  <p><strong>Tatoueur :</strong> <%= link_to @event.tatoueur.nickname, @event.tatoueur %></p>
+<% end %>
+
+<%= link_to "Modifier", edit_event_path(@event) %>
+<%= link_to "Supprimer", @event, method: :delete, data: { confirm: "Supprimer cet événement ?" } %>

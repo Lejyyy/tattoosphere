@@ -1,0 +1,45 @@
+<%= form_with model: @shop, html: { enctype: "multipart/form-data" } do |f| %>
+
+  <%# Afficher la cover actuelle %>
+  <% if @shop.cover.attached? %>
+    <div>
+      <%= image_tag @shop.cover, width: 400 %>
+    </div>
+  <% end %>
+
+  <div>
+    <%= f.label :cover, "Photo principale" %>
+    <%= f.file_field :cover, accept: "image/*" %>
+  </div>
+
+  <div>
+    <%= f.label :photos, "Galerie photos" %>
+    <%= f.file_field :photos, accept: "image/*", multiple: true %>
+  </div>
+
+  <div>
+    <%= f.label :name, "Nom" %>
+    <%= f.text_field :name %>
+  </div>
+  <div>
+    <%= f.label :email %>
+    <%= f.email_field :email %>
+  </div>
+  <div>
+    <%= f.label :address, "Adresse" %>
+    <%= f.text_field :address %>
+  </div>
+  <div>
+    <%= f.label :phone, "Téléphone" %>
+    <%= f.text_field :phone %>
+  </div>
+  <div>
+    <%= f.label :description %>
+    <%= f.text_area :description %>
+  </div>
+  <div>
+    <%= f.label :open_hours, "Horaires" %>
+    <%= f.text_field :open_hours %>
+  </div>
+  <%= f.submit %>
+<% end %>

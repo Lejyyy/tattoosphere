@@ -1,0 +1,17 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  shop: one
+  tatoueur: one
+  portfolio_item: one
+  event: one
+  url: MyString
+  media_type: MyString
+
+two:
+  shop: two
+  tatoueur: two
+  portfolio_item: two
+  event: two
+  url: MyString
+  media_type: MyString

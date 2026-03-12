@@ -1,0 +1,2 @@
+module ShopTatoueursHelper
+end

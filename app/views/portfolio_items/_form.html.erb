@@ -1,0 +1,29 @@
+<%= form_with model: [@tatoueur, @portfolio, @portfolio_item], html: { enctype: "multipart/form-data" } do |f| %>
+
+  <%# Afficher les images existantes %>
+  <% if @portfolio_item.images.attached? %>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+      <% @portfolio_item.images.each do |img| %>
+        <%= image_tag img, width: 150 %>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div>
+    <%= f.label :images, "Photos de la réalisation" %>
+    <%= f.file_field :images, accept: "image/*", multiple: true %>
+  </div>
+  <div>
+    <%= f.label :description %>
+    <%= f.text_area :description %>
+  </div>
+  <div>
+    <%= f.label :price, "Prix (€)" %>
+    <%= f.number_field :price, step: 0.01 %>
+  </div>
+  <div>
+    <%= f.label :tattoo_style_ids, "Styles" %>
+    <%= f.collection_check_boxes :tattoo_style_ids, TattooStyle.all, :id, :name %>
+  </div>
+  <%= f.submit %>
+<% end %>

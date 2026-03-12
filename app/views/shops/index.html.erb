@@ -1,0 +1,11 @@
+
+<h1>Tous les shops</h1>
+<%= link_to "Ajouter un shop", new_shop_path %>
+
+<% @shops.each do |shop| %>
+  <div class="shop-card">
+    <h2><%= link_to shop.name, shop %></h2>
+    <p><%= shop.address %></p>
+    <p><%= shop.description %></p>
+  </div>
+<% end %>

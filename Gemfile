@@ -66,3 +66,15 @@ group :test do
 end
 
 gem "devise", "~> 5.0"
+
+gem "pundit", "~> 2.5"
+
+gem "cloudinary", "~> 2.4"
+
+gem "activestorage-cloudinary-service", "~> 0.2.3"
+
+gem "dotenv-rails", "~> 3.2"
+
+gem "faker", "~> 3.6"
+
+gem "active_storage_validations", "~> 3.0"

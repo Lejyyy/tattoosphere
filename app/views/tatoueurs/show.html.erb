@@ -1,0 +1,5 @@
+<% if @tatoueur.avatar.attached? %>
+  <%= image_tag @tatoueur.avatar, width: 200, style: "border-radius: 50%" %>
+<% else %>
+  <p>Pas de photo de profil</p>
+<% end %>

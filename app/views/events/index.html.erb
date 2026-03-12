@@ -1,0 +1,16 @@
+<h1>Événements</h1>
+<%= link_to "Créer un événement", new_event_path %>
+
+<% @events.each do |e| %>
+  <div class="event-card">
+    <h2><%= link_to e.name, e %></h2>
+    <p><%= e.location %></p>
+    <p><%= e.start_date.strftime("%d/%m/%Y à %H:%M") %></p>
+    <% if e.shop %>
+      <p>Par <%= link_to e.shop.name, e.shop %></p>
+    <% end %>
+    <% if e.tatoueur %>
+      <p>Par <%= link_to e.tatoueur.nickname, e.tatoueur %></p>
+    <% end %>
+  </div>
+<% end %>

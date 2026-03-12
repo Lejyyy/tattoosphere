@@ -1,0 +1,11 @@
+<h1>Réservation #<%= @booking.id %></h1>
+<p><strong>Shop :</strong> <%= @booking.shop.name %></p>
+<p><strong>Tatoueur :</strong> <%= @booking.tatoueur.nickname %></p>
+<p><strong>Date :</strong> <%= @booking.date.strftime("%d/%m/%Y") %></p>
+<p><strong>Horaire :</strong> <%= @booking.start_time&.strftime("%H:%M") %> - <%= @booking.end_time&.strftime("%H:%M") %></p>
+<p><strong>Statut :</strong> <%= @booking.status %></p>
+<p><strong>Prix estimé :</strong> <%= @booking.price_estimated %> €</p>
+<p><strong>Description :</strong> <%= @booking.description %></p>
+
+<%= link_to "Modifier", edit_booking_path(@booking) %>
+<%= link_to "Annuler", @booking, method: :delete, data: { confirm: "Annuler cette réservation ?" } %>

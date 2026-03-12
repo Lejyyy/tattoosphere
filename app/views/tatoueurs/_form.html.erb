@@ -1,0 +1,40 @@
+<%= form_with model: @tatoueur, html: { enctype: "multipart/form-data" } do |f| %>
+
+  <%# Afficher l'avatar actuel %>
+  <% if @tatoueur.avatar.attached? %>
+    <div>
+      <%= image_tag @tatoueur.avatar, width: 150, style: "border-radius: 50%" %>
+    </div>
+  <% end %>
+
+  <div>
+    <%= f.label :avatar, "Photo de profil" %>
+    <%= f.file_field :avatar, accept: "image/*" %>
+  </div>
+
+  <div>
+    <%= f.label :nickname, "Pseudo" %>
+    <%= f.text_field :nickname %>
+  </div>
+  <div>
+    <%= f.label :first_name, "Prénom" %>
+    <%= f.text_field :first_name %>
+  </div>
+  <div>
+    <%= f.label :last_name, "Nom" %>
+    <%= f.text_field :last_name %>
+  </div>
+  <div>
+    <%= f.label :email %>
+    <%= f.email_field :email %>
+  </div>
+  <div>
+    <%= f.label :description %>
+    <%= f.text_area :description %>
+  </div>
+  <div>
+    <%= f.label :tattoo_style_ids, "Styles" %>
+    <%= f.collection_check_boxes :tattoo_style_ids, TattooStyle.all, :id, :name %>
+  </div>
+  <%= f.submit %>
+<% end %>

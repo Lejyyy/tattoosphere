@@ -1,0 +1,47 @@
+<%= form_with model: @event, html: { enctype: "multipart/form-data" } do |f| %>
+
+  <%# Afficher la bannière actuelle %>
+  <% if @event.banner.attached? %>
+    <div>
+      <%= image_tag @event.banner, width: 600 %>
+    </div>
+  <% end %>
+
+  <div>
+    <%= f.label :banner, "Bannière de l'événement" %>
+    <%= f.file_field :banner, accept: "image/*" %>
+  </div>
+  <div>
+    <%= f.label :name, "Nom" %>
+    <%= f.text_field :name %>
+  </div>
+  <div>
+    <%= f.label :description %>
+    <%= f.text_area :description %>
+  </div>
+  <div>
+    <%= f.label :location, "Lieu" %>
+    <%= f.text_field :location %>
+  </div>
+  <div>
+    <%= f.label :start_date, "Date de début" %>
+    <%= f.datetime_field :start_date %>
+  </div>
+  <div>
+    <%= f.label :end_date, "Date de fin" %>
+    <%= f.datetime_field :end_date %>
+  </div>
+  <div>
+    <%= f.label :is_public, "Public ?" %>
+    <%= f.check_box :is_public %>
+  </div>
+  <div>
+    <%= f.label :shop_id, "Shop (optionnel)" %>
+    <%= f.collection_select :shop_id, Shop.all, :id, :name, include_blank: true %>
+  </div>
+  <div>
+    <%= f.label :tatoueur_id, "Tatoueur (optionnel)" %>
+    <%= f.collection_select :tatoueur_id, Tatoueur.all, :id, :nickname, include_blank: true %>
+  </div>
+  <%= f.submit %>
+<% end %>

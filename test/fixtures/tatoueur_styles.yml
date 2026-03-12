@@ -1,0 +1,9 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  tatoueur: one
+  tattoo_style: one
+
+two:
+  tatoueur: two
+  tattoo_style: two

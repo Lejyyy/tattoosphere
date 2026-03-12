@@ -1,0 +1,14 @@
+<h1>Laisser un avis</h1>
+<p>Réservation avec <strong><%= @booking.tatoueur.nickname %></strong> le <%= @booking.date.strftime("%d/%m/%Y") %></p>
+
+<%= form_with model: [@booking, @review] do |f| %>
+  <div>
+    <%= f.label :rating, "Note (1 à 5)" %>
+    <%= f.number_field :rating, min: 1, max: 5 %>
+  </div>
+  <div>
+    <%= f.label :comment, "Commentaire" %>
+    <%= f.text_area :comment %>
+  </div>
+  <%= f.submit "Publier l'avis" %>
+<% end %>

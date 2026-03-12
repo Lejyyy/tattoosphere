@@ -1,0 +1,10 @@
+<h1>Portfolios de <%= @tatoueur.nickname %></h1>
+
+<% @portfolios.each do |p| %>
+  <div class="portfolio-card">
+    <h2><%= link_to p.name, tatoueur_portfolio_path(@tatoueur, p) %></h2>
+    <p><%= p.description %></p>
+  </div>
+<% end %>
+
+<%= link_to "Nouveau portfolio", new_tatoueur_portfolio_path(@tatoueur) %>

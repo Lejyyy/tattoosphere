@@ -1,0 +1,20 @@
+<h1><%= @shop.name %></h1>
+<p><strong>Adresse :</strong> <%= @shop.address %></p>
+<p><strong>Email :</strong> <%= @shop.email %></p>
+<p><strong>Téléphone :</strong> <%= @shop.phone %></p>
+<p><strong>Horaires :</strong> <%= @shop.open_hours %></p>
+<p><%= @shop.description %></p>
+
+<h2>Tatoueurs</h2>
+<% @shop.tatoueurs.each do |t| %>
+  <p><%= link_to t.nickname, tatoueur_path(t) %></p>
+<% end %>
+
+<h2>Événements</h2>
+<% @shop.events.each do |e| %>
+  <p><%= link_to e.name, event_path(e) %> — <%= e.start_date.strftime("%d/%m/%Y") %></p>
+<% end %>
+
+<%= link_to "Réserver", new_shop_booking_path(@shop) %>
+<%= link_to "Modifier", edit_shop_path(@shop) %>
+<%= link_to "Supprimer", @shop, method: :delete, data: { confirm: "Supprimer ce shop ?" } %>
