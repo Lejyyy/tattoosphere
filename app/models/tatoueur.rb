@@ -7,7 +7,7 @@ class Tatoueur < ApplicationRecord
   has_one_attached :identity_document      # pièce d'identité
   has_one_attached :hygiene_certificate    # certification hygiène & sécurité
 
-  has_many :conversation_participants, as: :participant
+  has_many :conversation_participants, as: :participant, dependent: :destroy
   has_many :conversations, through: :conversation_participants
   has_many :tatoueur_styles
   has_many :tattoo_styles, through: :tatoueur_styles

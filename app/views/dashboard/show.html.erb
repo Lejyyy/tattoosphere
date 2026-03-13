@@ -1,0 +1,155 @@
+<div class="container py-5">
+
+  <%# EN-TÊTE %>
+  <div class="d-flex align-items-center justify-content-between mb-5">
+    <div>
+      <h1 class="h3 mb-1">Bonjour, <%= current_user.nickname %></h1>
+      <span class="text-secondary small"><%= current_user.email %></span>
+    </div>
+    <span class="badge bg-secondary"><%= current_user.role.humanize %></span>
+  </div>
+
+  <div class="row g-4">
+
+    <%# ================================ %>
+    <%# COLONNE GAUCHE %>
+    <%# ================================ %>
+    <div class="col-lg-8">
+
+      <%# RÉSERVATIONS RÉCENTES %>
+      <div class="card border-secondary mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center border-secondary">
+          <span class="fw-semibold">Mes réservations récentes</span>
+          <%= link_to "Voir toutes", bookings_path, class: "text-warning small text-decoration-none" %>
+        </div>
+        <div class="card-body p-0">
+          <% if @bookings.any? %>
+            <ul class="list-group list-group-flush">
+              <% @bookings.each do |booking| %>
+                <li class="list-group-item bg-transparent border-secondary d-flex justify-content-between align-items-center py-3">
+                  <div>
+                    <div class="fw-semibold small"><%= booking.tatoueur.nickname %></div>
+                    <div class="text-secondary small"><%= booking.shop.name %> — <%= booking.date.strftime("%d/%m/%Y") %></div>
+                  </div>
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="badge <%= booking_status_badge(booking.status) %>">
+                      <%= booking.status.humanize %>
+                    </span>
+                    <%= link_to "Voir", booking_path(booking), class: "btn btn-outline-secondary btn-sm" %>
+                  </div>
+                </li>
+              <% end %>
+            </ul>
+          <% else %>
+            <p class="text-secondary small p-3 mb-0">Aucune réservation pour le moment.</p>
+          <% end %>
+        </div>
+      </div>
+
+      <%# CONVERSATIONS %>
+      <div class="card border-secondary">
+        <div class="card-header d-flex justify-content-between align-items-center border-secondary">
+          <div class="d-flex align-items-center gap-2">
+            <span class="fw-semibold">Messages</span>
+            <% if @unread_count > 0 %>
+              <span class="badge bg-warning text-dark"><%= @unread_count %></span>
+            <% end %>
+          </div>
+          <%= link_to "Voir tous", conversations_path, class: "text-warning small text-decoration-none" %>
+        </div>
+        <div class="card-body p-0">
+          <% if @conversations.any? %>
+            <ul class="list-group list-group-flush">
+              <% @conversations.each do |conversation| %>
+                <% other = conversation.other_participant(current_user) %>
+                <% unread = conversation.unread_count_for(current_user) %>
+                <li class="list-group-item bg-transparent border-secondary d-flex justify-content-between align-items-center py-3">
+                  <div>
+                    <span class="fw-semibold small <%= unread > 0 ? "text-warning" : "" %>">
+                      <%= other.respond_to?(:nickname) ? other.nickname : other.name %>
+                    </span>
+                    <div class="text-secondary small">
+                      <%= conversation.messages.last&.content&.truncate(40) %>
+                    </div>
+                  </div>
+                  <div class="d-flex align-items-center gap-2">
+                    <% if unread > 0 %>
+                      <span class="badge bg-warning text-dark rounded-pill"><%= unread %></span>
+                    <% end %>
+                    <%= link_to "Ouvrir", conversation_path(conversation), class: "btn btn-outline-secondary btn-sm" %>
+                  </div>
+                </li>
+              <% end %>
+            </ul>
+          <% else %>
+            <p class="text-secondary small p-3 mb-0">Aucune conversation pour le moment.</p>
+          <% end %>
+        </div>
+      </div>
+
+    </div>
+
+    <%# ================================ %>
+    <%# COLONNE DROITE %>
+    <%# ================================ %>
+    <div class="col-lg-4">
+
+      <%# PROFIL TATOUEUR %>
+      <div class="card border-secondary mb-4">
+        <div class="card-header border-secondary fw-semibold">Espace tatoueur</div>
+        <div class="card-body">
+          <% if @tatoueur %>
+            <div class="d-flex align-items-center gap-2 mb-3">
+              <% if @tatoueur.avatar.attached? %>
+                <%= image_tag @tatoueur.avatar, class: "rounded-circle", style: "width: 40px; height: 40px; object-fit: cover;" %>
+              <% end %>
+              <div>
+                <div class="fw-semibold small"><%= @tatoueur.nickname %></div>
+                <%= render "tatoueurs/verified_badge", tatoueur: @tatoueur %>
+              </div>
+            </div>
+            <div class="d-flex flex-column gap-2">
+              <%= link_to "Mon profil", tatoueur_path(@tatoueur), class: "btn btn-outline-warning btn-sm w-100" %>
+              <%= link_to "Mes disponibilités", tatoueur_availabilities_path(@tatoueur), class: "btn btn-outline-secondary btn-sm w-100" %>
+              <%= link_to "Mon portfolio", tatoueur_portfolios_path(@tatoueur), class: "btn btn-outline-secondary btn-sm w-100" %>
+              <% unless @tatoueur.verified? || @tatoueur.pending_verification? %>
+                <%= link_to "Faire vérifier mon profil", verification_tatoueur_path(@tatoueur), class: "btn btn-warning btn-sm w-100" %>
+              <% end %>
+            </div>
+          <% else %>
+            <p class="text-secondary small mb-3">Vous n'avez pas encore de profil tatoueur.</p>
+            <%= link_to "Créer mon profil tatoueur", new_tatoueur_path, class: "btn btn-outline-warning btn-sm w-100" %>
+          <% end %>
+        </div>
+      </div>
+
+      <%# PROFIL SHOP %>
+      <div class="card border-secondary mb-4">
+        <div class="card-header border-secondary fw-semibold">Espace shop</div>
+        <div class="card-body">
+          <% if @shop %>
+            <div class="fw-semibold small mb-3"><%= @shop.name %></div>
+            <div class="d-flex flex-column gap-2">
+              <%= link_to "Mon shop", shop_path(@shop), class: "btn btn-outline-warning btn-sm w-100" %>
+              <%= link_to "Modifier", edit_shop_path(@shop), class: "btn btn-outline-secondary btn-sm w-100" %>
+            </div>
+          <% else %>
+            <p class="text-secondary small mb-3">Vous n'avez pas encore de shop.</p>
+            <%= link_to "Référencer mon shop", new_shop_path, class: "btn btn-outline-warning btn-sm w-100" %>
+          <% end %>
+        </div>
+      </div>
+
+      <%# FAVORIS %>
+      <div class="card border-secondary">
+        <div class="card-header border-secondary fw-semibold">Mes favoris</div>
+        <div class="card-body">
+          <div class="d-flex flex-column gap-2">
+            <%= link_to "Voir mes favoris", favorites_path, class: "btn btn-outline-secondary btn-sm w-100" %>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

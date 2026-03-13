@@ -1,93 +1,39 @@
-<div class="container py-5">
-  <h1 class="section-title">Mes favoris</h1>
+<div class="container py-4">
+  <h1 class="h4 mb-4">Mes favoris</h1>
 
-  <%# TATOUEURS %>
+  <h2 class="h5">Tatoueurs</h2>
   <% if @favorite_tatoueurs.any? %>
-    <h2 class="section-title mt-5">Tatoueurs</h2>
-    <div class="row g-4 mt-2">
-      <% @favorite_tatoueurs.each do |t| %>
-        <div class="col-sm-6 col-lg-3">
-          <div class="card-dark h-100">
-            <div class="card-img-placeholder">💉</div>
-            <div class="card-body">
-              <div class="card-name"><%= t.nickname %></div>
-              <div class="card-meta"><%= t.tattoo_styles.map(&:name).join(", ") %></div>
-              <div class="d-flex justify-content-between align-items-center mt-2">
-                <%= link_to "Voir →", tatoueur_path(t), class: "card-link" %>
-                <%= render "favorites/button", favoritable: t %>
-              </div>
-            </div>
-          </div>
-        </div>
-      <% end %>
-    </div>
+    <% @favorite_tatoueurs.each do |t| %>
+      <p><%= link_to t.nickname, tatoueur_path(t) %></p>
+    <% end %>
+  <% else %>
+    <p class="text-secondary">Aucun tatoueur en favori.</p>
   <% end %>
 
-  <%# SHOPS %>
+  <h2 class="h5 mt-4">Shops</h2>
   <% if @favorite_shops.any? %>
-    <h2 class="section-title mt-5">Shops</h2>
-    <div class="row g-4 mt-2">
-      <% @favorite_shops.each do |s| %>
-        <div class="col-sm-6 col-lg-4">
-          <div class="card-dark h-100">
-            <div class="card-img-placeholder">🏪</div>
-            <div class="card-body">
-              <div class="card-name"><%= s.name %></div>
-              <div class="card-meta">📍 <%= s.address %></div>
-              <div class="d-flex justify-content-between align-items-center mt-2">
-                <%= link_to "Voir →", shop_path(s), class: "card-link" %>
-                <%= render "favorites/button", favoritable: s %>
-              </div>
-            </div>
-          </div>
-        </div>
-      <% end %>
-    </div>
+    <% @favorite_shops.each do |s| %>
+      <p><%= link_to s.name, shop_path(s) %></p>
+    <% end %>
+  <% else %>
+    <p class="text-secondary">Aucun shop en favori.</p>
   <% end %>
 
-  <%# PORTFOLIOS %>
+  <h2 class="h5 mt-4">Portfolios</h2>
   <% if @favorite_portfolios.any? %>
-    <h2 class="section-title mt-5">Portfolios</h2>
-    <div class="row g-4 mt-2">
-      <% @favorite_portfolios.each do |p| %>
-        <div class="col-sm-6 col-lg-4">
-          <div class="card-dark h-100">
-            <div class="card-body">
-              <div class="card-name"><%= p.name %></div>
-              <div class="card-meta"><%= p.tatoueur.nickname %></div>
-              <div class="d-flex justify-content-between align-items-center mt-2">
-                <%= link_to "Voir →", tatoueur_portfolio_path(p.tatoueur, p), class: "card-link" %>
-                <%= render "favorites/button", favoritable: p %>
-              </div>
-            </div>
-          </div>
-        </div>
-      <% end %>
-    </div>
+    <% @favorite_portfolios.each do |p| %>
+      <p><%= link_to p.name, tatoueur_portfolio_path(p.tatoueur, p) %></p>
+    <% end %>
+  <% else %>
+    <p class="text-secondary">Aucun portfolio en favori.</p>
   <% end %>
 
-  <%# PORTFOLIO ITEMS %>
+  <h2 class="h5 mt-4">Réalisations</h2>
   <% if @favorite_portfolio_items.any? %>
-    <h2 class="section-title mt-5">Réalisations</h2>
-    <div class="row g-4 mt-2">
-      <% @favorite_portfolio_items.each do |item| %>
-        <div class="col-sm-6 col-lg-3">
-          <div class="card-dark h-100">
-            <div class="card-img-placeholder">🖼️</div>
-            <div class="card-body">
-              <div class="card-meta"><%= item.description&.truncate(60) %></div>
-              <div class="card-meta">💶 <%= item.price %> €</div>
-              <div class="d-flex justify-content-between align-items-center mt-2">
-                <%= render "favorites/button", favoritable: item %>
-              </div>
-            </div>
-          </div>
-        </div>
-      <% end %>
-    </div>
-  <% end %>
-
-  <% if [@favorite_tatoueurs, @favorite_shops, @favorite_portfolios, @favorite_portfolio_items].all?(&:empty?) %>
-    <p class="text-muted mt-5">Vous n'avez pas encore de favoris.</p>
+    <% @favorite_portfolio_items.each do |pi| %>
+      <p><%= link_to "Réalisation ##{pi.id}", tatoueur_portfolio_portfolio_item_path(pi.portfolio.tatoueur, pi.portfolio, pi) %></p>
+    <% end %>
+  <% else %>
+    <p class="text-secondary">Aucune réalisation en favori.</p>
   <% end %>
 </div>

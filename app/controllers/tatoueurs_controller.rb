@@ -47,6 +47,7 @@ class TatoueursController < ApplicationController
     @tatoueur.user = current_user
     authorize @tatoueur
     if @tatoueur.save
+      current_user.update!(role: "tatoueur")
       redirect_to @tatoueur, notice: "Profil tatoueur créé."
     else
       render :new, status: :unprocessable_entity

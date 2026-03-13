@@ -15,10 +15,6 @@
   <p><%= link_to e.name, event_path(e) %> — <%= e.start_date.strftime("%d/%m/%Y") %></p>
 <% end %>
 
-<%= link_to "Réserver", new_shop_booking_path(@shop) %>
-<%= link_to "Modifier", edit_shop_path(@shop) %>
-<%= link_to "Supprimer", @shop, method: :delete, data: { confirm: "Supprimer ce shop ?" } %>
-
 <% if user_signed_in? %>
   <%= link_to "Réserver dans ce shop", new_shop_booking_path(@shop), class: "hero-cta" %>
 <% else %>
@@ -29,4 +25,17 @@
   <%= link_to "Modifier", edit_shop_path(@shop), class: "btn btn-outline-warning btn-sm" %>
 <% end %>
 
+<% if user_signed_in? %>
+  <%= link_to "Supprimer", @shop,
+      data: { turbo_method: :delete, turbo_confirm: "Supprimer ce shop ?" },
+      class: "btn btn-danger btn-sm" %>
+<% end %>
+
 <%= render "favorites/button", favoritable: @shop %>
+
+<% if user_signed_in? %>
+  <%= link_to "Contacter #{@shop.name}",
+      conversations_path(shop_id: @shop.id),
+      data: { turbo_method: :post },
+      class: "hero-cta mt-3" %>
+<% end %>

@@ -7,14 +7,11 @@ class User < ApplicationRecord
   # ================================
   has_one  :tatoueur
   has_one  :shop
-
   has_many :bookings
   has_many :reviews
   has_many :messages
-
-  has_many :conversation_participants
+  has_many :conversation_participants, as: :participant, dependent: :destroy
   has_many :conversations, through: :conversation_participants
-
   has_many :favorites, dependent: :destroy
   has_many :favorite_tatoueurs,       through: :favorites, source: :favoritable, source_type: "Tatoueur"
   has_many :favorite_shops,           through: :favorites, source: :favoritable, source_type: "Shop"
@@ -25,8 +22,8 @@ class User < ApplicationRecord
   # VALIDATIONS
   # ================================
   ROLES = %w[user tatoueur shop_owner admin].freeze
-
-  validates :first_name, :last_name, presence: true
+  validates :first_name, :last_name, :nickname, presence: true
+  validates :nickname, uniqueness: { case_sensitive: false }
   validates :role, inclusion: { in: ROLES }
   validate  :role_assignment_allowed
 

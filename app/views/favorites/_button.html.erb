@@ -3,19 +3,15 @@
 <div id="favorite-<%= favoritable.class.name.downcase %>-<%= favoritable.id %>">
   <% if user_signed_in? %>
     <% if favorited %>
-      <%= button_to "♥ Favori",
+      <%= button_to "❤️ Retirer des favoris",
           polymorphic_path([favoritable, :favorite]),
           method: :delete,
-          data: { turbo_stream: true },
-          class: "btn btn-favorite active" %>
+          class: "btn btn-sm btn-outline-danger" %>
     <% else %>
-      <%= button_to "♡ Favori",
+      <%= button_to "🤍 Ajouter aux favoris",
           polymorphic_path([favoritable, :favorite]),
           method: :post,
-          data: { turbo_stream: true },
-          class: "btn btn-favorite" %>
+          class: "btn btn-sm btn-outline-secondary" %>
     <% end %>
-  <% else %>
-    <%= link_to "♡ Favori", new_user_session_path, class: "btn btn-favorite" %>
   <% end %>
 </div>

@@ -3,19 +3,20 @@ Rails.application.routes.draw do
   # PAGES & SEARCH
   # ================================
   root "pages#home"
+  get "/dashboard", to: "dashboard#show", as: :dashboard
   get "/map",    to: "pages#map",    as: :map
   get "/search", to: "searches#index", as: :search
 
   # ================================
   # AUTHENTIFICATION
   # ================================
-  devise_for :users
+  devise_for :users, controllers: { registrations: "registrations" }
 
   # ================================
   # SHOPS
   # ================================
   resources :shops do
-    resource  :favorite, only: [ :create, :destroy ], module: :favorites
+    resource  :favorite, only: [ :create, :destroy ]
     resources :bookings,  only: [ :new, :create ]
     resources :events,    only: [ :index, :show ]
     resources :medias,    only: [ :index ]
@@ -30,11 +31,11 @@ Rails.application.routes.draw do
   # TATOUEURS
   # ================================
   resources :tatoueurs do
-    resource  :favorite, only: [ :create, :destroy ], module: :favorites
+    resource  :favorite, only: [ :create, :destroy ]
     resources :portfolios do
-      resource  :favorite, only: [ :create, :destroy ], module: :favorites
+      resource  :favorite, only: [ :create, :destroy ]
       resources :portfolio_items do
-        resource :favorite, only: [ :create, :destroy ], module: :favorites
+        resource :favorite, only: [ :create, :destroy ]
       end
     end
     resources :availabilities, only: [ :index, :create, :destroy ]

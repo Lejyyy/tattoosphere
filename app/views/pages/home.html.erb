@@ -1,115 +1,118 @@
 <%# ================================ %>
-<%# HERO %>
+<%# TATOUEURS EN VEDETTE %>
 <%# ================================ %>
-<section class="hero">
-  <div class="container position-relative">
-    <div class="row align-items-center">
-      <div class="col-lg-7">
-        <h1 class="hero-title">
-          Trouve ton
-          <span>artiste.</span>
-        </h1>
-        <p class="hero-subtitle mt-4">
-          Explore les meilleurs tatoueurs et shops près de chez toi.
-          Réserve en ligne, simplement.
-        </p>
-        <div class="d-flex gap-3 mt-5">
-          <%= link_to "Explorer les tatoueurs", tatoueurs_path, class: "hero-cta" %>
-          <% if user_signed_in? %>
-            <%= link_to "Mes réservations", bookings_path, class: "hero-cta", style: "background: transparent; color: #c9a84c; border: 1px solid #c9a84c;" %>
-          <% else %>
-            <%= link_to "Rejoindre la plateforme", new_user_registration_path, class: "hero-cta", style: "background: transparent; color: #c9a84c; border: 1px solid #c9a84c;" %>
-          <% end %>
-        </div>
-      </div>
+<section class="py-5">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="h4 mb-0">Tatoueurs en vedette</h2>
+      <%= link_to "Voir tous →", tatoueurs_path, class: "text-warning text-decoration-none small" %>
     </div>
-    <div class="hero-decoration">INK</div>
+    <div class="row g-4">
+      <% @tatoueurs.each do |tatoueur| %>
+        <div class="col-md-3">
+          <div class="card border-secondary h-100">
+            <%# Avatar %>
+            <% if tatoueur.avatar.attached? %>
+              <%= image_tag tatoueur.avatar, class: "card-img-top", style: "height: 200px; object-fit: cover;" %>
+            <% else %>
+              <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
+                <span class="text-muted fs-1"><%= tatoueur.nickname.first.upcase %></span>
+              </div>
+            <% end %>
+            <div class="card-body">
+              <div class="d-flex align-items-center gap-2 mb-1">
+                <h3 class="h6 mb-0"><%= tatoueur.nickname %></h3>
+                <%= render "tatoueurs/verified_badge", tatoueur: tatoueur %>
+              </div>
+              <p class="text-secondary small mb-2">
+                <%= tatoueur.tattoo_styles.map(&:name).join(", ").presence || "Style non renseigné" %>
+              </p>
+              <% if tatoueur.shops.any? %>
+                <p class="text-secondary small mb-0">
+                  <%= tatoueur.shops.first.name %>
+                </p>
+              <% end %>
+            </div>
+            <div class="card-footer border-secondary">
+              <%= link_to "Voir le profil", tatoueur_path(tatoueur), class: "btn btn-outline-warning btn-sm w-100" %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
   </div>
 </section>
 
 <%# ================================ %>
-<%# SEARCH BAR %>
+<%# SHOPS EN VEDETTE %>
 <%# ================================ %>
-<section class="search-section py-5">
+<section class="py-5" style="background-color: #1e1e1e;">
   <div class="container">
-    <%= form_with url: search_path,
-                  method: :get,
-                  id: "search-form",
-                  data: { turbo_frame: "search-results", turbo_action: "advance" } do |f| %>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="h4 mb-0">Shops à découvrir</h2>
+      <%= link_to "Voir tous →", shops_path, class: "text-warning text-decoration-none small" %>
+    </div>
+    <div class="row g-4">
+      <% @shops.each do |shop| %>
+        <div class="col-md-4">
+          <div class="card border-secondary h-100">
+            <% if shop.cover.attached? %>
+              <%= image_tag shop.cover, class: "card-img-top", style: "height: 180px; object-fit: cover;" %>
+            <% else %>
+              <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 180px;">
+                <span class="text-muted small">Pas de photo</span>
+              </div>
+            <% end %>
+            <div class="card-body">
+              <h3 class="h6 mb-1"><%= shop.name %></h3>
+              <p class="text-secondary small mb-0"><%= shop.address %></p>
+            </div>
+            <div class="card-footer border-secondary">
+              <%= link_to "Voir le shop", shop_path(shop), class: "btn btn-outline-warning btn-sm w-100" %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  </div>
+</section>
 
-      <%# Ligne 1 — recherche principale %>
-      <div class="row g-2 mb-3">
-        <div class="col-md-4">
-          <%= f.text_field :query,
-              placeholder: "Nom du tatoueur...",
-              value: params[:query],
-              class: "form-control search-input",
-              data: { action: "input->search#submit" } %>
-        </div>
-        <div class="col-md-4">
-          <%= f.text_field :shop_name,
-              placeholder: "Nom du shop...",
-              value: params[:shop_name],
-              class: "form-control search-input",
-              data: { action: "input->search#submit" } %>
-        </div>
-        <div class="col-md-4">
-          <%= f.text_field :location,
-              placeholder: "Ville ou code postal...",
-              value: params[:location],
-              class: "form-control search-input",
-              data: { action: "input->search#submit" } %>
-        </div>
+<%# ================================ %>
+<%# ÉVÉNEMENTS À VENIR %>
+<%# ================================ %>
+<section class="py-5">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="h4 mb-0">Événements à venir</h2>
+      <%= link_to "Voir tous →", events_path, class: "text-warning text-decoration-none small" %>
+    </div>
+    <% if @events.any? %>
+      <div class="row g-4">
+        <% @events.each do |event| %>
+          <div class="col-md-4">
+            <div class="card border-secondary h-100">
+              <% if event.banner.attached? %>
+                <%= image_tag event.banner, class: "card-img-top", style: "height: 160px; object-fit: cover;" %>
+              <% end %>
+              <div class="card-body">
+                <h3 class="h6 mb-1"><%= event.name %></h3>
+                <p class="text-secondary small mb-1">
+                  <%= event.start_date&.strftime("%d/%m/%Y") %>
+                  <% if event.location.present? %>
+                    — <%= event.location %>
+                  <% end %>
+                </p>
+                <p class="text-secondary small mb-0"><%= event.description&.truncate(80) %></p>
+              </div>
+              <div class="card-footer border-secondary">
+                <%= link_to "En savoir plus", event_path(event), class: "btn btn-outline-warning btn-sm w-100" %>
+              </div>
+            </div>
+          </div>
+        <% end %>
       </div>
-
-      <%# Ligne 2 — filtres avancés %>
-      <div class="row g-2 align-items-center">
-        <div class="col-md-3">
-          <%= f.select :style_id,
-              TattooStyle.all.map { |s| [s.name, s.id] },
-              { include_blank: "Tous les styles" },
-              { class: "form-control search-input",
-                data: { action: "change->search#submit" } } %>
-        </div>
-        <div class="col-md-2">
-          <%= f.select :day,
-              [["Lundi", 1], ["Mardi", 2], ["Mercredi", 3],
-               ["Jeudi", 4], ["Vendredi", 5], ["Samedi", 6], ["Dimanche", 0]],
-              { include_blank: "Disponibilité" },
-              { class: "form-control search-input",
-                data: { action: "change->search#submit" } } %>
-        </div>
-        <div class="col-md-2">
-          <%= f.number_field :price_min,
-              placeholder: "Prix min €",
-              value: params[:price_min],
-              class: "form-control search-input",
-              data: { action: "input->search#submit" } %>
-        </div>
-        <div class="col-md-2">
-          <%= f.number_field :price_max,
-              placeholder: "Prix max €",
-              value: params[:price_max],
-              class: "form-control search-input",
-              data: { action: "input->search#submit" } %>
-        </div>
-        <div class="col-md-2">
-          <%= f.submit "Rechercher", class: "btn search-btn w-100" %>
-        </div>
-        <div class="col-md-1">
-          <%= link_to "✕", root_path, class: "btn btn-outline-secondary w-100", title: "Réinitialiser" %>
-        </div>
-      </div>
+    <% else %>
+      <p class="text-secondary">Aucun événement à venir pour le moment.</p>
     <% end %>
   </div>
 </section>
-
-<%# Résultats de recherche (Turbo Frame) %>
-<%= turbo_frame_tag "search-results" do %>
-  <% if params.slice(:query, :shop_name, :location, :style_id, :day, :price_min, :price_max).any?(&:present?) %>
-    <%= render "searches/results", tatoueurs: @tatoueurs, shops: @shops %>
-  <% else %>
-    <%# Sections normales de la homepage quand pas de recherche %>
-    <%= render "pages/home_sections" %>
-  <% end %>
-<% end %>
