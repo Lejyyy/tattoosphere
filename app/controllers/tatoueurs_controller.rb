@@ -3,9 +3,21 @@ class TatoueursController < ApplicationController
   before_action :set_tatoueur, only: [ :show, :edit, :update, :destroy ]
 
   def index
-    @tatoueurs = policy_scope(Tatoueur)
-    @tatoueurs = @tatoueurs.joins(:tattoo_styles).where(tattoo_styles: { id: params[:style_id] }) if params[:style_id].present?
+  @tatoueurs = Tatoueur.where(is_active: true)
+  @tatoueurs = @tatoueurs.joins(:tattoo_styles)
+                         .where(tattoo_styles: { id: params[:style_id] }) if params[:style_id].present?
+  @tatoueurs = @tatoueurs.near(params[:location], 50) if params[:location].present?
+
+  # JSON pour la mini-map
+  @tatoueurs_json = @tatoueurs.where.not(latitude: nil)
+                               .map { |t| {
+                                 id: t.id, name: t.nickname,
+                                 lat: t.latitude, lng: t.longitude,
+                                 styles: t.tattoo_styles.map(&:name).join(", "),
+                                 url: tatoueur_path(t), type: "tatoueur"
+                               }}.to_json
   end
+
 
   def show
     authorize @tatoueur

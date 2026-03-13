@@ -1,0 +1,65 @@
+<div class="container py-5" style="max-width: 600px;">
+  <h1 class="section-title">Virement bancaire</h1>
+
+  <div class="card-dark p-4 mt-4">
+    <p style="color:#888;">
+      Effectuez un virement du montant de l'acompte sur le compte bancaire
+      ci-dessous. Votre réservation sera confirmée dès réception par le tatoueur.
+    </p>
+
+    <%# Coordonnées bancaires %>
+    <div style="background:#141414;border:1px solid #2a2a2a;border-radius:8px;padding:1.5rem;margin:1.5rem 0;">
+      <h3 style="color:#c9a84c;font-size:0.85rem;letter-spacing:1px;text-transform:uppercase;margin-bottom:1rem;">
+        Coordonnées bancaires
+      </h3>
+
+      <table style="width:100%;border-collapse:collapse;">
+        <tr>
+          <td style="color:#666;padding:6px 0;width:120px;">Bénéficiaire</td>
+          <td style="color:#fff;font-weight:700;">
+            <%= @booking.tatoueur.first_name %> <%= @booking.tatoueur.last_name %>
+          </td>
+        </tr>
+        <tr>
+          <td style="color:#666;padding:6px 0;">IBAN</td>
+          <td style="color:#fff;font-family:monospace;font-size:1rem;">
+            <%= @booking.tatoueur.iban.scan(/.{1,4}/).join(' ') %>
+          </td>
+        </tr>
+        <tr>
+          <td style="color:#666;padding:6px 0;">BIC</td>
+          <td style="color:#fff;font-family:monospace;">
+            <%= @booking.tatoueur.bic %>
+          </td>
+        </tr>
+        <% if @booking.tatoueur.bank_name.present? %>
+          <tr>
+            <td style="color:#666;padding:6px 0;">Banque</td>
+            <td style="color:#fff;"><%= @booking.tatoueur.bank_name %></td>
+          </tr>
+        <% end %>
+        <tr>
+          <td style="color:#666;padding:6px 0;">Montant</td>
+          <td style="color:#c9a84c;font-weight:700;font-size:1.1rem;">
+            <%= @booking.deposit_amount %> €
+          </td>
+        </tr>
+        <tr>
+          <td style="color:#666;padding:6px 0;">Référence</td>
+          <td style="color:#fff;font-family:monospace;">
+            RDV-<%= @booking.id %>-<%= @booking.user.id %>
+          </td>
+        </tr>
+      </table>
+    </div>
+
+    <div style="background:rgba(201,168,76,0.1);border:1px solid rgba(201,168,76,0.3);border-radius:8px;padding:1rem;">
+      <p style="color:#c9a84c;margin:0;font-size:0.9rem;">
+        ⚠️ Pensez à indiquer la référence <strong>RDV-<%= @booking.id %>-<%= @booking.user.id %></strong>
+        dans le libellé de votre virement.
+      </p>
+    </div>
+
+    <%= link_to "Retour à ma réservation", booking_path(@booking), class: "hero-cta d-block text-center mt-4" %>
+  </div>
+</div>

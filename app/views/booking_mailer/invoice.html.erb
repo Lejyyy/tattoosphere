@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<body style="background:#0f0f0f;color:#e0e0e0;font-family:Inter,sans-serif;padding:2rem;">
+  <div style="max-width:600px;margin:0 auto;">
+    <h1 style="color:#c9a84c;">Tattoosphere</h1>
+    <h2 style="color:#ffffff;">🧾 Votre facture d'acompte</h2>
+
+    <p>Bonjour <strong><%= @user.first_name %></strong>,</p>
+    <p>Votre paiement a bien été reçu. Vous trouverez votre facture en pièce jointe.</p>
+
+    <div style="background:#1e1e1e;border:1px solid #2a2a2a;border-radius:8px;padding:1.5rem;margin:1.5rem 0;">
+      <p style="margin:0;color:#888;">Montant réglé</p>
+      <p style="margin:0.25rem 0 0;font-size:1.5rem;font-weight:700;color:#c9a84c;">
+        <%= @booking.deposit_amount %> €
+      </p>
+      <p style="margin:0.5rem 0 0;color:#888;font-size:0.85rem;">
+        Référence : <%= @booking.paypal_payment_id %>
+      </p>
+    </div>
+
+    <p style="color:#555;font-size:0.85rem;margin-top:2rem;">
+      © <%= Date.current.year %> Tattoosphere
+    </p>
+  </div>
+</body>
+</html>

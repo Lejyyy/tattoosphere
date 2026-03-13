@@ -1,0 +1,80 @@
+<div id="<%= map_id %>"
+     style="height: <%= height %>; width: 100%; border-radius: 0.5rem; border: 1px solid #2a2a2a;"
+     data-tatoueurs="<%= tatoueurs_json %>"
+     data-shops="<%= shops_json %>">
+</div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const el = document.getElementById("<%= map_id %>");
+    if (!el) return;
+
+    const tatoueurs = JSON.parse(el.dataset.tatoueurs || "[]");
+    const shops     = JSON.parse(el.dataset.shops || "[]");
+    const allPoints = [...tatoueurs, ...shops];
+
+    // Centre par défaut — France
+    const defaultCenter = [46.603354, 1.888334];
+    const defaultZoom   = 6;
+
+    const map = L.map("<%= map_id %>").setView(defaultCenter, defaultZoom);
+
+    // Tiles OpenStreetMap
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      maxZoom: 18
+    }).addTo(map);
+
+    // Icônes custom
+    const tatoueurIcon = L.divIcon({
+      html: '<div style="background:#c9a84c;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;border:2px solid #000;">💉</div>',
+      className: "",
+      iconSize: [32, 32],
+      iconAnchor: [16, 16]
+    });
+
+    const shopIcon = L.divIcon({
+      html: '<div style="background:#2a2a2a;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;border:2px solid #c9a84c;">🏪</div>',
+      className: "",
+      iconSize: [32, 32],
+      iconAnchor: [16, 16]
+    });
+
+    // Ajouter les marqueurs
+    allPoints.forEach(function(point) {
+      if (!point.lat || !point.lng) return;
+
+      const icon   = point.type === "tatoueur" ? tatoueurIcon : shopIcon;
+      const marker = L.marker([point.lat, point.lng], { icon }).addTo(map);
+
+      const stylesHtml = point.styles
+        ? `<div style="margin-top:4px;font-size:0.75rem;color:#c9a84c;">${point.styles}</div>`
+        : "";
+
+      const addressHtml = point.address
+        ? `<div style="margin-top:4px;font-size:0.75rem;color:#888;">📍 ${point.address}</div>`
+        : "";
+
+      marker.bindPopup(`
+        <div style="background:#1e1e1e;color:#e0e0e0;padding:0.75rem;border-radius:0.5rem;min-width:150px;">
+          <div style="font-weight:700;font-size:0.95rem;">${point.name}</div>
+          ${stylesHtml}
+          ${addressHtml}
+          <a href="${point.url}"
+             style="display:inline-block;margin-top:0.5rem;color:#c9a84c;font-size:0.8rem;font-weight:600;">
+            Voir le profil →
+          </a>
+        </div>
+      `, { className: "custom-popup" });
+    });
+
+    // Ajuster le zoom pour englober tous les points
+    if (allPoints.length > 0) {
+      const validPoints = allPoints.filter(p => p.lat && p.lng);
+      if (validPoints.length > 0) {
+        const bounds = L.latLngBounds(validPoints.map(p => [p.lat, p.lng]));
+        map.fitBounds(bounds, { padding: [40, 40] });
+      }
+    }
+  });
+</script>

@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_12_184814) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_13_104216) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -53,10 +53,19 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_12_184814) do
   end
 
   create_table "bookings", force: :cascade do |t|
+    t.text "cancellation_reason"
+    t.datetime "cancelled_at"
     t.datetime "created_at", null: false
     t.date "date"
+    t.decimal "deposit_amount"
+    t.datetime "deposit_confirmed_at"
+    t.boolean "deposit_paid"
+    t.datetime "deposit_paid_at"
     t.text "description"
     t.time "end_time"
+    t.string "payment_method"
+    t.string "paypal_order_id"
+    t.string "paypal_payment_id"
     t.decimal "price_estimated"
     t.bigint "shop_id", null: false
     t.time "start_time"
@@ -67,6 +76,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_12_184814) do
     t.index ["shop_id"], name: "index_bookings_on_shop_id"
     t.index ["tatoueur_id"], name: "index_bookings_on_tatoueur_id"
     t.index ["user_id"], name: "index_bookings_on_user_id"
+  end
+
+  create_table "conversation_participants", force: :cascade do |t|
+    t.bigint "conversation_id", null: false
+    t.datetime "created_at", null: false
+    t.integer "participant_id"
+    t.string "participant_type"
+    t.datetime "updated_at", null: false
+    t.index ["conversation_id"], name: "index_conversation_participants_on_conversation_id"
+  end
+
+  create_table "conversations", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "events", force: :cascade do |t|
@@ -84,6 +107,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_12_184814) do
     t.index ["tatoueur_id"], name: "index_events_on_tatoueur_id"
   end
 
+  create_table "favorites", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.integer "favoritable_id"
+    t.string "favoritable_type"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id"], name: "index_favorites_on_user_id"
+  end
+
   create_table "media", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.bigint "event_id", null: false
@@ -97,6 +129,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_12_184814) do
     t.index ["portfolio_item_id"], name: "index_media_on_portfolio_item_id"
     t.index ["shop_id"], name: "index_media_on_shop_id"
     t.index ["tatoueur_id"], name: "index_media_on_tatoueur_id"
+  end
+
+  create_table "messages", force: :cascade do |t|
+    t.text "content"
+    t.bigint "conversation_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "read_at"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["conversation_id"], name: "index_messages_on_conversation_id"
+    t.index ["user_id"], name: "index_messages_on_user_id"
   end
 
   create_table "portfolio_items", force: :cascade do |t|
@@ -156,6 +199,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_12_184814) do
     t.text "description"
     t.string "email"
     t.boolean "is_active"
+    t.float "latitude"
+    t.float "longitude"
     t.string "name"
     t.string "open_hours"
     t.string "phone"
@@ -185,13 +230,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_12_184814) do
   end
 
   create_table "tatoueurs", force: :cascade do |t|
+    t.string "address"
+    t.string "bank_name"
+    t.string "bic"
     t.datetime "created_at", null: false
+    t.decimal "deposit_amount"
     t.text "description"
     t.string "email"
     t.string "first_name"
+    t.string "iban"
     t.boolean "is_active"
     t.string "last_name"
+    t.float "latitude"
+    t.float "longitude"
     t.string "nickname"
+    t.string "paypal_merchant_id"
+    t.boolean "paypal_onboarded"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["user_id"], name: "index_tatoueurs_on_user_id"
@@ -228,12 +282,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_12_184814) do
   add_foreign_key "bookings", "shops"
   add_foreign_key "bookings", "tatoueurs"
   add_foreign_key "bookings", "users"
+  add_foreign_key "conversation_participants", "conversations"
   add_foreign_key "events", "shops"
   add_foreign_key "events", "tatoueurs"
+  add_foreign_key "favorites", "users"
   add_foreign_key "media", "events"
   add_foreign_key "media", "portfolio_items"
   add_foreign_key "media", "shops"
   add_foreign_key "media", "tatoueurs"
+  add_foreign_key "messages", "conversations"
+  add_foreign_key "messages", "users"
   add_foreign_key "portfolio_items", "portfolios"
   add_foreign_key "portfolio_styles", "portfolio_items"
   add_foreign_key "portfolio_styles", "tattoo_styles"

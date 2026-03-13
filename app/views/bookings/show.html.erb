@@ -9,3 +9,46 @@
 
 <%= link_to "Modifier", edit_booking_path(@booking) %>
 <%= link_to "Annuler", @booking, method: :delete, data: { confirm: "Annuler cette réservation ?" } %>
+
+ <div class="card-dark p-4 mt-4">
+   <h3 style="color:#fff;">Acompte</h3>
+
+   <% if @booking.deposit_paid? %>
+     <div style="color:#28a745;">
+       ✅ Acompte de <%= @booking.deposit_amount %> € réglé
+       le <%= @booking.deposit_paid_at.strftime("%d/%m/%Y à %H:%M") %>
+     </div>
+   <% elsif @booking.cancellable? %>
+     <p>Montant de l'acompte : <strong style="color:#c9a84c;"><%= @booking.deposit_amount %> €</strong></p>
+     <%= link_to "Payer l'acompte via PayPal",
+         new_booking_payment_path(@booking),
+         class: "hero-cta" %>
+   <% end %>
+
+   <% if @booking.cancellable? %>
+    <div class="mt-3">
+     <%= button_to "Annuler le rendez-vous",
+           @booking,
+           method: :delete,
+           data: { confirm: "Confirmer l'annulation ?" },
+           class: "btn btn-outline-danger btn-sm" %>
+       </div>
+    <% end %>
+    </div>
+
+<% if @booking.payment_method == "bank_transfer" && !@booking.deposit_paid? %>
+  <% if current_user.tatoueur? && current_user.tatoueur == @booking.tatoueur %>
+    <div class="card-dark p-4 mt-4">
+      <h3 style="color:#fff;">Confirmation du virement</h3>
+      <p style="color:#888;">
+        Le client doit vous verser <strong style="color:#c9a84c;"><%= @booking.deposit_amount %> €</strong>
+        par virement avec la référence <strong>RDV-<%= @booking.id %>-<%= @booking.user.id %></strong>.
+      </p>
+      <%= button_to "✅ J'ai reçu le virement",
+          confirm_transfer_booking_payment_path(@booking),
+          method: :post,
+          class: "hero-cta",
+          data: { confirm: "Confirmer la réception du virement ?" } %>
+    </div>
+  <% end %>
+<% end %>

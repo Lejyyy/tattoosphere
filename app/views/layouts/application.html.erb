@@ -6,6 +6,8 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
+    <%= action_cable_meta_tag %>
+
     <%# Google Fonts %>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
@@ -13,6 +15,12 @@
 
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <%# Leaflet.js CSS %>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+    <%# Leaflet.js JS — avant </body> %>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
   </head>
 
@@ -51,6 +59,9 @@
               <li class="nav-item ms-2">
                 <%= link_to "Inscription", new_user_registration_path, class: "btn btn-warning btn-sm px-3 text-dark fw-bold" %>
               </li>
+            <% end %>
+            <% if user_signed_in? %>
+            <%= link_to "♥ Favoris", favorites_path, class: "nav-link" %>
             <% end %>
           </ul>
         </div>

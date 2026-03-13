@@ -1,0 +1,21 @@
+<% favorited = user_signed_in? && current_user.favorited?(favoritable) %>
+
+<div id="favorite-<%= favoritable.class.name.downcase %>-<%= favoritable.id %>">
+  <% if user_signed_in? %>
+    <% if favorited %>
+      <%= button_to "♥ Favori",
+          polymorphic_path([favoritable, :favorite]),
+          method: :delete,
+          data: { turbo_stream: true },
+          class: "btn btn-favorite active" %>
+    <% else %>
+      <%= button_to "♡ Favori",
+          polymorphic_path([favoritable, :favorite]),
+          method: :post,
+          data: { turbo_stream: true },
+          class: "btn btn-favorite" %>
+    <% end %>
+  <% else %>
+    <%= link_to "♡ Favori", new_user_session_path, class: "btn btn-favorite" %>
+  <% end %>
+</div>

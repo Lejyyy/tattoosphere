@@ -1,5 +1,3 @@
-# frozen_string_literal: true
-
 class ApplicationPolicy
   attr_reader :user, :record
 
@@ -8,7 +6,7 @@ class ApplicationPolicy
     @record = record
   end
 
-  # Par défaut tout est interdit
+  # Pages publiques accessibles sans connexion
   def index?   = false
   def show?    = false
   def create?  = false
@@ -17,17 +15,21 @@ class ApplicationPolicy
   def edit?    = update?
   def destroy? = false
 
+  # Helper — vérifie qu'un user est connecté avant tout
+  def user_connected?
+    user.present?
+  end
+
   class Scope
+    attr_reader :user, :scope
+
     def initialize(user, scope)
-      @user = user
+      @user  = user
       @scope = scope
     end
 
-     def resolve
+    def resolve
       scope.all
     end
-    private
-
-    attr_reader :user, :scope
   end
 end

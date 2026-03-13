@@ -82,3 +82,15 @@ gem "active_storage_validations", "~> 3.0"
 gem "bootstrap", "~> 5.3"
 
 gem "sassc-rails", "~> 2.1"
+
+gem "geocoder", "~> 1.8"
+
+gem "paypal-checkout-sdk", "~> 1.0"
+
+gem "prawn", "~> 2.4"
+
+gem "prawn-table", "~> 0.2.2"
+
+gem "whenever", "~> 1.1"
+
+gem "letter_opener", "~> 1.10"

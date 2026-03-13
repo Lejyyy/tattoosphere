@@ -3,3 +3,31 @@
 <% else %>
   <p>Pas de photo de profil</p>
 <% end %>
+
+<% if user_signed_in? %>
+  <%= link_to "Réserver", new_shop_booking_path(@tatoueur.shops.first), class: "hero-cta" %>
+<% else %>
+  <%= link_to "Connectez-vous pour réserver", new_user_session_path, class: "hero-cta" %>
+<% end %>
+
+<% if user_signed_in? && policy(@tatoueur).update? %>
+  <%= link_to "Modifier", edit_tatoueur_path(@tatoueur), class: "btn btn-outline-warning btn-sm" %>
+<% end %>
+
+<% if user_signed_in? %>
+  <%= link_to "Contacter #{@tatoueur.nickname}",
+      conversations_path(tatoueur_id: @tatoueur.id),
+      method: :post,
+      class: "hero-cta mt-3" %>
+<% end %>
+
+<%= render "favorites/button", favoritable: @tatoueur %>
+
+# Bouton "Contacter" sur show shop
+# app/views/shops/show.html.erb
+<% if user_signed_in? %>
+  <%= link_to "Contacter #{@shop.name}",
+      conversations_path(shop_id: @shop.id),
+      method: :post,
+      class: "hero-cta mt-3" %>
+<% end %>

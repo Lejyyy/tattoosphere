@@ -1,0 +1,73 @@
+<div class="container-fluid py-4">
+  <div class="container mb-4">
+    <h1 class="section-title">Carte des tatoueurs & shops</h1>
+    <p class="section-subtitle">Navigue sur la carte pour trouver un artiste près de chez toi</p>
+
+    <%# Filtres %>
+    <%= form_with url: map_path, method: :get, class: "row g-2 mb-4" do |f| %>
+      <div class="col-md-4">
+        <%= f.text_field :location,
+            placeholder: "Ville ou code postal...",
+            value: params[:location],
+            class: "form-control search-input" %>
+      </div>
+      <div class="col-md-3">
+        <%= f.select :style_id,
+            TattooStyle.all.map { |s| [s.name, s.id] },
+            { include_blank: "Tous les styles" },
+            { class: "form-control search-input" } %>
+      </div>
+      <div class="col-md-2">
+        <%= f.select :type,
+            [["Tatoueurs & Shops", ""], ["Tatoueurs", "tatoueur"], ["Shops", "shop"]],
+            { selected: params[:type] },
+            { class: "form-control search-input" } %>
+      </div>
+      <div class="col-md-2">
+        <%= f.submit "Rechercher", class: "btn search-btn w-100" %>
+      </div>
+    <% end %>
+  </div>
+
+  <div class="row g-0" style="height: 75vh;">
+    <%# Sidebar liste %>
+    <div class="col-md-3" style="overflow-y: auto; background: #141414; border-right: 1px solid #2a2a2a; padding: 1rem;">
+      <h6 style="color:#666;font-size:0.8rem;letter-spacing:1px;text-transform:uppercase;">
+        <%= @tatoueurs.count + @shops.count %> résultats
+      </h6>
+
+      <% @tatoueurs.each do |t| %>
+        <div class="card-dark p-3 mb-2" style="cursor:pointer;" onclick="window.location='<%= tatoueur_path(t) %>'">
+          <div class="d-flex align-items-center gap-2">
+            <span>💉</span>
+            <div>
+              <div class="card-name" style="font-size:0.9rem;"><%= t.nickname %></div>
+              <div class="card-meta" style="font-size:0.75rem;"><%= t.tattoo_styles.map(&:name).join(", ") %></div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+
+      <% @shops.each do |s| %>
+        <div class="card-dark p-3 mb-2" style="cursor:pointer;" onclick="window.location='<%= shop_path(s) %>'">
+          <div class="d-flex align-items-center gap-2">
+            <span>🏪</span>
+            <div>
+              <div class="card-name" style="font-size:0.9rem;"><%= s.name %></div>
+              <div class="card-meta" style="font-size:0.75rem;">📍 <%= s.address %></div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+
+    <%# Map %>
+    <div class="col-md-9">
+      <%= render "shared/map",
+          map_id: "main-map",
+          height: "100%",
+          tatoueurs_json: @tatoueurs_json,
+          shops_json: @shops_json %>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,8 @@
+<% is_mine = message.user == current_user %>
+<div class="message-bubble <%= is_mine ? 'message-mine' : 'message-other' %>">
+  <% unless is_mine %>
+    <div class="message-sender"><%= message.user.nickname || message.user.first_name %></div>
+  <% end %>
+  <div class="message-content"><%= message.content %></div>
+  <div class="message-time"><%= message.created_at.strftime("%H:%M") %></div>
+</div>

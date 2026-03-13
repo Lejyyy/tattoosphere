@@ -1,52 +1,28 @@
 Rails.application.routes.draw do
-  get "pages/home"
-  get "tattoo_styles/index"
-  get "shop_tatoueurs/create"
-  get "shop_tatoueurs/destroy"
-  get "socials/index"
-  get "medias/index"
-  get "availabilities/index"
-  get "availabilities/new"
-  get "events/index"
-  get "events/show"
-  get "events/new"
-  get "events/edit"
-  get "portfolio_items/index"
-  get "portfolio_items/show"
-  get "portfolio_items/new"
-  get "portfolio_items/edit"
-  get "portfolios/index"
-  get "portfolios/show"
-  get "portfolios/new"
-  get "reviews/new"
-  get "reviews/create"
-  get "bookings/index"
-  get "bookings/show"
-  get "bookings/new"
-  get "bookings/edit"
-  get "tatoueurs/index"
-  get "tatoueurs/show"
-  get "tatoueurs/new"
-  get "tatoueurs/edit"
-  get "shops/index"
-  get "shops/show"
-  get "shops/new"
-  get "shops/edit"
-  devise_for :users
-
+  # ================================
+  # PAGES & SEARCH
+  # ================================
   root "pages#home"
+  get "/map",    to: "pages#map",    as: :map
+  get "/search", to: "searches#index", as: :search
+
+  # ================================
+  # AUTHENTIFICATION
+  # ================================
+  devise_for :users
 
   # ================================
   # SHOPS
   # ================================
   resources :shops do
-    resources :bookings, only: [ :new, :create ]
-    resources :events, only: [ :index, :show ]
-    resources :medias, only: [ :index ]
-    resources :socials, only: [ :index ]
+    resource  :favorite, only: [ :create, :destroy ], module: :favorites
+    resources :bookings,  only: [ :new, :create ]
+    resources :events,    only: [ :index, :show ]
+    resources :medias,    only: [ :index ]
+    resources :socials,   only: [ :index ]
     member do
-      post :add_tatoueur    # associer un tatoueur au shop
-      delete :remove_tatoueur # dissocier un tatoueur du shop
+      post   :add_tatoueur
+      delete :remove_tatoueur
     end
   end
 
@@ -54,25 +30,33 @@ Rails.application.routes.draw do
   # TATOUEURS
   # ================================
   resources :tatoueurs do
+    resource  :favorite, only: [ :create, :destroy ], module: :favorites
     resources :portfolios do
-      resources :portfolio_items
+      resource  :favorite, only: [ :create, :destroy ], module: :favorites
+      resources :portfolio_items do
+        resource :favorite, only: [ :create, :destroy ], module: :favorites
+      end
     end
     resources :availabilities, only: [ :index, :create, :destroy ]
-    resources :reviews, only: [ :index ]
-    resources :events, only: [ :index, :show ]
-    resources :medias, only: [ :index ]
-    resources :socials, only: [ :index ]
+    resources :reviews,        only: [ :index ]
+    resources :events,         only: [ :index, :show ]
+    resources :medias,         only: [ :index ]
+    resources :socials,        only: [ :index ]
   end
 
   # ================================
   # BOOKINGS
   # ================================
   resources :bookings, only: [ :index, :show, :edit, :update, :destroy ] do
-    resource :review, only: [ :new, :create ]
+    resource :review,  only: [ :new, :create ]
+    resource :payment, only: [ :new ], controller: "payments" do
+      get  :bank_transfer
+      post :confirm_transfer
+    end
   end
 
   # ================================
-  # EVENTS
+  # EVENTS (standalone)
   # ================================
   resources :events, only: [ :index, :show, :new, :create, :edit, :update, :destroy ]
 
@@ -80,4 +64,21 @@ Rails.application.routes.draw do
   # TATTOO STYLES
   # ================================
   resources :tattoo_styles, only: [ :index ]
+
+  # ================================
+  # FAVORITES (index global)
+  # ================================
+  resources :favorites, only: [ :index ]
+
+  # ================================
+  # CONVERSATIONS & MESSAGES
+  # ================================
+  resources :conversations, only: [ :index, :show, :create ] do
+    resources :messages, only: [ :create ]
+  end
+
+  # ================================
+  # ACTION CABLE
+  # ================================
+  mount ActionCable.server => "/cable"
 end

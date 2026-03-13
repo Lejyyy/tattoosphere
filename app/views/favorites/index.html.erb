@@ -1,0 +1,93 @@
+<div class="container py-5">
+  <h1 class="section-title">Mes favoris</h1>
+
+  <%# TATOUEURS %>
+  <% if @favorite_tatoueurs.any? %>
+    <h2 class="section-title mt-5">Tatoueurs</h2>
+    <div class="row g-4 mt-2">
+      <% @favorite_tatoueurs.each do |t| %>
+        <div class="col-sm-6 col-lg-3">
+          <div class="card-dark h-100">
+            <div class="card-img-placeholder">💉</div>
+            <div class="card-body">
+              <div class="card-name"><%= t.nickname %></div>
+              <div class="card-meta"><%= t.tattoo_styles.map(&:name).join(", ") %></div>
+              <div class="d-flex justify-content-between align-items-center mt-2">
+                <%= link_to "Voir →", tatoueur_path(t), class: "card-link" %>
+                <%= render "favorites/button", favoritable: t %>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# SHOPS %>
+  <% if @favorite_shops.any? %>
+    <h2 class="section-title mt-5">Shops</h2>
+    <div class="row g-4 mt-2">
+      <% @favorite_shops.each do |s| %>
+        <div class="col-sm-6 col-lg-4">
+          <div class="card-dark h-100">
+            <div class="card-img-placeholder">🏪</div>
+            <div class="card-body">
+              <div class="card-name"><%= s.name %></div>
+              <div class="card-meta">📍 <%= s.address %></div>
+              <div class="d-flex justify-content-between align-items-center mt-2">
+                <%= link_to "Voir →", shop_path(s), class: "card-link" %>
+                <%= render "favorites/button", favoritable: s %>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# PORTFOLIOS %>
+  <% if @favorite_portfolios.any? %>
+    <h2 class="section-title mt-5">Portfolios</h2>
+    <div class="row g-4 mt-2">
+      <% @favorite_portfolios.each do |p| %>
+        <div class="col-sm-6 col-lg-4">
+          <div class="card-dark h-100">
+            <div class="card-body">
+              <div class="card-name"><%= p.name %></div>
+              <div class="card-meta"><%= p.tatoueur.nickname %></div>
+              <div class="d-flex justify-content-between align-items-center mt-2">
+                <%= link_to "Voir →", tatoueur_portfolio_path(p.tatoueur, p), class: "card-link" %>
+                <%= render "favorites/button", favoritable: p %>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# PORTFOLIO ITEMS %>
+  <% if @favorite_portfolio_items.any? %>
+    <h2 class="section-title mt-5">Réalisations</h2>
+    <div class="row g-4 mt-2">
+      <% @favorite_portfolio_items.each do |item| %>
+        <div class="col-sm-6 col-lg-3">
+          <div class="card-dark h-100">
+            <div class="card-img-placeholder">🖼️</div>
+            <div class="card-body">
+              <div class="card-meta"><%= item.description&.truncate(60) %></div>
+              <div class="card-meta">💶 <%= item.price %> €</div>
+              <div class="d-flex justify-content-between align-items-center mt-2">
+                <%= render "favorites/button", favoritable: item %>
+              </div>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <% if [@favorite_tatoueurs, @favorite_shops, @favorite_portfolios, @favorite_portfolio_items].all?(&:empty?) %>
+    <p class="text-muted mt-5">Vous n'avez pas encore de favoris.</p>
+  <% end %>
+</div>

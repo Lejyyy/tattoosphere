@@ -6,6 +6,10 @@ class User < ApplicationRecord
   has_many :reviews
   has_one :tatoueur   # si le user est tatoueur
   has_one :shop       # si le user est shop owner
+  has_many :messages
+  has_many :conversation_participants, as: :participant
+  has_many :conversations, through: :conversation_participants
+  has_many :favorites
 
   ROLES = %w[user tatoueur shop_owner].freeze
 

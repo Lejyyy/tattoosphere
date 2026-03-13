@@ -14,3 +14,22 @@
 <% end %>
 
 <%= link_to "Ajouter un tatoueur", new_tatoueur_path %>
+
+<% if user_signed_in? && current_user.tatoueur? %>
+  <%= link_to "Créer mon profil tatoueur", new_tatoueur_path, class: "hero-cta" %>
+<% end %>
+
+# Sur la page index des shops
+# app/views/shops/index.html.erb
+<% if user_signed_in? && current_user.shop_owner? %>
+  <%= link_to "Ajouter mon shop", new_shop_path, class: "hero-cta" %>
+<% end %>
+
+<div class="container mt-5">
+  <h2 class="section-title">Carte des tatoueurs</h2>
+  <%= render "shared/map",
+      map_id: "tatoueurs-map",
+      height: "400px",
+      tatoueurs_json: @tatoueurs_json,
+      shops_json: "[]" %>
+</div>

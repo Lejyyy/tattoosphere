@@ -3,7 +3,16 @@ class ShopsController < ApplicationController
   before_action :set_shop, only: [ :show, :edit, :update, :destroy, :add_tatoueur, :remove_tatoueur ]
 
   def index
-    @shops = policy_scope(Shop)
+  @shops = Shop.where(is_active: true)
+  @shops = @shops.near(params[:location], 50) if params[:location].present?
+
+  @shops_json = @shops.where.not(latitude: nil)
+                      .map { |s| {
+                        id: s.id, name: s.name,
+                        lat: s.latitude, lng: s.longitude,
+                        address: s.address,
+                        url: shop_path(s), type: "shop"
+                      }}.to_json
   end
 
   def show

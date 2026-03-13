@@ -14,3 +14,5 @@
 
 <%= link_to "Ajouter une réalisation", new_tatoueur_portfolio_portfolio_item_path(@tatoueur, @portfolio) %>
 <%= link_to "Retour", tatoueur_portfolios_path(@tatoueur) %>
+
+<%= render "favorites/button", favoritable: @portfolio %>

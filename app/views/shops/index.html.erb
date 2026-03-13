@@ -9,3 +9,12 @@
     <p><%= shop.description %></p>
   </div>
 <% end %>
+
+<div class="container mt-5">
+  <h2 class="section-title">Carte des shops</h2>
+  <%= render "shared/map",
+      map_id: "shops-map",
+      height: "400px",
+      tatoueurs_json: "[]",
+      shops_json: @shops_json %>
+</div>

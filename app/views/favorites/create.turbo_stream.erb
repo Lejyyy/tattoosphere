@@ -1,0 +1,3 @@
+<%= turbo_stream.replace "favorite-#{@favoritable.class.name.downcase}-#{@favoritable.id}" do %>
+  <%= render "favorites/button", favoritable: @favoritable %>
+<% end %>

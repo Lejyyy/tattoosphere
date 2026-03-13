@@ -1,0 +1,80 @@
+<div class="container py-5">
+
+  <%# Tatoueurs %>
+  <% if tatoueurs.any? %>
+    <h2 class="section-title">
+      Tatoueurs
+      <span style="font-size:1rem;color:#666;font-weight:400;">
+        (<%= tatoueurs.count %> résultat<%= tatoueurs.count > 1 ? "s" : "" %>)
+      </span>
+    </h2>
+    <div class="row g-4 mt-2 mb-5">
+      <% tatoueurs.each do |t| %>
+        <div class="col-sm-6 col-lg-3">
+          <div class="card-dark h-100">
+            <div class="card-img-placeholder">
+              <% if t.avatar.attached? %>
+                <%= image_tag t.avatar, class: "card-img" %>
+              <% else %>
+                💉
+              <% end %>
+            </div>
+            <div class="card-body">
+              <div class="card-name"><%= t.nickname %></div>
+              <div class="card-meta"><%= t.first_name %> <%= t.last_name %></div>
+              <div class="mt-2">
+                <% t.tattoo_styles.each do |style| %>
+                  <span class="card-badge"><%= style.name %></span>
+                <% end %>
+              </div>
+              <% if t.latitude.present? %>
+                <div class="card-meta mt-1">📍 <%= t.geocodable_address&.truncate(40) %></div>
+              <% end %>
+              <%= link_to "Voir le profil →", tatoueur_path(t), class: "card-link" %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# Shops %>
+  <% if shops.any? %>
+    <h2 class="section-title">
+      Shops
+      <span style="font-size:1rem;color:#666;font-weight:400;">
+        (<%= shops.count %> résultat<%= shops.count > 1 ? "s" : "" %>)
+      </span>
+    </h2>
+    <div class="row g-4 mt-2">
+      <% shops.each do |s| %>
+        <div class="col-sm-6 col-lg-4">
+          <div class="card-dark h-100">
+            <div class="card-img-placeholder">
+              <% if s.cover.attached? %>
+                <%= image_tag s.cover, class: "card-img" %>
+              <% else %>
+                🏪
+              <% end %>
+            </div>
+            <div class="card-body">
+              <div class="card-name"><%= s.name %></div>
+              <div class="card-meta">📍 <%= s.address %></div>
+              <div class="card-meta">🕐 <%= s.open_hours %></div>
+              <%= link_to "Voir le shop →", shop_path(s), class: "card-link" %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# Aucun résultat %>
+  <% if tatoueurs.empty? && shops.empty? %>
+    <div class="text-center py-5">
+      <div style="font-size:3rem;">🔍</div>
+      <p class="mt-3" style="color:#666;">Aucun résultat trouvé pour ces critères.</p>
+      <%= link_to "Réinitialiser la recherche", root_path, class: "hero-cta mt-3 d-inline-block" %>
+    </div>
+  <% end %>
+</div>

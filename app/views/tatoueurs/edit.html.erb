@@ -1,39 +1,39 @@
 <h1>Modifier <%= @tatoueur.nickname %></h1>
 <%= render "form" %>
 
-# app/views/tatoueurs/_form.html.erb
-<%= form_with model: @tatoueur do |f| %>
-  <% if @tatoueur.errors.any? %>
-    <div class="errors">
-      <% @tatoueur.errors.full_messages.each do |msg| %>
-        <p><%= msg %></p>
-      <% end %>
-    </div>
-  <% end %>
+<div class="card-dark p-4 mt-4">
+  <h3 style="color:#fff;">Coordonnées bancaires</h3>
+  <p style="color:#888;font-size:0.85rem;">
+    Ces informations permettront à vos clients de vous verser l'acompte par virement.
+  </p>
 
-  <div>
-    <%= f.label :nickname, "Pseudo" %>
-    <%= f.text_field :nickname %>
-  </div>
-  <div>
-    <%= f.label :first_name, "Prénom" %>
-    <%= f.text_field :first_name %>
-  </div>
-  <div>
-    <%= f.label :last_name, "Nom" %>
-    <%= f.text_field :last_name %>
-  </div>
-  <div>
-    <%= f.label :email %>
-    <%= f.email_field :email %>
-  </div>
-  <div>
-    <%= f.label :description %>
-    <%= f.text_area :description %>
-  </div>
-  <div>
-    <%= f.label :tattoo_style_ids, "Styles" %>
-    <%= f.collection_check_boxes :tattoo_style_ids, TattooStyle.all, :id, :name %>
-  </div>
-  <%= f.submit %>
-<% end %>
+  <%= form_with model: @tatoueur do |f| %>
+    <div class="mb-3">
+      <%= f.label :iban, "IBAN", style: "color:#888;" %>
+      <%= f.text_field :iban,
+          placeholder: "FR76 3000 6000 0112 3456 7890 189",
+          class: "form-control search-input",
+          value: @tatoueur.iban %>
+    </div>
+    <div class="mb-3">
+      <%= f.label :bic, "BIC / SWIFT", style: "color:#888;" %>
+      <%= f.text_field :bic,
+          placeholder: "BNPAFRPP",
+          class: "form-control search-input" %>
+    </div>
+    <div class="mb-3">
+      <%= f.label :bank_name, "Nom de la banque", style: "color:#888;" %>
+      <%= f.text_field :bank_name,
+          placeholder: "BNP Paribas",
+          class: "form-control search-input" %>
+    </div>
+    <div class="mb-3">
+      <%= f.label :deposit_amount, "Montant de l'acompte (€)", style: "color:#888;" %>
+      <%= f.number_field :deposit_amount,
+          step: 1,
+          min: 0,
+          class: "form-control search-input" %>
+    </div>
+    <%= f.submit "Sauvegarder", class: "btn search-btn" %>
+  <% end %>
+</div>

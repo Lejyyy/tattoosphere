@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<body style="background:#0f0f0f;color:#e0e0e0;font-family:Inter,sans-serif;padding:2rem;">
+  <div style="max-width:600px;margin:0 auto;">
+    <h1 style="color:#c9a84c;">Tattoosphere</h1>
+    <h2 style="color:#ffffff;">⏰ Rappel — Votre rendez-vous est demain !</h2>
+
+    <p>Bonjour <strong><%= @user.first_name %></strong>,</p>
+    <p>Nous vous rappelons votre rendez-vous prévu demain :</p>
+
+    <div style="background:#1e1e1e;border-left:4px solid #c9a84c;padding:1.5rem;margin:1.5rem 0;border-radius:0 8px 8px 0;">
+      <p style="margin:0;font-size:1.2rem;font-weight:700;color:#fff;">
+        <%= @booking.date.strftime("%A %d %B %Y").capitalize %>
+      </p>
+      <p style="margin:0.5rem 0 0;color:#c9a84c;">
+        <%= @booking.start_time&.strftime("%H:%M") %> avec <%= @tatoueur.nickname %>
+      </p>
+      <p style="margin:0.5rem 0 0;color:#888;">
+        📍 <%= @shop.name %> — <%= @shop.address %>
+      </p>
+    </div>
+
+    <p style="color:#aaa;">En cas d'empêchement, pensez à annuler votre rendez-vous depuis la plateforme.</p>
+
+    <p style="color:#555;font-size:0.85rem;margin-top:2rem;">
+      © <%= Date.current.year %> Tattoosphere
+    </p>
+  </div>
+</body>
+</html>

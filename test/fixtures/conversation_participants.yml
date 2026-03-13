@@ -1,0 +1,11 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  conversation: one
+  participant_type: MyString
+  participant_id: 1
+
+two:
+  conversation: two
+  participant_type: MyString
+  participant_id: 1

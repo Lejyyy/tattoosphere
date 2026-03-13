@@ -1,0 +1,76 @@
+<div class="container py-4" style="max-width: 800px;">
+
+  <%# Header %>
+  <% other = @conversation.other_participant(current_user) %>
+  <div class="d-flex align-items-center gap-3 mb-4 pb-3" style="border-bottom: 1px solid #2a2a2a;">
+    <%= link_to "← Retour", conversations_path, class: "card-link me-3" %>
+    <div style="width:45px;height:45px;border-radius:50%;background:#2a2a2a;display:flex;align-items:center;justify-content:center;">
+      <%= other&.is_a?(Shop) ? "🏪" : "💉" %>
+    </div>
+    <div>
+      <div class="card-name">
+        <%= other&.respond_to?(:nickname) ? other.nickname : other&.name %>
+      </div>
+      <div class="card-meta"><%= other&.class&.name %></div>
+    </div>
+  </div>
+
+  <%# Messages %>
+  <div id="messages" style="height: 500px; overflow-y: auto; display: flex; flex-direction: column; gap: 0.75rem; padding: 1rem 0;">
+    <%= render @messages %>
+  </div>
+
+  <%# Formulaire %>
+  <div class="mt-3" style="border-top: 1px solid #2a2a2a; padding-top: 1rem;">
+    <%= form_with model: [@conversation, @message],
+                  id: "message-form",
+                  data: { action: "submit->message#send" } do |f| %>
+      <div class="d-flex gap-2">
+        <%= f.text_field :content,
+            placeholder: "Écrire un message...",
+            class: "form-control search-input",
+            id: "message-input",
+            autocomplete: "off" %>
+        <%= f.submit "Envoyer", class: "btn search-btn" %>
+      </div>
+    <% end %>
+  </div>
+</div>
+
+<%# Action Cable subscription %>
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const messagesDiv = document.getElementById("messages");
+
+    // Scroll vers le bas
+    messagesDiv.scrollTop = messagesDiv.scrollHeight;
+
+    // Connexion au channel
+    const consumer = ActionCable.createConsumer();
+    consumer.subscriptions.create(
+      { channel: "ConversationChannel", conversation_id: <%= @conversation.id %> },
+      {
+        received(data) {
+          const messagesDiv = document.getElementById("messages");
+          const msgHtml = `
+            <div class="message-bubble message-other">
+              <div class="message-sender">${data.sender}</div>
+              <div class="message-content">${data.message}</div>
+              <div class="message-time">${data.created_at}</div>
+            </div>
+          `;
+          messagesDiv.insertAdjacentHTML("beforeend", msgHtml);
+          messagesDiv.scrollTop = messagesDiv.scrollHeight;
+        }
+      }
+    );
+
+    // Vider le champ après envoi
+    const form = document.getElementById("message-form");
+    form.addEventListener("submit", function() {
+      setTimeout(() => {
+        document.getElementById("message-input").value = "";
+      }, 100);
+    });
+  });
+</script>

@@ -124,6 +124,17 @@ a {
   }
 }
 
+.hero-cta-outline {
+  background: transparent;
+  color: $primary;
+  border: 1px solid $primary;
+
+  &:hover {
+    background: $primary;
+    color: #000;
+  }
+}
+
 // ================================
 // SEARCH BAR
 // ================================
@@ -344,4 +355,83 @@ footer {
     text-transform: uppercase;
     margin-bottom: 0.5rem;
   }
+}
+
+
+// ================================
+// MESSAGERIE
+// ================================
+.message-bubble {
+  max-width: 70%;
+  padding: 0.75rem 1rem;
+  border-radius: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+
+  &.message-mine {
+    align-self: flex-end;
+    background-color: #c9a84c;
+    color: #000000;
+    border-bottom-right-radius: 0.25rem;
+  }
+
+  &.message-other {
+    align-self: flex-start;
+    background-color: #2a2a2a;
+    color: #e0e0e0;
+    border-bottom-left-radius: 0.25rem;
+  }
+
+  .message-sender {
+    font-size: 0.75rem;
+    font-weight: 700;
+    opacity: 0.7;
+  }
+
+  .message-content {
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .message-time {
+    font-size: 0.7rem;
+    opacity: 0.5;
+    align-self: flex-end;
+  }
+}
+
+// FAVORITES
+
+.btn-favorite {
+  background: transparent;
+  border: 1px solid #333;
+  color: #666;
+  font-size: 0.85rem;
+  padding: 0.3rem 0.8rem;
+  border-radius: 2rem;
+  transition: all 0.2s;
+  cursor: pointer;
+
+  &:hover {
+    border-color: #c9a84c;
+    color: #c9a84c;
+  }
+
+  &.active {
+    background-color: rgba(201, 168, 76, 0.15);
+    border-color: #c9a84c;
+    color: #c9a84c;
+  }
+}
+
+// MAP (Leaflet.js)
+
+ .leaflet-popup-content-wrapper {
+   background: #1e1e1e !important;
+   border: 1px solid #2a2a2a !important;
+   box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
+ }
+ .leaflet-popup-tip {
+   background: #1e1e1e !important;
 }
