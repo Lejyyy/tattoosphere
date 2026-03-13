@@ -1,18 +1,30 @@
 class BookingPolicy < ApplicationPolicy
   def index?  = true
-  def show?   = record.user == user || tatoueur_owns_booking?
+  def show?   = record.user == user || tatoueur_owns_booking? || user.admin?
+  def new?    = create?
 
   def create?
     user.user?
   end
 
   def update?
-    # Le tatoueur peut changer le statut, le client peut modifier sa réservation
-    record.user == user || tatoueur_owns_booking?
+    record.user == user || tatoueur_owns_booking? || user.admin?
   end
 
   def destroy?
-    record.user == user
+    (record.user == user && record.cancellable?) || user.admin?
+  end
+
+  class Scope < ApplicationPolicy::Scope
+    def resolve
+      if user.admin?
+        scope.all
+      elsif user.tatoueur?
+        scope.where(user: user).or(scope.where(tatoueur: user.tatoueur))
+      else
+        scope.where(user: user)
+      end
+    end
   end
 
   private

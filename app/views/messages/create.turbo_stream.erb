@@ -1,0 +1,17 @@
+<%= turbo_stream.append "messages" do %>
+  <%= render "conversations/message", message: @message %>
+<% end %>
+
+<%= turbo_stream.replace "new_message_form" do %>
+  <%= form_with model: [@conversation, Message.new],
+                id: "new_message_form",
+                class: "d-flex gap-2" do |f| %>
+    <%= f.text_area :content,
+        rows: 1,
+        placeholder: "Écrire un message...",
+        class: "form-control",
+        required: true,
+        style: "resize: none;" %>
+    <%= f.submit "Envoyer", class: "btn btn-warning" %>
+  <% end %>
+<% end %>

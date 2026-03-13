@@ -42,6 +42,10 @@ Rails.application.routes.draw do
     resources :events,         only: [ :index, :show ]
     resources :medias,         only: [ :index ]
     resources :socials,        only: [ :index ]
+    member do
+      get  :verification
+      post :submit_verification
+    end
   end
 
   # ================================

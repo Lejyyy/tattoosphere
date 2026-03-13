@@ -1,58 +1,24 @@
-<!DOCTYPE html>
-<html>
-<body style="background:#0f0f0f;color:#e0e0e0;font-family:Inter,sans-serif;padding:2rem;">
-  <div style="max-width:600px;margin:0 auto;">
 
-    <h1 style="color:#c9a84c;font-size:1.5rem;">Tattoosphere</h1>
-    <h2 style="color:#ffffff;">✅ Réservation confirmée</h2>
+<h1>Réservation confirmée</h1>
+<p>Bonjour <strong style="color:#fff"><%= @user.first_name %></strong>,</p>
+<p>Votre réservation auprès de <strong style="color:#ffc107"><%= @tatoueur.nickname %></strong> a bien été enregistrée.</p>
 
-    <p>Bonjour <strong><%= @user.first_name %></strong>,</p>
-    <p>Votre réservation a bien été enregistrée. Voici le récapitulatif :</p>
+<table class="detail-table">
+  <tr><td>Tatoueur</td><td><%= @tatoueur.nickname %></td></tr>
+  <tr><td>Shop</td><td><%= @shop.name %></td></tr>
+  <tr><td>Adresse</td><td><%= @shop.address %></td></tr>
+  <tr><td>Date</td><td><%= @booking.date.strftime("%d/%m/%Y") %></td></tr>
+  <tr><td>Horaire</td><td><%= @booking.start_time&.strftime("%H:%M") %> — <%= @booking.end_time&.strftime("%H:%M") %></td></tr>
+  <tr><td>Prix estimé</td><td><%= @booking.price_estimated %> €</td></tr>
+  <tr><td>Acompte</td><td><%= @booking.deposit_amount %> €</td></tr>
+  <tr><td>Statut</td><td><%= @booking.status.humanize %></td></tr>
+</table>
 
-    <div style="background:#1e1e1e;border:1px solid #2a2a2a;border-radius:8px;padding:1.5rem;margin:1.5rem 0;">
-      <table style="width:100%;border-collapse:collapse;">
-        <tr>
-          <td style="color:#666;padding:6px 0;width:140px;">Tatoueur</td>
-          <td style="color:#fff;font-weight:700;"><%= @tatoueur.nickname %></td>
-        </tr>
-        <tr>
-          <td style="color:#666;padding:6px 0;">Shop</td>
-          <td style="color:#fff;"><%= @shop.name %></td>
-        </tr>
-        <tr>
-          <td style="color:#666;padding:6px 0;">Adresse</td>
-          <td style="color:#fff;"><%= @shop.address %></td>
-        </tr>
-        <tr>
-          <td style="color:#666;padding:6px 0;">Date</td>
-          <td style="color:#fff;font-weight:700;"><%= @booking.date.strftime("%d/%m/%Y") %></td>
-        </tr>
-        <tr>
-          <td style="color:#666;padding:6px 0;">Horaire</td>
-          <td style="color:#fff;"><%= @booking.start_time&.strftime("%H:%M") %> — <%= @booking.end_time&.strftime("%H:%M") %></td>
-        </tr>
-        <tr>
-          <td style="color:#666;padding:6px 0;">Prix estimé</td>
-          <td style="color:#fff;"><%= @booking.price_estimated %> €</td>
-        </tr>
-        <tr>
-          <td style="color:#666;padding:6px 0;">Acompte à régler</td>
-          <td style="color:#c9a84c;font-weight:700;"><%= @booking.deposit_amount %> €</td>
-        </tr>
-      </table>
-    </div>
+<div class="alert-box">
+  Un acompte de <strong><%= @booking.deposit_amount %> €</strong> est à régler pour valider définitivement votre réservation.
+</div>
 
-    <% unless @booking.deposit_paid? %>
-      <p style="color:#aaa;">Pour confirmer définitivement votre rendez-vous, pensez à régler l'acompte depuis la plateforme.</p>
-      <a href="<%= new_booking_payment_url(@booking) %>"
-         style="display:inline-block;background:#c9a84c;color:#000;font-weight:700;padding:0.75rem 2rem;border-radius:4px;text-decoration:none;margin-top:1rem;">
-        Payer l'acompte
-      </a>
-    <% end %>
+<a href="<%= booking_url(@booking) %>" class="btn">Voir ma réservation</a>
 
-    <p style="color:#555;font-size:0.85rem;margin-top:2rem;">
-      © <%= Date.current.year %> Tattoosphere — Tous droits réservés
-    </p>
-  </div>
-</body>
-</html>
+<p>À bientôt sur Tattoosphere !</p>
+

@@ -31,3 +31,11 @@
       method: :post,
       class: "hero-cta mt-3" %>
 <% end %>
+
+<%= render "verified_badge", tatoueur: @tatoueur %>
+
+<% if current_user&.tatoueur == @tatoueur && !@tatoueur.verified? %>
+  <%= link_to "Faire vérifier mon profil",
+      verification_tatoueur_path(@tatoueur),
+      class: "btn btn-outline-warning btn-sm" %>
+<% end %>

@@ -1,0 +1,16 @@
+
+<div class="d-flex gap-1 flex-wrap">
+  <span class="badge <%= tatoueur.identity_document.attached? ? "bg-success" : "bg-secondary" %>">
+    Identité
+  </span>
+  <span class="badge <%= tatoueur.hygiene_certificate.attached? ? "bg-success" : "bg-secondary" %>">
+    Hygiène
+  </span>
+  <span class="badge <%= tatoueur.siren.present? ? "bg-success" : "bg-secondary" %>">
+    SIREN
+  </span>
+  <span class="badge <%= tatoueur.bank_details_complete? ? "bg-success" : "bg-secondary" %>">
+    Bancaire
+  </span>
+</div>
+

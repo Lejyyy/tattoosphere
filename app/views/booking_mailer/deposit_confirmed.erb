@@ -1,33 +1,19 @@
-<!DOCTYPE html>
-<html>
-<body style="background:#0f0f0f;color:#e0e0e0;font-family:Inter,sans-serif;padding:2rem;">
-  <div style="max-width:600px;margin:0 auto;">
-    <h1 style="color:#c9a84c;">Tattoosphere</h1>
-    <h2 style="color:#ffffff;">✅ Acompte reçu — Réservation confirmée !</h2>
+<h1>Acompte reçu — Réservation confirmée</h1>
+<p>Bonjour <strong style="color:#fff"><%= @user.first_name %></strong>,</p>
+<p>Le tatoueur <strong style="color:#ffc107"><%= @tatoueur.nickname %></strong> a bien confirmé la réception de votre acompte. Votre réservation est maintenant validée.</p>
 
-    <p>Bonjour <strong><%= @booking.user.first_name %></strong>,</p>
-    <p>
-      Votre tatoueur <strong><%= @booking.tatoueur.nickname %></strong>
-      a confirmé la réception de votre virement de
-      <strong style="color:#c9a84c;"><%= @booking.deposit_amount %> €</strong>.
-      Votre rendez-vous est maintenant confirmé !
-    </p>
+<table class="detail-table">
+  <tr><td>Tatoueur</td><td><%= @tatoueur.nickname %></td></tr>
+  <tr><td>Shop</td><td><%= @shop.name %></td></tr>
+  <tr><td>Adresse</td><td><%= @shop.address %></td></tr>
+  <tr><td>Date RDV</td><td><%= @booking.date.strftime("%d/%m/%Y") %></td></tr>
+  <tr><td>Horaire</td><td><%= @booking.start_time&.strftime("%H:%M") %> — <%= @booking.end_time&.strftime("%H:%M") %></td></tr>
+  <tr><td>Acompte réglé</td><td><%= @booking.deposit_amount %> €</td></tr>
+  <tr><td>Reste à régler</td><td><%= (@booking.price_estimated.to_f - @booking.deposit_amount.to_f).round(2) %> € (le jour du RDV)</td></tr>
+</table>
 
-    <div style="background:#1e1e1e;border-left:4px solid #c9a84c;padding:1.5rem;margin:1.5rem 0;border-radius:0 8px 8px 0;">
-      <p style="margin:0;font-size:1.2rem;font-weight:700;color:#fff;">
-        <%= @booking.date.strftime("%A %d %B %Y").capitalize %>
-      </p>
-      <p style="margin:0.5rem 0 0;color:#c9a84c;">
-        <%= @booking.start_time&.strftime("%H:%M") %> avec <%= @booking.tatoueur.nickname %>
-      </p>
-      <p style="margin:0.5rem 0 0;color:#888;">
-        📍 <%= @booking.shop.name %> — <%= @booking.shop.address %>
-      </p>
-    </div>
+<div class="alert-box success">
+  Pensez à vous munir d'une pièce d'identité le jour du rendez-vous.
+</div>
 
-    <p style="color:#555;font-size:0.85rem;margin-top:2rem;">
-      © <%= Date.current.year %> Tattoosphere
-    </p>
-  </div>
-</body>
-</html>
+<a href="<%= booking_url(@booking) %>" class="btn">Voir ma réservation</a>

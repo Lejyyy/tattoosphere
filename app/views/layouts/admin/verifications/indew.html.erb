@@ -1,0 +1,144 @@
+<%# app/views/admin/verifications/index.html.erb %>
+
+<div class="d-flex align-items-center justify-content-between mb-4">
+  <h1 class="h3 mb-0">Vérifications tatoueurs</h1>
+</div>
+
+<%# ONGLETS %>
+<ul class="nav nav-tabs mb-4" id="verificationTabs">
+  <li class="nav-item">
+    <a class="nav-link active" data-bs-toggle="tab" href="#pending">
+      En attente
+      <% if @pending.any? %>
+        <span class="badge bg-warning text-dark ms-1"><%= @pending.count %></span>
+      <% end %>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" data-bs-toggle="tab" href="#approved">
+      Approuvés
+      <span class="badge bg-success ms-1"><%= @approved.count %></span>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link" data-bs-toggle="tab" href="#rejected">
+      Rejetés
+      <span class="badge bg-danger ms-1"><%= @rejected.count %></span>
+    </a>
+  </li>
+</ul>
+
+<div class="tab-content">
+
+  <%# EN ATTENTE %>
+  <div class="tab-pane fade show active" id="pending">
+    <% if @pending.any? %>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead class="text-secondary small">
+            <tr>
+              <th>Tatoueur</th>
+              <th>Email</th>
+              <th>Soumis le</th>
+              <th>Documents</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @pending.each do |tatoueur| %>
+              <tr>
+                <td>
+                  <div class="fw-semibold"><%= tatoueur.nickname %></div>
+                  <div class="text-secondary small"><%= tatoueur.first_name %> <%= tatoueur.last_name %></div>
+                </td>
+                <td class="text-secondary small"><%= tatoueur.email %></td>
+                <td class="text-secondary small"><%= tatoueur.verification_submitted_at&.strftime("%d/%m/%Y") %></td>
+                <td>
+                  <%= render "document_badges", tatoueur: tatoueur %>
+                </td>
+                <td class="text-end">
+                  <%= link_to "Examiner", admin_verification_path(tatoueur), class: "btn btn-warning btn-sm" %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <p class="text-secondary">Aucune demande en attente.</p>
+    <% end %>
+  </div>
+
+  <%# APPROUVÉS %>
+  <div class="tab-pane fade" id="approved">
+    <% if @approved.any? %>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead class="text-secondary small">
+            <tr>
+              <th>Tatoueur</th>
+              <th>Email</th>
+              <th>Approuvé le</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @approved.each do |tatoueur| %>
+              <tr>
+                <td>
+                  <div class="fw-semibold"><%= tatoueur.nickname %></div>
+                  <div class="text-secondary small"><%= tatoueur.first_name %> <%= tatoueur.last_name %></div>
+                </td>
+                <td class="text-secondary small"><%= tatoueur.email %></td>
+                <td class="text-secondary small"><%= tatoueur.verification_reviewed_at&.strftime("%d/%m/%Y") %></td>
+                <td class="text-end">
+                  <%= link_to "Voir", admin_verification_path(tatoueur), class: "btn btn-outline-secondary btn-sm" %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <p class="text-secondary">Aucun tatoueur approuvé.</p>
+    <% end %>
+  </div>
+
+  <%# REJETÉS %>
+  <div class="tab-pane fade" id="rejected">
+    <% if @rejected.any? %>
+      <div class="table-responsive">
+        <table class="table table-hover align-middle">
+          <thead class="text-secondary small">
+            <tr>
+              <th>Tatoueur</th>
+              <th>Email</th>
+              <th>Rejeté le</th>
+              <th>Raison</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @rejected.each do |tatoueur| %>
+              <tr>
+                <td>
+                  <div class="fw-semibold"><%= tatoueur.nickname %></div>
+                  <div class="text-secondary small"><%= tatoueur.first_name %> <%= tatoueur.last_name %></div>
+                </td>
+                <td class="text-secondary small"><%= tatoueur.email %></td>
+                <td class="text-secondary small"><%= tatoueur.verification_reviewed_at&.strftime("%d/%m/%Y") %></td>
+                <td class="text-secondary small"><%= tatoueur.verification_rejected_reason %></td>
+                <td class="text-end">
+                  <%= link_to "Voir", admin_verification_path(tatoueur), class: "btn btn-outline-secondary btn-sm" %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <p class="text-secondary">Aucune demande rejetée.</p>
+    <% end %>
+  </div>
+
+</div>

@@ -1,0 +1,14 @@
+
+<h1>Demande de verification non acceptee</h1>
+<p>Bonjour <strong style="color:#fff"><%= @tatoueur.nickname %></strong>,</p>
+<p>Après examen de votre dossier, nous ne sommes pas en mesure de valider votre demande de vérification pour le motif suivant :</p>
+
+<div class="alert-box danger">
+  <%= @reason %>
+</div>
+
+<p>Vous pouvez soumettre une nouvelle demande après avoir corrigé les points mentionnés ci-dessus.</p>
+
+<a href="<%= edit_tatoueur_url(@tatoueur) %>" class="btn">Mettre à jour mon profil</a>
+
+<p>Si vous pensez qu'il s'agit d'une erreur, contactez-nous via la messagerie Tattoosphere.</p>

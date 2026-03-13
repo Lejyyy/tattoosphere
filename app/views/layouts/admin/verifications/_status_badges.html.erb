@@ -1,0 +1,10 @@
+<% badge_class = case tatoueur.verification_status
+   when "pending"      then "bg-warning text-dark"
+   when "approved"     then "bg-success"
+   when "rejected"     then "bg-danger"
+   else                     "bg-secondary"
+   end %>
+
+<span class="badge <%= badge_class %>">
+  <%= tatoueur.verification_status.humanize %>
+</span>

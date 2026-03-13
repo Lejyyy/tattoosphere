@@ -6,6 +6,12 @@ class AvailabilityPolicy < ApplicationPolicy
   end
 
   def destroy?
-    create?
+    create? || user.admin?
+  end
+
+  class Scope < ApplicationPolicy::Scope
+    def resolve
+      scope.all
+    end
   end
 end

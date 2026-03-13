@@ -1,39 +1,35 @@
-<div class="container py-5">
-  <h1 class="section-title">Mes conversations</h1>
+<div class="container py-4">
+  <h1 class="h4 mb-4">Mes conversations</h1>
 
   <% if @conversations.any? %>
-    <div class="row g-3 mt-4">
-      <% @conversations.each do |conv| %>
-        <% other = conv.other_participant(current_user) %>
-        <% next unless other %>
-        <div class="col-12">
-          <%= link_to conversation_path(conv), class: "text-decoration-none" do %>
-            <div class="card-dark p-3 d-flex align-items-center justify-content-between">
-              <div class="d-flex align-items-center gap-3">
-                <div style="width:45px;height:45px;border-radius:50%;background:#2a2a2a;display:flex;align-items:center;justify-content:center;font-size:1.2rem;">
-                  <%= other.is_a?(Shop) ? "🏪" : "💉" %>
-                </div>
-                <div>
-                  <div class="card-name">
-                    <%= other.respond_to?(:nickname) ? other.nickname : other.name %>
-                  </div>
-                  <div class="card-meta">
-                    <%= conv.messages.last&.content&.truncate(50) || "Aucun message" %>
-                  </div>
-                </div>
-              </div>
-              <% unread = conv.unread_count_for(current_user) %>
-              <% if unread > 0 %>
-                <span class="badge" style="background: #c9a84c; color: #000;">
-                  <%= unread %>
-                </span>
-              <% end %>
+    <div class="list-group">
+      <% @conversations.each do |conversation| %>
+        <% other = conversation.other_participant(current_user) %>
+        <% unread = conversation.unread_count_for(current_user) %>
+        <% last_message = conversation.messages.last %>
+
+        <%= link_to conversation_path(conversation), class: "list-group-item list-group-item-action d-flex align-items-center gap-3 py-3" do %>
+          <div class="flex-grow-1 min-width-0">
+            <div class="d-flex justify-content-between align-items-center">
+              <span class="fw-semibold <%= unread > 0 ? "text-warning" : "" %>">
+                <%= other.respond_to?(:nickname) ? other.nickname : other.name %>
+              </span>
+              <span class="text-secondary small">
+                <%= last_message&.created_at&.strftime("%d/%m %H:%M") %>
+              </span>
             </div>
+            <div class="text-secondary small text-truncate">
+              <%= last_message&.content&.truncate(60) || "Aucun message" %>
+            </div>
+          </div>
+          <% if unread > 0 %>
+            <span class="badge bg-warning text-dark rounded-pill"><%= unread %></span>
           <% end %>
-        </div>
+        <% end %>
       <% end %>
     </div>
   <% else %>
-    <p class="text-muted mt-4">Aucune conversation pour le moment.</p>
+    <p class="text-secondary">Aucune conversation pour le moment.</p>
   <% end %>
 </div>
+

@@ -1,0 +1,19 @@
+<h1>Demande de vérification reçue</h1>
+<p>Bonjour <strong style="color:#fff"><%= @tatoueur.nickname %></strong>,</p>
+<p>Nous avons bien reçu votre demande de vérification. Notre équipe va l'examiner dans les plus brefs délais.</p>
+
+<div class="alert-box">
+  Une fois votre profil vérifié, un badge apparaîtra sur votre profil public pour rassurer vos futurs clients.
+</div>
+
+<table class="detail-table">
+  <tr><td>Pièce d'identité</td><td><%= @tatoueur.identity_document.attached? ? "Fournie" : "Manquante" %></td></tr>
+  <tr><td>Certification hygiène</td><td><%= @tatoueur.hygiene_certificate.attached? ? "Fournie" : "Manquante" %></td></tr>
+  <tr><td>SIREN</td><td><%= @tatoueur.siren.presence || "Non renseigné" %></td></tr>
+  <tr><td>Coordonnées bancaires</td><td><%= @tatoueur.bank_details_complete? ? "Complètes" : "Incomplètes" %></td></tr>
+  <tr><td>Soumis le</td><td><%= @tatoueur.verification_submitted_at&.strftime("%d/%m/%Y à %H:%M") %></td></tr>
+</table>
+
+<p>Vous recevrez un email dès qu'une décision sera prise.</p>
+
+<p>Merci de votre confiance,<br>L'équipe Tattoosphere</p>

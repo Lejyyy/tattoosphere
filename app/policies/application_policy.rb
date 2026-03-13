@@ -2,11 +2,10 @@ class ApplicationPolicy
   attr_reader :user, :record
 
   def initialize(user, record)
-    @user = user
+    @user   = user
     @record = record
   end
 
-  # Pages publiques accessibles sans connexion
   def index?   = false
   def show?    = false
   def create?  = false
@@ -15,9 +14,16 @@ class ApplicationPolicy
   def edit?    = update?
   def destroy? = false
 
-  # Helper — vérifie qu'un user est connecté avant tout
+  # ================================
+  # HELPERS
+  # ================================
+
   def user_connected?
     user.present?
+  end
+
+  def admin?
+    user&.admin?
   end
 
   class Scope
@@ -29,7 +35,7 @@ class ApplicationPolicy
     end
 
     def resolve
-      scope.all
+      raise NotImplementedError, "#{self.class}#resolve n'est pas implémenté"
     end
   end
 end

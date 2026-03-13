@@ -1,71 +1,101 @@
 class ShopsController < ApplicationController
-  skip_before_action :authenticate_user!, only: [ :index, :show ]
+  before_action :authenticate_user!, except: [ :index, :show ]
   before_action :set_shop, only: [ :show, :edit, :update, :destroy, :add_tatoueur, :remove_tatoueur ]
 
+  # GET /shops
   def index
-  @shops = Shop.where(is_active: true)
-  @shops = @shops.near(params[:location], 50) if params[:location].present?
+    @shops = Shop.where(is_active: true)
+    @shops = @shops.near(params[:location], 50) if params[:location].present?
 
-  @shops_json = @shops.where.not(latitude: nil)
-                      .map { |s| {
-                        id: s.id, name: s.name,
-                        lat: s.latitude, lng: s.longitude,
-                        address: s.address,
-                        url: shop_path(s), type: "shop"
-                      }}.to_json
+    @shops_json = @shops.where.not(latitude: nil).map do |s|
+      {
+        id:      s.id,
+        name:    s.name,
+        lat:     s.latitude,
+        lng:     s.longitude,
+        address: s.address,
+        url:     shop_path(s),
+        type:    "shop"
+      }
+    end.to_json
   end
 
+  # GET /shops/:id
   def show
     authorize @shop
-    @tatoueurs = @shop.tatoueurs
-    @events = @shop.events
+    @tatoueurs = @shop.tatoueurs.includes(:tattoo_styles).where(is_active: true)
+    @events    = @shop.events.order(start_date: :asc)
   end
 
+  # GET /shops/new
   def new
+    if current_user.shop.present?
+      redirect_to shop_path(current_user.shop), alert: "Vous avez déjà un shop."
+      return
+    end
     @shop = Shop.new
     authorize @shop
   end
 
+  # POST /shops
   def create
     @shop = Shop.new(shop_params)
     @shop.user = current_user
     authorize @shop
     if @shop.save
-      redirect_to @shop, notice: "Shop créé avec succès"
+      redirect_to @shop, notice: "Shop créé avec succès."
     else
       render :new, status: :unprocessable_entity
     end
   end
 
+  # GET /shops/:id/edit
   def edit
     authorize @shop
   end
 
+  # PATCH /shops/:id
   def update
     authorize @shop
     if @shop.update(shop_params)
-      redirect_to @shop, notice: "Shop mis à jour"
+      redirect_to @shop, notice: "Shop mis à jour."
     else
       render :edit, status: :unprocessable_entity
     end
   end
 
+  # DELETE /shops/:id
   def destroy
     authorize @shop
     @shop.update(is_active: false)
-    redirect_to shops_path, notice: "Shop désactivé"
+    redirect_to shops_path, notice: "Shop désactivé."
   end
 
+  # POST /shops/:id/add_tatoueur
   def add_tatoueur
     authorize @shop
-    @shop.tatoueurs << Tatoueur.find(params[:tatoueur_id])
-    redirect_to @shop, notice: "Tatoueur ajouté"
+    tatoueur = Tatoueur.find(params[:tatoueur_id])
+
+    if @shop.tatoueurs.include?(tatoueur)
+      redirect_to @shop, alert: "Ce tatoueur est déjà associé à ce shop."
+    else
+      ShopTatoueur.create!(shop: @shop, tatoueur: tatoueur, start_date: Date.today)
+      redirect_to @shop, notice: "#{tatoueur.nickname} ajouté au shop."
+    end
   end
 
+  # DELETE /shops/:id/remove_tatoueur
   def remove_tatoueur
     authorize @shop
-    @shop.tatoueurs.delete(Tatoueur.find(params[:tatoueur_id]))
-    redirect_to @shop, notice: "Tatoueur retiré"
+    tatoueur     = Tatoueur.find(params[:tatoueur_id])
+    association  = ShopTatoueur.find_by(shop: @shop, tatoueur: tatoueur)
+
+    if association
+      association.update!(end_date: Date.today)
+      redirect_to @shop, notice: "#{tatoueur.nickname} retiré du shop."
+    else
+      redirect_to @shop, alert: "Ce tatoueur n'est pas associé à ce shop."
+    end
   end
 
   private
@@ -75,10 +105,10 @@ class ShopsController < ApplicationController
   end
 
   def shop_params
-  params.require(:shop).permit(
-    :name, :email, :address, :phone,
-    :description, :open_hours, :cover,
-    photos: []
-  )
-end
+    params.require(:shop).permit(
+      :name, :email, :address, :phone,
+      :description, :open_hours, :is_active,
+      :cover, photos: []
+    )
+  end
 end

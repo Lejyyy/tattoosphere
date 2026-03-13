@@ -1,0 +1,111 @@
+<%# app/views/admin/verifications/show.html.erb %>
+
+<div class="d-flex align-items-center gap-3 mb-4">
+  <%= link_to "← Retour", admin_verifications_path, class: "btn btn-outline-secondary btn-sm" %>
+  <h1 class="h3 mb-0"><%= @tatoueur.nickname %></h1>
+  <%= render "status_badge", tatoueur: @tatoueur %>
+</div>
+
+<div class="row g-4">
+
+  <%# INFOS TATOUEUR %>
+  <div class="col-md-6">
+    <div class="card border-secondary h-100">
+      <div class="card-header text-secondary small fw-semibold">Informations</div>
+      <div class="card-body">
+        <dl class="row mb-0">
+          <dt class="col-5 text-secondary small">Nom complet</dt>
+          <dd class="col-7"><%= @tatoueur.first_name %> <%= @tatoueur.last_name %></dd>
+
+          <dt class="col-5 text-secondary small">Email</dt>
+          <dd class="col-7"><%= @tatoueur.email %></dd>
+
+          <dt class="col-5 text-secondary small">SIREN</dt>
+          <dd class="col-7"><%= @tatoueur.siren.presence || "-" %></dd>
+
+          <dt class="col-5 text-secondary small">IBAN</dt>
+          <dd class="col-7"><%= @tatoueur.masked_iban || "-" %></dd>
+
+          <dt class="col-5 text-secondary small">BIC</dt>
+          <dd class="col-7"><%= @tatoueur.bic.presence || "-" %></dd>
+
+          <dt class="col-5 text-secondary small">Soumis le</dt>
+          <dd class="col-7"><%= @tatoueur.verification_submitted_at&.strftime("%d/%m/%Y à %H:%M") || "-" %></dd>
+
+          <% if @tatoueur.verification_rejected_reason.present? %>
+            <dt class="col-5 text-secondary small">Raison du rejet</dt>
+            <dd class="col-7 text-danger"><%= @tatoueur.verification_rejected_reason %></dd>
+          <% end %>
+        </dl>
+      </div>
+    </div>
+  </div>
+
+  <%# DOCUMENTS %>
+  <div class="col-md-6">
+    <div class="card border-secondary h-100">
+      <div class="card-header text-secondary small fw-semibold">Documents</div>
+      <div class="card-body d-flex flex-column gap-3">
+
+        <%# Pièce d'identité %>
+        <div>
+          <div class="text-secondary small mb-1">Pièce d'identité</div>
+          <% if @tatoueur.identity_document.attached? %>
+            <%= link_to "Voir le document", url_for(@tatoueur.identity_document),
+                target: "_blank",
+                class: "btn btn-outline-warning btn-sm" %>
+          <% else %>
+            <span class="text-danger small">Non fourni</span>
+          <% end %>
+        </div>
+
+        <%# Certification hygiène %>
+        <div>
+          <div class="text-secondary small mb-1">Certification hygiène & sécurité</div>
+          <% if @tatoueur.hygiene_certificate.attached? %>
+            <%= link_to "Voir le document", url_for(@tatoueur.hygiene_certificate),
+                target: "_blank",
+                class: "btn btn-outline-warning btn-sm" %>
+          <% else %>
+            <span class="text-danger small">Non fourni</span>
+          <% end %>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<%# ACTIONS — uniquement si en attente %>
+<% if @tatoueur.pending_verification? %>
+  <div class="card border-secondary mt-4">
+    <div class="card-header text-secondary small fw-semibold">Décision</div>
+    <div class="card-body">
+      <div class="row g-3 align-items-end">
+
+        <%# Approuver %>
+        <div class="col-md-3">
+          <%= button_to "Approuver", approve_admin_verification_path(@tatoueur),
+              method: :patch,
+              class: "btn btn-success w-100",
+              data: { confirm: "Confirmer la vérification de #{@tatoueur.nickname} ?" } %>
+        </div>
+
+        <%# Rejeter avec raison %>
+        <div class="col-md-9">
+          <%= form_with url: reject_admin_verification_path(@tatoueur), method: :patch do |f| %>
+            <div class="input-group">
+              <%= f.text_field :reason,
+                  placeholder: "Raison du rejet (obligatoire)",
+                  class: "form-control",
+                  required: true %>
+              <%= f.submit "Rejeter", class: "btn btn-danger" %>
+            </div>
+          <% end %>
+        </div>
+
+      </div>
+    </div>
+  </div>
+<% end %>

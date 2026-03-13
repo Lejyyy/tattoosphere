@@ -1,9 +1,36 @@
 class SearchesController < ApplicationController
   skip_before_action :authenticate_user!
 
+  # GET /search
   def index
+    @query     = params[:query].presence
     @tatoueurs = search_tatoueurs
     @shops     = search_shops
+
+    # JSON pour la carte
+    @results_json = (@tatoueurs.map do |t|
+      next unless t.latitude && t.longitude
+      {
+        id:     t.id,
+        name:   t.nickname,
+        lat:    t.latitude,
+        lng:    t.longitude,
+        styles: t.tattoo_styles.map(&:name).join(", "),
+        url:    tatoueur_path(t),
+        type:   "tatoueur"
+      }
+    end + @shops.map do |s|
+      next unless s.latitude && s.longitude
+      {
+        id:      s.id,
+        name:    s.name,
+        lat:     s.latitude,
+        lng:     s.longitude,
+        address: s.address,
+        url:     shop_path(s),
+        type:    "shop"
+      }
+    end).compact.to_json
 
     respond_to do |format|
       format.html
@@ -17,7 +44,6 @@ class SearchesController < ApplicationController
     tatoueurs = Tatoueur.where(is_active: true)
                         .includes(:tattoo_styles, :shops)
 
-    # Filtre par nom
     if params[:query].present?
       tatoueurs = tatoueurs.where(
         "nickname ILIKE :q OR first_name ILIKE :q OR last_name ILIKE :q",
@@ -25,28 +51,24 @@ class SearchesController < ApplicationController
       )
     end
 
-    # Filtre par style
     if params[:style_id].present?
       tatoueurs = tatoueurs.joins(:tattoo_styles)
                            .where(tattoo_styles: { id: params[:style_id] })
     end
 
-    # Filtre par localisation (rayon 50km)
     if params[:location].present?
       tatoueurs = tatoueurs.near(params[:location], 50)
     end
 
-    # Filtre par disponibilité (jour de la semaine)
     if params[:day].present?
       tatoueurs = tatoueurs.joins(:availabilities)
                            .where(availabilities: { day_of_week: params[:day] })
     end
 
-    # Filtre par prix min/max via portfolio_items
     if params[:price_min].present? || params[:price_max].present?
       tatoueurs = tatoueurs.joins(portfolios: :portfolio_items)
-      tatoueurs = tatoueurs.where("portfolio_items.price >= ?", params[:price_min]) if params[:price_min].present?
-      tatoueurs = tatoueurs.where("portfolio_items.price <= ?", params[:price_max]) if params[:price_max].present?
+      tatoueurs = tatoueurs.where("portfolio_items.price >= ?", params[:price_min].to_f) if params[:price_min].present?
+      tatoueurs = tatoueurs.where("portfolio_items.price <= ?", params[:price_max].to_f) if params[:price_max].present?
     end
 
     tatoueurs.distinct
@@ -55,12 +77,10 @@ class SearchesController < ApplicationController
   def search_shops
     shops = Shop.where(is_active: true)
 
-    # Filtre par nom
-    if params[:shop_name].present?
-      shops = shops.where("name ILIKE ?", "%#{params[:shop_name]}%")
+    if params[:query].present?
+      shops = shops.where("name ILIKE ?", "%#{params[:query]}%")
     end
 
-    # Filtre par localisation
     if params[:location].present?
       shops = shops.near(params[:location], 50)
     end

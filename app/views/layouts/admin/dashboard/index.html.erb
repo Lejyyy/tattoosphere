@@ -1,0 +1,37 @@
+<h1 class="h3 mb-4">Dashboard</h1>
+
+<div class="row g-3">
+  <div class="col-md-3">
+    <div class="card border-warning">
+      <div class="card-body">
+        <div class="text-secondary small mb-1">Vérifications en attente</div>
+        <div class="h2 text-warning mb-0"><%= @pending_count %></div>
+        <%= link_to "Voir", admin_verifications_path, class: "stretched-link text-decoration-none text-secondary small" %>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card border-secondary">
+      <div class="card-body">
+        <div class="text-secondary small mb-1">Tatoueurs actifs</div>
+        <div class="h2 mb-0"><%= @tatoueurs_count %></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card border-secondary">
+      <div class="card-body">
+        <div class="text-secondary small mb-1">Shops actifs</div>
+        <div class="h2 mb-0"><%= @shops_count %></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card border-secondary">
+      <div class="card-body">
+        <div class="text-secondary small mb-1">Réservations totales</div>
+        <div class="h2 mb-0"><%= @bookings_count %></div>
+      </div>
+    </div>
+  </div>
+</div>

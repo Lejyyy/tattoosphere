@@ -1,12 +1,13 @@
 class SocialPolicy < ApplicationPolicy
   def index?  = true
+  def create? = owner_of_record? || user.admin?
+  def update? = owner_of_record? || user.admin?
+  def destroy? = owner_of_record? || user.admin?
 
-  def create?
-    owner_of_record?
-  end
-
-  def destroy?
-    owner_of_record?
+  class Scope < ApplicationPolicy::Scope
+    def resolve
+      scope.all
+    end
   end
 
   private

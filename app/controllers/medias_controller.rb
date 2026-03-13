@@ -1,13 +1,22 @@
 class MediasController < ApplicationController
-  skip_before_action :authenticate_user!, only: [ :index ]
+  before_action :authenticate_user!, except: [ :index ]
+  before_action :set_owner
 
+  # GET /shops/:shop_id/medias
+  # GET /tatoueurs/:tatoueur_id/medias
   def index
+    @medias = @owner.medias
+  end
+
+  private
+
+  def set_owner
     if params[:shop_id]
       @owner = Shop.find(params[:shop_id])
-      @medias = @owner.medias
     elsif params[:tatoueur_id]
       @owner = Tatoueur.find(params[:tatoueur_id])
-      @medias = @owner.medias
+    else
+      redirect_to root_path, alert: "Ressource introuvable."
     end
   end
 end

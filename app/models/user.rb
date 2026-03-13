@@ -1,22 +1,39 @@
 class User < ApplicationRecord
- devise :database_authenticatable, :registerable,
+  devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable
+
+  # ================================
+  # ASSOCIATIONS
+  # ================================
+  has_one  :tatoueur
+  has_one  :shop
 
   has_many :bookings
   has_many :reviews
-  has_one :tatoueur   # si le user est tatoueur
-  has_one :shop       # si le user est shop owner
   has_many :messages
-  has_many :conversation_participants, as: :participant
+
+  has_many :conversation_participants
   has_many :conversations, through: :conversation_participants
-  has_many :favorites
 
-  ROLES = %w[user tatoueur shop_owner].freeze
+  has_many :favorites, dependent: :destroy
+  has_many :favorite_tatoueurs,       through: :favorites, source: :favoritable, source_type: "Tatoueur"
+  has_many :favorite_shops,           through: :favorites, source: :favoritable, source_type: "Shop"
+  has_many :favorite_portfolios,      through: :favorites, source: :favoritable, source_type: "Portfolio"
+  has_many :favorite_portfolio_items, through: :favorites, source: :favoritable, source_type: "PortfolioItem"
 
-  validates :role, inclusion: { in: ROLES }
+  # ================================
+  # VALIDATIONS
+  # ================================
+  ROLES = %w[user tatoueur shop_owner admin].freeze
+
   validates :first_name, :last_name, presence: true
+  validates :role, inclusion: { in: ROLES }
+  validate  :role_assignment_allowed
 
-   def tatoueur?
+  # ================================
+  # HELPERS
+  # ================================
+  def tatoueur?
     role == "tatoueur"
   end
 
@@ -26,5 +43,19 @@ class User < ApplicationRecord
 
   def user?
     role == "user"
+  end
+
+  def admin?
+    role == "admin"
+  end
+
+  def favorited?(resource)
+    favorites.exists?(favoritable: resource)
+  end
+
+  private
+
+  def role_assignment_allowed
+    errors.add(:role, "ne peut pas être attribué de cette façon") if role_changed? && role == "admin"
   end
 end

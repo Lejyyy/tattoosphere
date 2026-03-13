@@ -2,8 +2,11 @@ class ReviewPolicy < ApplicationPolicy
   def index?  = true
   def show?   = true
 
+  def new?
+    create?
+  end
+
   def create?
-    # Seul le client ayant une réservation "done" sans avis peut poster
     user.user? &&
       record.booking.user == user &&
       record.booking.status == "done" &&
@@ -11,5 +14,11 @@ class ReviewPolicy < ApplicationPolicy
   end
 
   def update?  = false
-  def destroy? = false
+  def destroy? = user.admin?
+
+  class Scope < ApplicationPolicy::Scope
+    def resolve
+      scope.all
+    end
+  end
 end

@@ -1,35 +1,19 @@
-<!DOCTYPE html>
-<html>
-<body style="background:#0f0f0f;color:#e0e0e0;font-family:Inter,sans-serif;padding:2rem;">
-  <div style="max-width:600px;margin:0 auto;">
-    <h1 style="color:#c9a84c;">Tattoosphere</h1>
-    <h2 style="color:#ffffff;">❌ Réservation annulée</h2>
+<h1>Réservation annulée</h1>
+<p>Bonjour <strong style="color:#fff"><%= @user.first_name %></strong>,</p>
+<p>Votre réservation <strong style="color:#fff">#<%= @booking.id %></strong> auprès de <strong style="color:#ffc107"><%= @tatoueur.nickname %></strong> a été annulée.</p>
 
-    <p>Bonjour <strong><%= @user.first_name %></strong>,</p>
-    <p>Votre réservation du <strong><%= @booking.date.strftime("%d/%m/%Y") %></strong>
-       avec <strong><%= @tatoueur.nickname %></strong> a été annulée.</p>
+<table class="detail-table">
+  <tr><td>Tatoueur</td><td><%= @tatoueur.nickname %></td></tr>
+  <tr><td>Date prévue</td><td><%= @booking.date.strftime("%d/%m/%Y") %></td></tr>
+  <tr><td>Annulée le</td><td><%= @booking.cancelled_at&.strftime("%d/%m/%Y à %H:%M") %></td></tr>
+  <% if @booking.cancellation_reason.present? %>
+    <tr><td>Raison</td><td><%= @booking.cancellation_reason %></td></tr>
+  <% end %>
+</table>
 
-    <% if @booking.cancellation_reason.present? %>
-      <div style="background:#1e1e1e;border:1px solid #2a2a2a;padding:1rem;border-radius:8px;margin:1rem 0;">
-        <p style="color:#888;margin:0;">Motif : <%= @booking.cancellation_reason %></p>
-      </div>
-    <% end %>
+<div class="alert-box danger">
+  Si vous pensez qu'il s'agit d'une erreur, contactez-nous via la messagerie Tattoosphere.
+</div>
 
-    <% if @booking.deposit_paid? %>
-      <p style="color:#aaa;">
-        Le remboursement de votre acompte de <strong style="color:#c9a84c;"><%= @booking.deposit_amount %> €</strong>
-        sera traité sous 5 à 10 jours ouvrés.
-      </p>
-    <% end %>
+<a href="<%= tatoueurs_url %>" class="btn">Trouver un autre tatoueur</a>
 
-    <a href="<%= tatoueurs_url %>"
-       style="display:inline-block;background:#c9a84c;color:#000;font-weight:700;padding:0.75rem 2rem;border-radius:4px;text-decoration:none;margin-top:1rem;">
-      Trouver un autre tatoueur
-    </a>
-
-    <p style="color:#555;font-size:0.85rem;margin-top:2rem;">
-      © <%= Date.current.year %> Tattoosphere
-    </p>
-  </div>
-</body>
-</html>

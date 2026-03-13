@@ -2,19 +2,22 @@ class ShopPolicy < ApplicationPolicy
   def index?  = true
   def show?   = true
 
+  def new?
+    user.shop_owner? && user.shop.nil?
+  end
+
   def create?
-    user.shop_owner?
+    user.shop_owner? && user.shop.nil?
   end
 
   def update?
-    user.shop_owner? && record.user == user
+    (user.shop_owner? && record.user == user) || user.admin?
   end
 
   def destroy?
     update?
   end
 
-  # Associer/dissocier un tatoueur
   def add_tatoueur?
     update?
   end
@@ -25,7 +28,7 @@ class ShopPolicy < ApplicationPolicy
 
   class Scope < ApplicationPolicy::Scope
     def resolve
-      scope.where(is_active: true)
+      user&.admin? ? scope.all : scope.where(is_active: true)
     end
   end
 end

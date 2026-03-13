@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_13_104216) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_13_134251) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -246,8 +246,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_13_104216) do
     t.string "nickname"
     t.string "paypal_merchant_id"
     t.boolean "paypal_onboarded"
+    t.string "siren"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
+    t.text "verification_rejected_reason"
+    t.datetime "verification_reviewed_at"
+    t.string "verification_status", default: "unsubmitted"
+    t.datetime "verification_submitted_at"
+    t.boolean "verified", default: false, null: false
     t.index ["user_id"], name: "index_tatoueurs_on_user_id"
   end
 

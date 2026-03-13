@@ -1,9 +1,11 @@
 class MessagesController < ApplicationController
   before_action :authenticate_user!
+  before_action :set_conversation
+  before_action :ensure_participant!
 
+  # POST /conversations/:conversation_id/messages
   def create
-    @conversation = Conversation.find(params[:conversation_id])
-    @message = @conversation.messages.new(message_params)
+    @message      = @conversation.messages.new(message_params)
     @message.user = current_user
 
     if @message.save
@@ -13,11 +15,22 @@ class MessagesController < ApplicationController
         format.html { redirect_to conversation_path(@conversation) }
       end
     else
-      redirect_to conversation_path(@conversation), alert: "Message vide."
+      redirect_to conversation_path(@conversation), alert: "Le message ne peut pas être vide."
     end
   end
 
   private
+
+  def set_conversation
+    @conversation = Conversation.find(params[:conversation_id])
+  end
+
+  def ensure_participant!
+    unless @conversation.conversation_participants
+                        .exists?(participant: current_user)
+      redirect_to conversations_path, alert: "Vous n'avez pas accès à cette conversation."
+    end
+  end
 
   def message_params
     params.require(:message).permit(:content)

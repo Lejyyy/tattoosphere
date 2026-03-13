@@ -1,0 +1,13 @@
+<h1>Profil verifie</h1>
+<p>Bonjour <strong style="color:#fff"><%= @tatoueur.nickname %></strong>,</p>
+<p>Excellente nouvelle ! Votre profil Tattoosphere a été <strong style="color:#28a745">vérifié avec succès</strong>.</p>
+
+<div class="alert-box success">
+  Un badge "Verifie" est maintenant visible sur votre profil public. Cela renforce la confiance de vos futurs clients.
+</div>
+
+<p>Continuez à enrichir votre portfolio et vos disponibilités pour maximiser vos réservations.</p>
+
+<a href="<%= tatoueur_url(@tatoueur) %>" class="btn">Voir mon profil</a>
+
+<p>Merci de votre confiance,<br>L'équipe Tattoosphere</p>
