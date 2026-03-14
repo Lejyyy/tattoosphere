@@ -1,0 +1,114 @@
+<div class="row g-4">
+
+  <%# Colonne principale %>
+  <div class="col-lg-8">
+
+    <%# Stats %>
+    <div class="row g-3 mb-4">
+      <div class="col-4">
+        <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;padding:1.5rem;text-align:center;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:2.5rem;color:#F5C500;"><%= current_user.bookings.count %></div>
+          <div class="text-secondary" style="font-size:0.8rem;text-transform:uppercase;">Réservations</div>
+        </div>
+      </div>
+      <div class="col-4">
+        <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;padding:1.5rem;text-align:center;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:2.5rem;color:#F5C500;"><%= @tatoueur.portfolio_items.count %></div>
+          <div class="text-secondary" style="font-size:0.8rem;text-transform:uppercase;">Réalisations</div>
+        </div>
+      </div>
+      <div class="col-4">
+        <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;padding:1.5rem;text-align:center;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:2.5rem;color:#F5C500;"><%= @unread_count %></div>
+          <div class="text-secondary" style="font-size:0.8rem;text-transform:uppercase;">Non lus</div>
+        </div>
+      </div>
+    </div>
+
+    <%# Réservations à venir %>
+    <h2 class="section-title mb-3">Réservations à venir</h2>
+    <% upcoming = current_user.bookings.where("date >= ?", Date.today).order(date: :asc).limit(5) %>
+    <% if upcoming.any? %>
+      <% upcoming.each do |booking| %>
+        <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-left:4px solid #F5C500;padding:1rem 1.5rem;margin-bottom:0.75rem;">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;">
+                <%= booking.date&.strftime("%d %B %Y") %>
+                <% if booking.start_time %>· <%= booking.start_time.strftime("%Hh%M") %><% end %>
+              </div>
+              <div class="text-secondary" style="font-size:0.85rem;">
+                <%= booking.shop.name %> · <%= booking.description&.truncate(50) || "Pas de description" %>
+              </div>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge <%= booking.status == 'confirmed' ? 'bg-success' : 'bg-warning' %>">
+                <%= booking.status %>
+              </span>
+              <%= link_to "Voir →", booking_path(booking), class: "card-link mb-0 mt-0" %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    <% else %>
+      <p class="text-secondary">Aucune réservation à venir.</p>
+    <% end %>
+
+    <%# Réservations passées %>
+    <h2 class="section-title mb-3 mt-4">Réservations passées</h2>
+    <% past = current_user.bookings.where("date < ?", Date.today).order(date: :desc).limit(5) %>
+    <% if past.any? %>
+      <% past.each do |booking| %>
+        <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-left:4px solid #2A2A2A;padding:1rem 1.5rem;margin-bottom:0.75rem;">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:#888;">
+                <%= booking.date&.strftime("%d %B %Y") %>
+              </div>
+              <div class="text-secondary" style="font-size:0.85rem;"><%= booking.shop.name %></div>
+            </div>
+            <%= link_to "Voir →", booking_path(booking), class: "card-link mb-0 mt-0" %>
+          </div>
+        </div>
+      <% end %>
+    <% else %>
+      <p class="text-secondary">Aucune réservation passée.</p>
+    <% end %>
+
+  </div>
+
+  <%# Colonne droite %>
+  <div class="col-lg-4">
+
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1.5rem;margin-bottom:1.5rem;">
+      <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:#F5C500;border-left:4px solid #F5C500;padding-left:0.75rem;">
+        Mon profil tatoueur
+      </h3>
+      <div class="d-flex flex-column gap-2 mt-3">
+        <%= link_to "👁️ Voir mon profil public", tatoueur_path(@tatoueur), class: "btn btn-outline-primary btn-sm w-100" %>
+        <%= link_to "✏️ Modifier mon profil", edit_tatoueur_path(@tatoueur), class: "btn btn-outline-primary btn-sm w-100" %>
+        <%= link_to "🖼️ Mes portfolios", tatoueur_portfolios_path(@tatoueur), class: "btn btn-outline-primary btn-sm w-100" %>
+        <%= link_to "📅 Mes disponibilités", tatoueur_availabilities_path(@tatoueur), class: "btn btn-outline-primary btn-sm w-100" %>
+        <%= link_to "❤️ Mes favoris", favorites_path, class: "btn btn-outline-primary btn-sm w-100" %>
+        <%= link_to "🎉 Créer un événement", new_event_path, class: "hero-cta w-100 text-center mt-2" %>
+      </div>
+
+      <% unless @tatoueur.verified? %>
+        <div class="alert alert-warning mt-3 mb-0" style="font-size:0.85rem;">
+          ⚠️ Profil non vérifié.
+          <%= link_to "Faire vérifier →", verification_tatoueur_path(@tatoueur), class: "text-yellow fw-bold" %>
+        </div>
+      <% end %>
+
+      <% unless @tatoueur.paypal_onboarded? %>
+        <div class="alert alert-warning mt-2 mb-0" style="font-size:0.85rem;">
+          💳 PayPal non connecté.
+          <%= link_to "Connecter →", connect_paypal_tatoueur_path(@tatoueur), class: "text-yellow fw-bold" %>
+        </div>
+      <% end %>
+    </div>
+
+    <%= render "dashboard/messages" %>
+
+  </div>
+</div>

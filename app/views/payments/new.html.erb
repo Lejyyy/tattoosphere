@@ -1,36 +1,62 @@
-<div class="container py-5" style="max-width: 600px;">
-  <h1 class="section-title">Payer l'acompte</h1>
+<div class="container py-4">
+  <h1 class="h4 mb-3">Payer l'acompte</h1>
+  <p>Montant : <strong><%= number_to_currency(@booking.deposit_amount, unit: "€", format: "%n %u") %></strong></p>
+  <p>Tatoueur : <strong><%= @tatoueur.nickname %></strong></p>
 
-  <div class="card-dark p-4 mt-4">
-    <p>Réservation avec <strong style="color:#fff;"><%= @booking.tatoueur.nickname %></strong></p>
-    <p>Date : <strong style="color:#fff;"><%= @booking.date.strftime("%d/%m/%Y") %></strong></p>
+  <div class="d-flex flex-column gap-3 mt-4">
 
-    <div style="border-top:1px solid #2a2a2a;margin:1rem 0;padding-top:1rem;">
-      <p style="color:#888;">Acompte à régler</p>
-      <p style="font-size:2rem;font-weight:700;color:#c9a84c;margin:0;">
-        <%= @booking.deposit_amount %> €
-      </p>
-    </div>
-
-    <h3 style="color:#fff;font-size:1rem;margin-top:1.5rem;">Choisir un moyen de paiement</h3>
-
-    <%# Virement bancaire %>
-    <% if @tatoueur.bank_details_complete? %>
-      <%= link_to bank_transfer_booking_payment_path(@booking),
-          class: "card-dark d-flex align-items-center gap-3 p-3 mt-3 text-decoration-none" do %>
-        <span style="font-size:1.5rem;">🏦</span>
-        <div>
-          <div style="color:#fff;font-weight:700;">Virement bancaire</div>
-          <div style="color:#888;font-size:0.85rem;">Gratuit — Confirmation manuelle par le tatoueur</div>
-        </div>
-      <% end %>
-    <% else %>
-      <div class="card-dark p-3 mt-3" style="opacity:0.5;">
-        <span style="font-size:1.5rem;">🏦</span>
-        <span style="color:#888;margin-left:0.5rem;">Virement bancaire non disponible</span>
+    <% if @tatoueur.paypal_onboarded? %>
+      <div>
+        <h5>Payer par PayPal</h5>
+        <div id="paypal-button-container"></div>
       </div>
     <% end %>
 
-    <%= link_to "Annuler", booking_path(@booking), class: "card-link d-block text-center mt-4" %>
+    <% if @tatoueur.bank_details_complete? %>
+      <%= link_to "Payer par virement bancaire",
+          bank_transfer_booking_payment_path(@booking),
+          class: "btn btn-outline-secondary" %>
+    <% end %>
+
   </div>
 </div>
+
+<% if @tatoueur.paypal_onboarded? %>
+  <script src="https://www.paypal.com/sdk/js?client-id=<%= ENV['PAYPAL_CLIENT_ID'] %>&currency=EUR"></script>
+  <script>
+    paypal.Buttons({
+      createOrder: async () => {
+        const res = await fetch("<%= paypal_create_order_booking_payment_path(@booking) %>", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-Token": "<%= form_authenticity_token %>"
+          }
+        });
+        const data = await res.json();
+        if (data.error) { alert(data.error); return; }
+        return data.id;
+      },
+      onApprove: async (data) => {
+        const res = await fetch("<%= paypal_capture_order_booking_payment_path(@booking) %>", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-Token": "<%= form_authenticity_token %>"
+          },
+          body: JSON.stringify({ order_id: data.orderID })
+        });
+        const result = await res.json();
+        if (result.status === "success") {
+          window.location.href = "<%= booking_path(@booking) %>";
+        } else {
+          alert("Erreur lors du paiement : " + result.error);
+        }
+      },
+      onError: (err) => {
+        console.error(err);
+        alert("Une erreur PayPal est survenue.");
+      }
+    }).render("#paypal-button-container");
+  </script>
+<% end %>

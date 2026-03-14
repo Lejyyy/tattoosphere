@@ -31,13 +31,13 @@ Rails.application.routes.draw do
   # TATOUEURS
   # ================================
   resources :tatoueurs do
+  resource  :favorite, only: [ :create, :destroy ]
+  resources :portfolios do
     resource  :favorite, only: [ :create, :destroy ]
-    resources :portfolios do
-      resource  :favorite, only: [ :create, :destroy ]
-      resources :portfolio_items do
-        resource :favorite, only: [ :create, :destroy ]
-      end
+    resources :portfolio_items do
+      resource :favorite, only: [ :create, :destroy ]
     end
+  end
     resources :availabilities, only: [ :index, :create, :destroy ]
     resources :reviews,        only: [ :index ]
     resources :events,         only: [ :index, :show ]
@@ -46,6 +46,8 @@ Rails.application.routes.draw do
     member do
       get  :verification
       post :submit_verification
+      get  :connect_paypal
+      get  :paypal_callback
     end
   end
 
@@ -57,6 +59,8 @@ Rails.application.routes.draw do
     resource :payment, only: [ :new ], controller: "payments" do
       get  :bank_transfer
       post :confirm_transfer
+      post "paypal/create_order",  to: "payments#create_paypal_order",  as: :paypal_create_order
+      post "paypal/capture_order", to: "payments#capture_paypal_order", as: :paypal_capture_order
     end
   end
 

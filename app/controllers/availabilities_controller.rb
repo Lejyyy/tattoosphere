@@ -9,6 +9,7 @@ class AvailabilitiesController < ApplicationController
     @availability   = Availability.new
   end
 
+
   # POST /tatoueurs/:tatoueur_id/availabilities
   def create
     @availability = @tatoueur.availabilities.new(availability_params)

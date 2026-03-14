@@ -1,55 +1,98 @@
-// Variables dark theme — AVANT l'import Bootstrap
-$body-bg: #0f0f0f;
-$body-color: #e0e0e0;
-$primary: #c9a84c;        // or/doré — couleur signature tatouage
-$secondary: #2a2a2a;
-$dark: #1a1a1a;
-$card-bg: #1e1e1e;
-$card-border-color: #2e2e2e;
-$navbar-dark-color: #e0e0e0;
-$border-radius: 0.5rem;
-$font-family-base: 'Inter', sans-serif;
+// ================================
+// VARIABLES — AVANT Bootstrap
+// ================================
+$black:       #0D0D0D;
+$yellow:      #F5C500;
+$white:       #FFFFFF;
+$red:         #C0392B;
+$gray:        #1A1A1A;
+$gray-light:  #2A2A2A;
+$gray-mid:    #1E1E1E;
 
-// Import Bootstrap
+// Bootstrap overrides
+$body-bg:          $black;
+$body-color:       $white;
+$primary:          $yellow;
+$secondary:        $gray-light;
+$danger:           $red;
+$dark:             $gray;
+$card-bg:          $gray-mid;
+$card-border-color: $gray-light;
+$border-radius:    0;
+$font-family-base: 'Barlow Condensed', sans-serif;
+
 @import "bootstrap";
+
+// ================================
+// GOOGLE FONTS (à importer aussi dans le layout)
+// ================================
+// Bebas Neue — titres
+// Barlow Condensed — corps
 
 // ================================
 // GLOBAL
 // ================================
 body {
-  background-color: $body-bg;
-  color: $body-color;
+  background-color: $black;
+  color: $white;
+  font-family: 'Barlow Condensed', sans-serif;
+  letter-spacing: 0.02em;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Bebas Neue', sans-serif;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
 }
 
 a {
-  color: $primary;
+  color: $yellow;
   text-decoration: none;
-  &:hover { color: lighten($primary, 15%); }
+  transition: color 0.2s ease;
+  &:hover { color: darken($yellow, 10%); }
 }
 
 // ================================
 // NAVBAR
 // ================================
-  .navbar {
-  background-color: #111111 !important;
-  border-bottom: 1px solid #2a2a2a;
-  padding: 1rem 2rem;
+.navbar {
+  background-color: $black !important;
+  border-bottom: 2px solid $yellow;
+  padding: 0.75rem 1.5rem;
 
   .navbar-brand {
-    font-size: 1.5rem;
-    font-weight: 800;
-    color: $primary !important;
-    letter-spacing: 2px;
-    text-transform: uppercase;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2rem;
+    color: $white !important;
+    letter-spacing: 0.1em;
+
+    span {
+      color: $yellow;
+    }
+
+    &:hover {
+      opacity: 0.85;
+    }
   }
 
   .nav-link {
-    color: #cccccc !important;
-    font-size: 0.9rem;
-    letter-spacing: 1px;
+    color: $white !important;
+    font-size: 0.95rem;
+    font-weight: 600;
     text-transform: uppercase;
-    transition: color 0.2s;
-    &:hover { color: $primary !important; }
+    letter-spacing: 0.08em;
+    padding: 0.5rem 1rem !important;
+    transition: color 0.2s ease;
+
+    &:hover  { color: $yellow !important; }
+    &.active { color: $yellow !important; }
+  }
+
+  .navbar-toggler {
+    border-color: $yellow;
+    .navbar-toggler-icon {
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba(245,197,0,1)' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e");
+    }
   }
 }
 
@@ -58,7 +101,7 @@ a {
 // ================================
 .hero {
   min-height: 90vh;
-  background: linear-gradient(135deg, #0f0f0f 0%, #1a1a1a 50%, #0f0f0f 100%);
+  background: linear-gradient(135deg, $black 0%, $gray 50%, $black 100%);
   display: flex;
   align-items: center;
   position: relative;
@@ -68,20 +111,19 @@ a {
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: radial-gradient(ellipse at 60% 50%, rgba(201, 168, 76, 0.08) 0%, transparent 70%);
+    background: radial-gradient(ellipse at 60% 50%, rgba($yellow, 0.08) 0%, transparent 70%);
   }
 
   .hero-title {
-    font-size: clamp(3rem, 8vw, 6rem);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(3rem, 8vw, 7rem);
     font-weight: 900;
     line-height: 1;
-    letter-spacing: -2px;
-    color: #ffffff;
+    letter-spacing: 0.05em;
+    color: $white;
+    text-transform: uppercase;
 
-    span {
-      color: $primary;
-      display: block;
-    }
+    span { color: $yellow; display: block; }
   }
 
   .hero-subtitle {
@@ -91,29 +133,11 @@ a {
     line-height: 1.8;
   }
 
-  .hero-cta {
-    display: inline-block;
-    background: $primary;
-    color: #000000;
-    font-weight: 700;
-    font-size: 0.9rem;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    padding: 1rem 2.5rem;
-    border-radius: 0;
-    transition: all 0.3s;
-
-    &:hover {
-      background: lighten($primary, 10%);
-      color: #000000;
-      transform: translateY(-2px);
-    }
-  }
-
   .hero-decoration {
+    font-family: 'Bebas Neue', sans-serif;
     font-size: clamp(8rem, 20vw, 16rem);
     font-weight: 900;
-    color: rgba(255,255,255,0.02);
+    color: rgba($white, 0.02);
     position: absolute;
     right: -2rem;
     top: 50%;
@@ -124,14 +148,98 @@ a {
   }
 }
 
-.hero-cta-outline {
-  background: transparent;
-  color: $primary;
-  border: 1px solid $primary;
+// ================================
+// BOUTONS
+// ================================
+.hero-cta {
+  display: inline-block;
+  background-color: $yellow;
+  color: $black;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  padding: 0.7rem 2rem;
+  text-transform: uppercase;
+  border: none;
+  transition: background-color 0.2s ease, transform 0.1s ease;
+  cursor: pointer;
 
   &:hover {
-    background: $primary;
-    color: #000;
+    background-color: darken($yellow, 8%);
+    color: $black;
+    transform: translateY(-2px);
+  }
+
+  &.disabled {
+    background-color: $gray-light;
+    color: #555;
+    cursor: not-allowed;
+    transform: none;
+  }
+}
+
+.hero-cta-outline {
+  display: inline-block;
+  background: transparent;
+  color: $yellow;
+  border: 2px solid $yellow;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.1rem;
+  letter-spacing: 0.1em;
+  padding: 0.7rem 2rem;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: $yellow;
+    color: $black;
+  }
+}
+
+.btn-primary {
+  background-color: $yellow;
+  border-color: $yellow;
+  color: $black;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  border-radius: 0;
+
+  &:hover {
+    background-color: darken($yellow, 8%);
+    border-color: darken($yellow, 8%);
+    color: $black;
+  }
+}
+
+.btn-outline-primary {
+  border-color: $yellow;
+  color: $yellow;
+  border-radius: 0;
+
+  &:hover {
+    background-color: $yellow;
+    color: $black;
+  }
+}
+
+.btn-danger {
+  background-color: $red;
+  border-color: $red;
+  border-radius: 0;
+
+  &:hover { background-color: darken($red, 8%); }
+}
+
+.btn-outline-danger {
+  border-color: $red;
+  color: $red;
+  border-radius: 0;
+
+  &:hover {
+    background-color: $red;
+    color: $white;
   }
 }
 
@@ -139,15 +247,15 @@ a {
 // SEARCH BAR
 // ================================
 .search-section {
-  background-color: #141414;
-  border-top: 1px solid #2a2a2a;
-  border-bottom: 1px solid #2a2a2a;
+  background-color: $gray;
+  border-top: 1px solid $gray-light;
+  border-bottom: 1px solid $gray-light;
   padding: 2rem 0;
 
   .search-input {
-    background-color: #1e1e1e;
-    border: 1px solid #333333;
-    color: #e0e0e0;
+    background-color: $gray-mid;
+    border: 1px solid $gray-light;
+    color: $white;
     padding: 0.9rem 1.5rem;
     font-size: 1rem;
     border-radius: 0;
@@ -155,23 +263,25 @@ a {
     &::placeholder { color: #555555; }
     &:focus {
       background-color: #252525;
-      border-color: $primary;
-      color: #e0e0e0;
-      box-shadow: 0 0 0 0.2rem rgba(201, 168, 76, 0.15);
+      border-color: $yellow;
+      color: $white;
+      box-shadow: 0 0 0 0.2rem rgba($yellow, 0.15);
     }
   }
 
   .search-btn {
-    background-color: $primary;
-    color: #000000;
+    background-color: $yellow;
+    color: $black;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
     font-weight: 700;
-    letter-spacing: 1px;
+    letter-spacing: 0.1em;
     text-transform: uppercase;
     border-radius: 0;
     padding: 0.9rem 2rem;
     border: none;
     transition: all 0.2s;
-    &:hover { background-color: lighten($primary, 10%); }
+    &:hover { background-color: darken($yellow, 8%); }
   }
 }
 
@@ -182,26 +292,21 @@ a {
   padding: 5rem 0;
 
   .section-title {
-    font-size: 2rem;
-    font-weight: 800;
-    letter-spacing: -1px;
-    color: #ffffff;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.5rem;
+    letter-spacing: 0.05em;
+    color: $yellow;
+    text-transform: uppercase;
+    border-left: 4px solid $yellow;
+    padding-left: 1rem;
     margin-bottom: 0.5rem;
-
-    &::after {
-      content: '';
-      display: block;
-      width: 40px;
-      height: 3px;
-      background: $primary;
-      margin-top: 0.75rem;
-    }
   }
 
   .section-subtitle {
     color: #666666;
     font-size: 0.95rem;
     margin-bottom: 3rem;
+    padding-left: 1.25rem;
   }
 }
 
@@ -209,29 +314,29 @@ a {
 // CARDS
 // ================================
 .card-dark {
-  background-color: #1a1a1a;
-  border: 1px solid #2a2a2a;
-  border-radius: 0.5rem;
+  background-color: $gray;
+  border: 1px solid $gray-light;
+  border-radius: 0;
   overflow: hidden;
   transition: all 0.3s;
 
   &:hover {
-    border-color: $primary;
+    border-color: $yellow;
     transform: translateY(-4px);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
   }
 
   .card-img {
     width: 100%;
     height: 200px;
     object-fit: cover;
-    background-color: #252525;
+    background-color: $gray-mid;
   }
 
   .card-img-placeholder {
     width: 100%;
     height: 200px;
-    background: linear-gradient(135deg, #1e1e1e, #2a2a2a);
+    background: linear-gradient(135deg, $gray-mid, $gray-light);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -239,14 +344,13 @@ a {
     color: #333333;
   }
 
-  .card-body {
-    padding: 1.5rem;
-  }
+  .card-body { padding: 1.5rem; }
 
   .card-name {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #ffffff;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 0.05em;
+    color: $white;
     margin-bottom: 0.25rem;
   }
 
@@ -257,24 +361,46 @@ a {
 
   .card-badge {
     display: inline-block;
-    background-color: rgba(201, 168, 76, 0.15);
-    color: $primary;
+    background-color: rgba($yellow, 0.15);
+    color: $yellow;
     font-size: 0.75rem;
-    font-weight: 600;
+    font-weight: 700;
     padding: 0.2rem 0.6rem;
-    border-radius: 2rem;
+    border-radius: 0;
     margin: 0.15rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
   }
 
   .card-link {
     display: inline-block;
     margin-top: 1rem;
-    color: $primary;
+    color: $yellow;
     font-size: 0.85rem;
-    font-weight: 600;
-    letter-spacing: 1px;
+    font-weight: 700;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
-    &:hover { color: lighten($primary, 15%); }
+    &:hover { color: darken($yellow, 10%); }
+  }
+}
+
+// Bootstrap .card override
+.card {
+  background-color: $gray;
+  border: 1px solid $gray-light;
+  border-radius: 0;
+  color: $white;
+
+  .card-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 0.05em;
+    color: $yellow;
+  }
+
+  &:hover {
+    border-color: $yellow;
+    transition: border-color 0.2s ease;
   }
 }
 
@@ -282,32 +408,34 @@ a {
 // EVENTS
 // ================================
 .event-item {
-  background-color: #1a1a1a;
-  border: 1px solid #2a2a2a;
-  border-left: 3px solid $primary;
+  background-color: $gray;
+  border: 1px solid $gray-light;
+  border-left: 4px solid $yellow;
   padding: 1.5rem;
-  border-radius: 0 0.5rem 0.5rem 0;
+  border-radius: 0;
   margin-bottom: 1rem;
   transition: all 0.2s;
 
   &:hover {
-    background-color: #202020;
+    background-color: $gray-light;
     transform: translateX(4px);
   }
 
   .event-date {
-    font-size: 0.8rem;
-    color: $primary;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.9rem;
+    color: $yellow;
     font-weight: 600;
-    letter-spacing: 1px;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
   }
 
   .event-name {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #ffffff;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.3rem;
+    color: $white;
     margin: 0.25rem 0;
+    letter-spacing: 0.05em;
   }
 
   .event-location {
@@ -317,85 +445,167 @@ a {
 }
 
 // ================================
+// BADGES
+// ================================
+.badge {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border-radius: 0;
+
+  &.bg-warning {
+    background-color: $yellow !important;
+    color: $black !important;
+  }
+
+  &.bg-danger  { background-color: $red !important; }
+  &.bg-success { background-color: #27AE60 !important; }
+}
+
+// ================================
+// FORMS
+// ================================
+.form-control, .form-select {
+  background-color: $gray;
+  border: 1px solid $gray-light;
+  color: $white;
+  border-radius: 0;
+
+  &:focus {
+    background-color: $gray;
+    border-color: $yellow;
+    color: $white;
+    box-shadow: 0 0 0 0.2rem rgba($yellow, 0.2);
+  }
+
+  &::placeholder { color: #555; }
+}
+
+.form-label {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.85rem;
+  color: #aaa;
+}
+
+// ================================
+// LIST GROUP (conversations)
+// ================================
+.list-group-item {
+  background-color: $gray;
+  border-color: $gray-light;
+  color: $white;
+  border-radius: 0 !important;
+
+  &:hover {
+    background-color: $gray-light;
+    color: $yellow;
+  }
+
+  &.list-group-item-action {
+    transition: background-color 0.15s ease;
+  }
+}
+
+// ================================
 // FLASH MESSAGES
 // ================================
+.alert {
+  border-radius: 0;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border: none;
+  border-left: 4px solid;
+
+  &.alert-success {
+    background-color: rgba(39, 174, 96, 0.1);
+    border-left-color: #27AE60;
+    color: #27AE60;
+  }
+
+  &.alert-danger {
+    background-color: rgba($red, 0.1);
+    border-left-color: $red;
+    color: lighten($red, 20%);
+  }
+
+  &.alert-warning {
+    background-color: rgba($yellow, 0.1);
+    border-left-color: $yellow;
+    color: $yellow;
+  }
+
+  &.alert-info {
+    background-color: rgba($white, 0.05);
+    border-left-color: $white;
+    color: $white;
+  }
+}
+
+// compat anciens flash
 .flash-notice {
-  background-color: rgba(201, 168, 76, 0.1);
-  border: 1px solid rgba(201, 168, 76, 0.3);
-  color: $primary;
+  background-color: rgba($yellow, 0.1);
+  border: 1px solid rgba($yellow, 0.3);
+  color: $yellow;
   padding: 1rem 1.5rem;
-  border-radius: 0.5rem;
   margin: 1rem 0;
 }
 
 .flash-alert {
-  background-color: rgba(220, 53, 69, 0.1);
-  border: 1px solid rgba(220, 53, 69, 0.3);
-  color: #dc3545;
+  background-color: rgba($red, 0.1);
+  border: 1px solid rgba($red, 0.3);
+  color: lighten($red, 15%);
   padding: 1rem 1.5rem;
-  border-radius: 0.5rem;
   margin: 1rem 0;
 }
 
 // ================================
-// FOOTER
-// ================================
-footer {
-  background-color: #111111;
-  border-top: 1px solid #2a2a2a;
-  padding: 3rem 0;
-  color: #555555;
-  font-size: 0.85rem;
-
-  .footer-brand {
-    font-size: 1.2rem;
-    font-weight: 800;
-    color: $primary;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    margin-bottom: 0.5rem;
-  }
-}
-
 // FAVORITES
-
+// ================================
 .btn-favorite {
   background: transparent;
-  border: 1px solid #333;
+  border: 1px solid $gray-light;
   color: #666;
   font-size: 0.85rem;
   padding: 0.3rem 0.8rem;
-  border-radius: 2rem;
+  border-radius: 0;
   transition: all 0.2s;
   cursor: pointer;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 
   &:hover {
-    border-color: #c9a84c;
-    color: #c9a84c;
+    border-color: $yellow;
+    color: $yellow;
   }
 
   &.active {
-    background-color: rgba(201, 168, 76, 0.15);
-    border-color: #c9a84c;
-    color: #c9a84c;
+    background-color: rgba($yellow, 0.15);
+    border-color: $yellow;
+    color: $yellow;
   }
 }
 
+// ================================
 // MAP (Leaflet.js)
-
- .leaflet-popup-content-wrapper {
-   background: #1e1e1e !important;
-   border: 1px solid #2a2a2a !important;
-   box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
- }
- .leaflet-popup-tip {
-   background: #1e1e1e !important;
+// ================================
+.leaflet-popup-content-wrapper {
+  background: $gray-mid !important;
+  border: 1px solid $gray-light !important;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5) !important;
+  border-radius: 0 !important;
 }
 
-/* ================================
-   CHAT — Messages
-   ================================ */
+.leaflet-popup-tip {
+  background: $gray-mid !important;
+}
 
+// ================================
+// CHAT — Messages
+// ================================
 .message {
   display: flex;
   flex-direction: column;
@@ -414,24 +624,40 @@ footer {
 
 .message__bubble {
   padding: 0.5rem 0.875rem;
-  border-radius: 1rem;
+  border-radius: 0;
   word-break: break-word;
 }
 
 .message--own .message__bubble {
-  background-color: #ffc107;
-  color: #000;
-  border-bottom-right-radius: 0.25rem;
+  background-color: $yellow;
+  color: $black;
+  border-bottom-right-radius: 0;
 }
 
 .message--other .message__bubble {
-  background-color: #2c2c2a;
-  color: #fff;
-  border-bottom-left-radius: 0.25rem;
+  background-color: $gray-light;
+  color: $white;
+  border-bottom-left-radius: 0;
 }
 
 .message__meta {
   font-size: 0.7rem;
   margin-top: 0.2rem;
   padding: 0 0.25rem;
+  color: #555;
+}
+
+// ================================
+// UTILITAIRES
+// ================================
+.text-yellow     { color: $yellow !important; }
+.text-red        { color: $red !important; }
+.border-yellow   { border-color: $yellow !important; }
+.bg-gray         { background-color: $gray !important; }
+.bg-gray-light   { background-color: $gray-light !important; }
+
+.divider-yellow {
+  border: none;
+  border-top: 2px solid $yellow;
+  margin: 2rem 0;
 }

@@ -1,0 +1,30 @@
+<div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1.5rem;">
+  <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:#F5C500;border-left:4px solid #F5C500;padding-left:0.75rem;">
+    Messages
+    <% if @unread_count > 0 %>
+      <span class="badge bg-warning ms-2"><%= @unread_count %></span>
+    <% end %>
+  </h3>
+  <% if @conversations.any? %>
+    <% @conversations.each do |conv| %>
+      <% other = conv.other_participant(current_user) %>
+      <%= link_to conversation_path(conv), style: "display:block;padding:0.75rem 0;border-bottom:1px solid #2A2A2A;color:#fff;" do %>
+        <div class="d-flex justify-content-between">
+          <span style="font-weight:600;">
+            <%= other&.nickname || other&.first_name || "Inconnu" %>
+          </span>
+          <% unread = conv.unread_count_for(current_user) %>
+          <% if unread > 0 %>
+            <span class="badge bg-warning"><%= unread %></span>
+          <% end %>
+        </div>
+        <div class="text-secondary" style="font-size:0.8rem;">
+          <%= conv.messages.last&.content&.truncate(40) || "Aucun message" %>
+        </div>
+      <% end %>
+    <% end %>
+    <%= link_to "Voir tous les messages →", conversations_path, class: "card-link mt-2 d-block" %>
+  <% else %>
+    <p class="text-secondary mt-2 mb-0">Aucune conversation.</p>
+  <% end %>
+</div>

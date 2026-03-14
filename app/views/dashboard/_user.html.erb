@@ -1,0 +1,75 @@
+<div class="row g-4">
+
+  <%# Colonne principale %>
+  <div class="col-lg-8">
+
+    <h2 class="section-title mb-3">Réservations à venir</h2>
+    <% upcoming = current_user.bookings.where("date >= ?", Date.today).order(date: :asc).limit(5) %>
+    <% if upcoming.any? %>
+      <% upcoming.each do |booking| %>
+        <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-left:4px solid #F5C500;padding:1rem 1.5rem;margin-bottom:0.75rem;">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;">
+                <%= booking.date&.strftime("%d %B %Y") %>
+                <% if booking.start_time %>· <%= booking.start_time.strftime("%Hh%M") %><% end %>
+              </div>
+              <div class="text-secondary" style="font-size:0.85rem;">
+                <%= booking.tatoueur.nickname %> · <%= booking.shop.name %>
+              </div>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+              <span class="badge <%= booking.status == 'confirmed' ? 'bg-success' : 'bg-warning' %>">
+                <%= booking.status %>
+              </span>
+              <%= link_to "Voir →", booking_path(booking), class: "card-link mb-0 mt-0" %>
+            </div>
+          </div>
+        </div>
+      <% end %>
+    <% else %>
+      <p class="text-secondary">Aucune réservation à venir.</p>
+    <% end %>
+
+    <h2 class="section-title mb-3 mt-4">Réservations passées</h2>
+    <% past = current_user.bookings.where("date < ?", Date.today).order(date: :desc).limit(5) %>
+    <% if past.any? %>
+      <% past.each do |booking| %>
+        <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-left:4px solid #2A2A2A;padding:1rem 1.5rem;margin-bottom:0.75rem;">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:#888;">
+                <%= booking.date&.strftime("%d %B %Y") %>
+              </div>
+              <div class="text-secondary" style="font-size:0.85rem;">
+                <%= booking.tatoueur.nickname %> · <%= booking.shop.name %>
+              </div>
+            </div>
+            <%= link_to "Voir →", booking_path(booking), class: "card-link mb-0 mt-0" %>
+          </div>
+        </div>
+      <% end %>
+    <% else %>
+      <p class="text-secondary">Aucune réservation passée.</p>
+    <% end %>
+
+  </div>
+
+  <%# Colonne droite %>
+  <div class="col-lg-4">
+
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1.5rem;margin-bottom:1.5rem;">
+      <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:#F5C500;border-left:4px solid #F5C500;padding-left:0.75rem;">
+        Mon compte
+      </h3>
+      <div class="d-flex flex-column gap-2 mt-3">
+        <%= link_to "❤️ Mes favoris", favorites_path, class: "btn btn-outline-primary btn-sm w-100" %>
+        <%= link_to "✏️ Modifier mon profil", edit_user_registration_path, class: "btn btn-outline-primary btn-sm w-100" %>
+        <%= link_to "🔍 Explorer les tatoueurs", tatoueurs_path, class: "hero-cta w-100 text-center mt-2" %>
+      </div>
+    </div>
+
+    <%= render "dashboard/messages" %>
+
+  </div>
+</div>

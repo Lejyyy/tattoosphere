@@ -4,12 +4,12 @@
   <% if user_signed_in? %>
     <% if favorited %>
       <%= button_to "❤️ Retirer des favoris",
-          polymorphic_path([favoritable, :favorite]),
+          favorite_path_for(favoritable),
           method: :delete,
           class: "btn btn-sm btn-outline-danger" %>
     <% else %>
       <%= button_to "🤍 Ajouter aux favoris",
-          polymorphic_path([favoritable, :favorite]),
+          favorite_path_for(favoritable),
           method: :post,
           class: "btn btn-sm btn-outline-secondary" %>
     <% end %>

@@ -1,35 +1,286 @@
-<% if @tatoueur.avatar.attached? %>
-  <%= image_tag @tatoueur.avatar, width: 200, style: "border-radius: 50%" %>
-<% else %>
-  <p>Pas de photo de profil</p>
+<% content_for :title, @tatoueur.nickname %>
+
+<%# ================================ %>
+<%# HERO — Profil %>
+<%# ================================ %>
+<section class="section pb-0">
+  <div class="container">
+    <div class="row align-items-center g-5">
+
+      <%# Avatar %>
+      <div class="col-auto">
+        <% if @tatoueur.avatar.attached? %>
+          <%= image_tag @tatoueur.avatar,
+              style: "width:140px;height:140px;object-fit:cover;border:3px solid #F5C500;" %>
+        <% else %>
+          <div style="width:140px;height:140px;background:#1A1A1A;border:3px solid #2A2A2A;display:flex;align-items:center;justify-content:center;font-size:3rem;">
+            🖋️
+          </div>
+        <% end %>
+      </div>
+
+      <%# Infos principales %>
+      <div class="col">
+        <div class="d-flex align-items-center gap-3 flex-wrap mb-1">
+          <h1 class="mb-0" style="font-size:3rem;"><%= @tatoueur.nickname %></h1>
+          <%= render "verified_badge", tatoueur: @tatoueur %>
+        </div>
+
+        <%# Localisation %>
+        <p class="text-secondary mb-2">
+          📍
+          <% if @tatoueur.address.present? %>
+            <%= @tatoueur.address %>
+          <% elsif @tatoueur.shops.any? %>
+            <%= @tatoueur.shops.first.address %>
+          <% else %>
+            Localisation non renseignée
+          <% end %>
+        </p>
+
+        <%# Shop rattaché %>
+        <% if @tatoueur.shops.any? %>
+          <p class="mb-2">
+            🏠 Travaille chez
+            <% @tatoueur.shops.each do |shop| %>
+              <%= link_to shop.name, shop_path(shop), class: "text-yellow fw-bold" %>
+            <% end %>
+          </p>
+        <% else %>
+          <p class="text-secondary mb-2">🏠 Indépendant</p>
+        <% end %>
+
+        <%# Stats %>
+        <div class="d-flex gap-4 my-3">
+          <div class="text-center">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:#F5C500;">
+              <%= @tatoueur.portfolio_items.count %>
+            </div>
+            <div class="text-secondary" style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em;">Réalisations</div>
+          </div>
+          <div class="text-center">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:#F5C500;">
+              <%= @reviews.count %>
+            </div>
+            <div class="text-secondary" style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em;">Avis</div>
+          </div>
+          <% if @reviews.any? %>
+            <div class="text-center">
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:#F5C500;">
+                <%= number_with_precision(@reviews.average(:rating), precision: 1) %> ⭐
+              </div>
+              <div class="text-secondary" style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em;">Note moyenne</div>
+            </div>
+          <% end %>
+        </div>
+
+        <%# Styles %>
+        <div class="d-flex flex-wrap gap-2 mb-3">
+          <% @tatoueur.tattoo_styles.each do |style| %>
+            <span class="card-badge"><%= style.name %></span>
+          <% end %>
+        </div>
+
+        <%# Actions %>
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+          <% if user_signed_in? %>
+            <%= link_to "✉️ Contacter",
+                conversations_path(tatoueur_id: @tatoueur.id),
+                data: { turbo_method: :post },
+                class: "hero-cta" %>
+            <% if @tatoueur.shops.any? %>
+              <%= link_to "📅 Réserver",
+                  new_shop_booking_path(@tatoueur.shops.first),
+                  class: "hero-cta-outline" %>
+            <% else %>
+              <span class="hero-cta disabled">Réservation indisponible</span>
+            <% end %>
+          <% else %>
+            <%= link_to "Connectez-vous pour contacter", new_user_session_path, class: "hero-cta" %>
+          <% end %>
+
+          <%= render "favorites/button", favoritable: @tatoueur %>
+
+          <%# Actions propriétaire %>
+          <% if user_signed_in? && policy(@tatoueur).update? %>
+            <%= link_to "Modifier", edit_tatoueur_path(@tatoueur), class: "btn btn-outline-primary btn-sm" %>
+          <% end %>
+          <% if current_user&.tatoueur == @tatoueur && !@tatoueur.verified? %>
+            <%= link_to "Faire vérifier mon profil",
+                verification_tatoueur_path(@tatoueur),
+                class: "btn btn-outline-warning btn-sm" %>
+          <% end %>
+          <% if current_user&.tatoueur == @tatoueur %>
+            <% if @tatoueur.paypal_onboarded? %>
+              <span class="badge bg-success">✅ PayPal connecté</span>
+            <% else %>
+              <%= link_to "Connecter PayPal",
+                  connect_paypal_tatoueur_path(@tatoueur),
+                  class: "btn btn-warning btn-sm" %>
+            <% end %>
+          <% end %>
+        </div>
+      </div>
+    </div>
+
+    <%# Description %>
+    <% if @tatoueur.description.present? %>
+      <div class="mt-4 pt-4" style="border-top:1px solid #2A2A2A;">
+        <p class="text-secondary" style="max-width:700px;line-height:1.8;">
+          <%= @tatoueur.description %>
+        </p>
+      </div>
+    <% end %>
+  </div>
+</section>
+
+<hr style="border-color:#2A2A2A;margin:3rem 0;">
+
+<%# ================================ %>
+<%# PORTFOLIOS %>
+<%# ================================ %>
+<% if @portfolios.any? %>
+  <section class="section pt-0">
+    <div class="container">
+      <h2 class="section-title mb-4">Portfolios</h2>
+      <div class="row g-4">
+        <% @portfolios.each do |portfolio| %>
+          <div class="col-md-4">
+            <div class="card-dark h-100">
+              <div class="card-img-placeholder">🖼️</div>
+              <div class="card-body">
+                <p class="card-name"><%= portfolio.name %></p>
+                <p class="card-meta"><%= portfolio.description&.truncate(80) %></p>
+                <p class="card-meta"><%= portfolio.portfolio_items.count %> réalisation(s)</p>
+                <%= link_to "Voir le portfolio →",
+                    tatoueur_portfolio_path(@tatoueur, portfolio),
+                    class: "card-link" %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </section>
+  <hr style="border-color:#2A2A2A;margin:3rem 0;">
 <% end %>
 
-<% if user_signed_in? %>
-  <% if @tatoueur.shops.any? %>
-    <%= link_to "Réserver", new_shop_booking_path(@tatoueur.shops.first), class: "hero-cta" %>
-  <% else %>
-    <span class="hero-cta disabled">Réservation indisponible</span>
-  <% end %>
-<% else %>
-  <%= link_to "Connectez-vous pour réserver", new_user_session_path, class: "hero-cta" %>
+<%# ================================ %>
+<%# FLASH TATTOOS (photos du tatoueur) %>
+<%# ================================ %>
+<% if @tatoueur.photos.attached? %>
+  <section class="section pt-0">
+    <div class="container">
+      <h2 class="section-title mb-4">Flash disponibles</h2>
+      <div class="row g-3">
+        <% @tatoueur.photos.each do |photo| %>
+          <div class="col-6 col-md-3">
+            <%= image_tag photo,
+                style: "width:100%;height:220px;object-fit:cover;border:1px solid #2A2A2A;transition:border-color 0.2s;",
+                onmouseover: "this.style.borderColor='#F5C500'",
+                onmouseout:  "this.style.borderColor='#2A2A2A'" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </section>
+  <hr style="border-color:#2A2A2A;margin:3rem 0;">
 <% end %>
 
-<% if user_signed_in? && policy(@tatoueur).update? %>
-  <%= link_to "Modifier", edit_tatoueur_path(@tatoueur), class: "btn btn-outline-warning btn-sm" %>
+<%# ================================ %>
+<%# DISPONIBILITÉS %>
+<%# ================================ %>
+<section class="section pt-0">
+  <div class="container">
+    <h2 class="section-title mb-4">Disponibilités</h2>
+    <% availabilities = @tatoueur.availabilities %>
+    <% if availabilities.any? %>
+      <div class="row g-3">
+        <% days = %w[Dimanche Lundi Mardi Mercredi Jeudi Vendredi Samedi] %>
+        <% availabilities.order(:day_of_week).each do |a| %>
+          <div class="col-6 col-md-3">
+            <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1rem;">
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:#F5C500;">
+                <%= days[a.day_of_week] %>
+              </div>
+              <div class="text-secondary" style="font-size:0.9rem;">
+                <%= a.start_time&.strftime("%Hh%M") %> — <%= a.end_time&.strftime("%Hh%M") %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="text-secondary">Aucune disponibilité renseignée pour le moment.</p>
+    <% end %>
+  </div>
+</section>
+
+<hr style="border-color:#2A2A2A;margin:3rem 0;">
+
+<%# ================================ %>
+<%# ÉVÉNEMENTS À VENIR %>
+<%# ================================ %>
+<% if @events.any? %>
+  <section class="section pt-0">
+    <div class="container">
+      <h2 class="section-title mb-4">Événements à venir</h2>
+      <% @events.each do |event| %>
+        <div class="event-item">
+          <div class="event-date"><%= event.start_date&.strftime("%d %B %Y") %></div>
+          <div class="event-name"><%= event.name %></div>
+          <div class="event-location">📍 <%= event.location %></div>
+          <% if event.description.present? %>
+            <p class="text-secondary mt-2 mb-0" style="font-size:0.9rem;">
+              <%= event.description.truncate(120) %>
+            </p>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  </section>
+  <hr style="border-color:#2A2A2A;margin:3rem 0;">
 <% end %>
 
-<% if user_signed_in? %>
-  <%= link_to "Contacter #{@tatoueur.nickname}",
-      conversations_path(tatoueur_id: @tatoueur.id),
-      data: { turbo_method: :post },
-      class: "hero-cta mt-3" %>
-<% end %>
+<%# ================================ %>
+<%# AVIS %>
+<%# ================================ %>
+<section class="section pt-0">
+  <div class="container">
+    <h2 class="section-title mb-4">
+      Avis
+      <% if @reviews.any? %>
+        <span style="font-size:1.5rem;color:#fff;">
+          — <%= number_with_precision(@reviews.average(:rating), precision: 1) %> / 5 ⭐
+        </span>
+      <% end %>
+    </h2>
 
-<%= render "favorites/button", favoritable: @tatoueur %>
-<%= render "verified_badge", tatoueur: @tatoueur %>
-
-<% if current_user&.tatoueur == @tatoueur && !@tatoueur.verified? %>
-  <%= link_to "Faire vérifier mon profil",
-      verification_tatoueur_path(@tatoueur),
-      class: "btn btn-outline-warning btn-sm" %>
-<% end %>
+    <% if @reviews.any? %>
+      <div class="row g-4">
+        <% @reviews.each do |review| %>
+          <div class="col-md-6">
+            <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1.5rem;">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:#F5C500;">
+                  <%= review.user.nickname %>
+                </span>
+                <span class="text-secondary" style="font-size:0.8rem;">
+                  <%= review.created_at.strftime("%d/%m/%Y") %>
+                </span>
+              </div>
+              <div class="mb-2">
+                <% review.rating.times do %>⭐<% end %>
+              </div>
+              <p class="text-secondary mb-0" style="line-height:1.6;">
+                <%= review.comment %>
+              </p>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    <% else %>
+      <p class="text-secondary">Aucun avis pour le moment.</p>
+    <% end %>
+  </div>
+</section>

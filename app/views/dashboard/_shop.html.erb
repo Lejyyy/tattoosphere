@@ -1,0 +1,98 @@
+<div class="row g-4">
+
+  <%# Colonne principale %>
+  <div class="col-lg-8">
+
+    <%# Stats %>
+    <div class="row g-3 mb-4">
+      <div class="col-4">
+        <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;padding:1.5rem;text-align:center;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:2.5rem;color:#F5C500;"><%= @shop.tatoueurs.count %></div>
+          <div class="text-secondary" style="font-size:0.8rem;text-transform:uppercase;">Tatoueurs</div>
+        </div>
+      </div>
+      <div class="col-4">
+        <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;padding:1.5rem;text-align:center;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:2.5rem;color:#F5C500;"><%= @shop.bookings.count %></div>
+          <div class="text-secondary" style="font-size:0.8rem;text-transform:uppercase;">Réservations</div>
+        </div>
+      </div>
+      <div class="col-4">
+        <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;padding:1.5rem;text-align:center;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:2.5rem;color:#F5C500;"><%= @unread_count %></div>
+          <div class="text-secondary" style="font-size:0.8rem;text-transform:uppercase;">Non lus</div>
+        </div>
+      </div>
+    </div>
+
+    <%# Tatoueurs %>
+    <h2 class="section-title mb-3">Mes tatoueurs</h2>
+    <% if @shop.tatoueurs.any? %>
+      <% @shop.tatoueurs.each do |tatoueur| %>
+        <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1rem 1.5rem;margin-bottom:0.75rem;display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <span style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;"><%= tatoueur.nickname %></span>
+            <span class="text-secondary ms-2" style="font-size:0.85rem;">
+              <%= tatoueur.tattoo_styles.map(&:name).join(", ") %>
+            </span>
+          </div>
+          <div class="d-flex gap-2">
+            <%= link_to "Voir", tatoueur_path(tatoueur), class: "btn btn-outline-primary btn-sm" %>
+            <%= button_to "Retirer",
+                remove_tatoueur_shop_path(@shop, tatoueur_id: tatoueur.id),
+                method: :delete,
+                class: "btn btn-outline-danger btn-sm",
+                data: { turbo_confirm: "Retirer ce tatoueur du shop ?" } %>
+          </div>
+        </div>
+      <% end %>
+    <% else %>
+      <p class="text-secondary">Aucun tatoueur rattaché.</p>
+    <% end %>
+
+    <%# Réservations à venir %>
+    <h2 class="section-title mb-3 mt-4">Réservations à venir</h2>
+    <% shop_bookings = @shop.bookings.where("date >= ?", Date.today).order(date: :asc).limit(5) %>
+    <% if shop_bookings.any? %>
+      <% shop_bookings.each do |booking| %>
+        <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-left:4px solid #F5C500;padding:1rem 1.5rem;margin-bottom:0.75rem;">
+          <div class="d-flex justify-content-between align-items-center">
+            <div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;">
+                <%= booking.date&.strftime("%d %B %Y") %>
+              </div>
+              <div class="text-secondary" style="font-size:0.85rem;">
+                <%= booking.user.nickname %> · <%= booking.tatoueur.nickname %>
+              </div>
+            </div>
+            <span class="badge <%= booking.status == 'confirmed' ? 'bg-success' : 'bg-warning' %>">
+              <%= booking.status %>
+            </span>
+          </div>
+        </div>
+      <% end %>
+    <% else %>
+      <p class="text-secondary">Aucune réservation à venir.</p>
+    <% end %>
+
+  </div>
+
+  <%# Colonne droite %>
+  <div class="col-lg-4">
+
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1.5rem;margin-bottom:1.5rem;">
+      <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:#F5C500;border-left:4px solid #F5C500;padding-left:0.75rem;">
+        Mon shop
+      </h3>
+      <div class="d-flex flex-column gap-2 mt-3">
+        <%= link_to "👁️ Voir ma page", shop_path(@shop), class: "btn btn-outline-primary btn-sm w-100" %>
+        <%= link_to "✏️ Modifier ma page", edit_shop_path(@shop), class: "btn btn-outline-primary btn-sm w-100" %>
+        <%= link_to "❤️ Mes favoris", favorites_path, class: "btn btn-outline-primary btn-sm w-100" %>
+        <%= link_to "🎉 Créer un événement", new_event_path, class: "hero-cta w-100 text-center mt-2" %>
+      </div>
+    </div>
+
+    <%= render "dashboard/messages" %>
+
+  </div>
+</div>

@@ -1,4 +1,4 @@
-module ApplicationHelper
+module FavoritesHelper
   def favorite_path_for(favoritable)
     case favoritable
     when Tatoueur
