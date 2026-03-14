@@ -11,7 +11,7 @@
       <%= link_to conversation_path(conv), style: "display:block;padding:0.75rem 0;border-bottom:1px solid #2A2A2A;color:#fff;" do %>
         <div class="d-flex justify-content-between">
           <span style="font-weight:600;">
-            <%= other&.nickname || other&.first_name || "Inconnu" %>
+            <<%= other&.try(:nickname) || other&.try(:name) || other&.try(:first_name) || "Inconnu" %>
           </span>
           <% unread = conv.unread_count_for(current_user) %>
           <% if unread > 0 %>

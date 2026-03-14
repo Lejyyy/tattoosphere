@@ -1,0 +1,39 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 style="font-family:'Bebas Neue',sans-serif;font-size:3rem;color:#F5C500;">Shops</h1>
+  <div class="d-flex gap-2">
+    <%= link_to "Tous", admin_shops_path, class: "btn btn-outline-secondary btn-sm" %>
+    <%= link_to "Actifs", admin_shops_path(active: true), class: "btn btn-outline-success btn-sm" %>
+    <%= link_to "Inactifs", admin_shops_path(active: false), class: "btn btn-outline-danger btn-sm" %>
+  </div>
+</div>
+
+<div class="table-responsive">
+  <table class="table" style="color:#fff;">
+    <thead style="border-bottom:2px solid #F5C500;">
+      <tr>
+        <th>Nom</th>
+        <th>Email</th>
+        <th>Adresse</th>
+        <th>Statut</th>
+        <th>Créé le</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @shops.each do |shop| %>
+        <tr style="border-bottom:1px solid #2A2A2A;">
+          <td><%= shop.name %></td>
+          <td class="text-secondary"><%= shop.email %></td>
+          <td class="text-secondary"><%= shop.address %></td>
+          <td>
+            <span class="badge <%= shop.is_active ? 'bg-success' : 'bg-danger' %>">
+              <%= shop.is_active ? "Actif" : "Inactif" %>
+            </span>
+          </td>
+          <td class="text-secondary"><%= shop.created_at.strftime("%d/%m/%Y") %></td>
+          <td><%= link_to "Examiner →", admin_shop_path(shop), class: "card-link" %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

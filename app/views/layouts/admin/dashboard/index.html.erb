@@ -1,37 +1,83 @@
-<h1 class="h3 mb-4">Dashboard</h1>
+<h1 style="font-family:'Bebas Neue',sans-serif;font-size:3rem;color:#F5C500;">Dashboard</h1>
 
-<div class="row g-3">
+<%# Stats %>
+<div class="row g-4 mb-5">
   <div class="col-md-3">
-    <div class="card border-warning">
-      <div class="card-body">
-        <div class="text-secondary small mb-1">Vérifications en attente</div>
-        <div class="h2 text-warning mb-0"><%= @pending_count %></div>
-        <%= link_to "Voir", admin_verifications_path, class: "stretched-link text-decoration-none text-secondary small" %>
-      </div>
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;padding:1.5rem;text-align:center;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:3rem;color:#F5C500;"><%= @users_count %></div>
+      <div class="text-secondary" style="text-transform:uppercase;font-size:0.8rem;">Utilisateurs</div>
     </div>
   </div>
   <div class="col-md-3">
-    <div class="card border-secondary">
-      <div class="card-body">
-        <div class="text-secondary small mb-1">Tatoueurs actifs</div>
-        <div class="h2 mb-0"><%= @tatoueurs_count %></div>
-      </div>
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;padding:1.5rem;text-align:center;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:3rem;color:#F5C500;"><%= @tatoueurs_count %></div>
+      <div class="text-secondary" style="text-transform:uppercase;font-size:0.8rem;">Tatoueurs</div>
     </div>
   </div>
   <div class="col-md-3">
-    <div class="card border-secondary">
-      <div class="card-body">
-        <div class="text-secondary small mb-1">Shops actifs</div>
-        <div class="h2 mb-0"><%= @shops_count %></div>
-      </div>
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;padding:1.5rem;text-align:center;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:3rem;color:#F5C500;"><%= @shops_count %></div>
+      <div class="text-secondary" style="text-transform:uppercase;font-size:0.8rem;">Shops</div>
     </div>
   </div>
   <div class="col-md-3">
-    <div class="card border-secondary">
-      <div class="card-body">
-        <div class="text-secondary small mb-1">Réservations totales</div>
-        <div class="h2 mb-0"><%= @bookings_count %></div>
-      </div>
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #C0392B;padding:1.5rem;text-align:center;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:3rem;color:#C0392B;"><%= @pending_tatoueurs.count %></div>
+      <div class="text-secondary" style="text-transform:uppercase;font-size:0.8rem;">En attente</div>
     </div>
   </div>
+</div>
+
+<%# Tatoueurs en attente %>
+<% if @pending_tatoueurs.any? %>
+  <h2 class="section-title mb-3">Tatoueurs en attente de validation</h2>
+  <div class="table-responsive mb-5">
+    <table class="table" style="color:#fff;">
+      <thead style="border-bottom:2px solid #F5C500;">
+        <tr>
+          <th>Nickname</th>
+          <th>Email</th>
+          <th>Soumis le</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @pending_tatoueurs.each do |t| %>
+          <tr style="border-bottom:1px solid #2A2A2A;">
+            <td><%= t.nickname %></td>
+            <td class="text-secondary"><%= t.email %></td>
+            <td class="text-secondary"><%= t.verification_submitted_at&.strftime("%d/%m/%Y") %></td>
+            <td><%= link_to "Examiner →", admin_tatoueur_path(t), class: "card-link" %></td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% end %>
+
+<%# Derniers inscrits %>
+<h2 class="section-title mb-3">Derniers inscrits</h2>
+<div class="table-responsive">
+  <table class="table" style="color:#fff;">
+    <thead style="border-bottom:2px solid #F5C500;">
+      <tr>
+        <th>Nickname</th>
+        <th>Email</th>
+        <th>Rôle</th>
+        <th>Inscrit le</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @recent_users.each do |user| %>
+        <tr style="border-bottom:1px solid #2A2A2A;">
+          <td><%= user.nickname %></td>
+          <td class="text-secondary"><%= user.email %></td>
+          <td><span class="badge bg-warning"><%= user.role %></span></td>
+          <td class="text-secondary"><%= user.created_at.strftime("%d/%m/%Y") %></td>
+          <td><%= link_to "Voir →", admin_user_path(user), class: "card-link" %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
 </div>

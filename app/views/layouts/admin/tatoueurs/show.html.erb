@@ -1,0 +1,81 @@
+<%= link_to "← Retour", admin_tatoueurs_path, class: "btn btn-outline-secondary btn-sm mb-4" %>
+
+<h1 style="font-family:'Bebas Neue',sans-serif;font-size:2.5rem;color:#F5C500;">
+  <%= @tatoueur.nickname %>
+  <% color = { "pending" => "bg-warning", "approved" => "bg-success", "rejected" => "bg-danger", "unsubmitted" => "bg-secondary" }[@tatoueur.verification_status] %>
+  <span class="badge <%= color %> ms-2" style="font-size:1rem;"><%= @tatoueur.verification_status %></span>
+</h1>
+
+<div class="row g-4 mt-2">
+
+  <%# Infos %>
+  <div class="col-md-6">
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1.5rem;">
+      <h3 class="section-title mb-3">Informations</h3>
+      <p><span class="text-secondary">Email :</span> <%= @tatoueur.email %></p>
+      <p><span class="text-secondary">SIREN :</span> <%= @tatoueur.siren || "Non renseigné" %></p>
+      <p><span class="text-secondary">IBAN :</span> <%= @tatoueur.masked_iban || "Non renseigné" %></p>
+      <p><span class="text-secondary">Soumis le :</span> <%= @tatoueur.verification_submitted_at&.strftime("%d/%m/%Y à %Hh%M") || "—" %></p>
+      <p><span class="text-secondary">Vérifié :</span> <%= @tatoueur.verified? ? "✅ Oui" : "❌ Non" %></p>
+    </div>
+  </div>
+
+  <%# Documents %>
+  <div class="col-md-6">
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1.5rem;">
+      <h3 class="section-title mb-3">Documents</h3>
+      <% if @tatoueur.identity_document.attached? %>
+        <p>📄 <%= link_to "Pièce d'identité", rails_blob_path(@tatoueur.identity_document, only_path: true), target: "_blank", class: "text-yellow" %></p>
+      <% else %>
+        <p class="text-secondary">❌ Pièce d'identité manquante</p>
+      <% end %>
+      <% if @tatoueur.hygiene_certificate.attached? %>
+        <p>📄 <%= link_to "Certificat d'hygiène", rails_blob_path(@tatoueur.hygiene_certificate, only_path: true), target: "_blank", class: "text-yellow" %></p>
+      <% else %>
+        <p class="text-secondary">❌ Certificat d'hygiène manquant</p>
+      <% end %>
+    </div>
+  </div>
+
+  <%# Actions %>
+  <div class="col-12">
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1.5rem;">
+      <h3 class="section-title mb-3">Actions</h3>
+      <div class="d-flex flex-wrap gap-3">
+
+        <% if @tatoueur.verification_status == "pending" %>
+          <%= button_to "✅ Approuver",
+              admin_tatoueur_path(@tatoueur, action_type: "approve"),
+              method: :patch,
+              class: "hero-cta",
+              data: { turbo_confirm: "Approuver ce tatoueur ?" } %>
+
+          <div class="d-flex gap-2 align-items-center">
+            <%= form_with url: admin_tatoueur_path(@tatoueur), method: :patch, class: "d-flex gap-2" do |f| %>
+              <%= hidden_field_tag :action_type, "reject" %>
+              <%= f.text_field :reason, placeholder: "Raison du refus...",
+                  class: "form-control form-control-sm",
+                  style: "background:#1A1A1A;border:1px solid #2A2A2A;color:#fff;width:250px;" %>
+              <%= f.submit "❌ Refuser", class: "btn btn-outline-danger btn-sm" %>
+            <% end %>
+          </div>
+        <% end %>
+
+        <% if @tatoueur.is_active %>
+          <%= button_to "🔴 Désactiver",
+              admin_tatoueur_path(@tatoueur, action_type: "deactivate"),
+              method: :patch,
+              class: "btn btn-outline-danger",
+              data: { turbo_confirm: "Désactiver ce tatoueur ?" } %>
+        <% else %>
+          <%= button_to "🟢 Activer",
+              admin_tatoueur_path(@tatoueur, action_type: "activate"),
+              method: :patch,
+              class: "btn btn-outline-success" %>
+        <% end %>
+
+      </div>
+    </div>
+  </div>
+
+</div>

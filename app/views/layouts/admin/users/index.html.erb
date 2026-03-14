@@ -1,0 +1,49 @@
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 style="font-family:'Bebas Neue',sans-serif;font-size:3rem;color:#F5C500;">Utilisateurs</h1>
+  <%= form_with url: admin_users_path, method: :get, class: "d-flex gap-2" do |f| %>
+    <%= f.text_field :q, value: params[:q], placeholder: "Rechercher...",
+        class: "form-control form-control-sm",
+        style: "background:#1A1A1A;border:1px solid #2A2A2A;color:#fff;width:250px;" %>
+    <%= f.submit "Chercher", class: "btn btn-outline-primary btn-sm" %>
+  <% end %>
+</div>
+
+<div class="table-responsive">
+  <table class="table" style="color:#fff;">
+    <thead style="border-bottom:2px solid #F5C500;">
+      <tr>
+        <th>Nickname</th>
+        <th>Email</th>
+        <th>Rôle</th>
+        <th>Actif</th>
+        <th>Inscrit le</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @users.each do |user| %>
+        <tr style="border-bottom:1px solid #2A2A2A;">
+          <td><%= user.nickname %></td>
+          <td class="text-secondary"><%= user.email %></td>
+          <td><span class="badge bg-warning"><%= user.role %></span></td>
+          <td>
+            <% if user.is_active %>
+              <span class="badge bg-success">Actif</span>
+            <% else %>
+              <span class="badge bg-danger">Inactif</span>
+            <% end %>
+          </td>
+          <td class="text-secondary"><%= user.created_at.strftime("%d/%m/%Y") %></td>
+          <td class="d-flex gap-2">
+            <%= link_to "Voir", admin_user_path(user), class: "btn btn-outline-primary btn-sm" %>
+            <%= link_to "Modifier", edit_admin_user_path(user), class: "btn btn-outline-secondary btn-sm" %>
+            <%= button_to "Désactiver", admin_user_path(user),
+                method: :delete,
+                class: "btn btn-outline-danger btn-sm",
+                data: { turbo_confirm: "Désactiver ce compte ?" } %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

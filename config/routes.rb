@@ -94,4 +94,11 @@ end
   # ACTION CABLE
   # ================================
   mount ActionCable.server => "/cable"
+
+  namespace :admin do
+  root "dashboard#index"
+  resources :users,     only: [ :index, :show, :edit, :update, :destroy ]
+  resources :tatoueurs, only: [ :index, :show, :update ]
+  resources :shops,     only: [ :index, :show, :update ]
+  end
 end

@@ -1,0 +1,42 @@
+<nav class="navbar navbar-expand-lg sticky-top">
+  <div class="container">
+    <%= link_to "Tattoosphere", root_path, class: "navbar-brand" %>
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto align-items-center gap-2">
+        <li class="nav-item">
+          <%= link_to "Shops", shops_path, class: "nav-link" %>
+        </li>
+        <li class="nav-item">
+          <%= link_to "Tatoueurs", tatoueurs_path, class: "nav-link" %>
+        </li>
+        <li class="nav-item">
+          <%= link_to "Événements", events_path, class: "nav-link" %>
+        </li>
+        <% if user_signed_in? %>
+          <li class="nav-item">
+            <%= link_to "Mon espace", dashboard_path, class: "nav-link" %>
+          </li>
+          <li class="nav-item">
+            <%= link_to "Favoris", favorites_path, class: "nav-link" %>
+          </li>
+          <li class="nav-item ms-2">
+            <%= button_to "Déconnexion", destroy_user_session_path,
+            method: :delete,
+            class: "btn btn-outline-primary btn-sm",
+            form: { style: "display:inline;" } %>
+          </li>
+        <% else %>
+          <li class="nav-item">
+            <%= link_to "Connexion", new_user_session_path, class: "nav-link" %>
+          </li>
+          <li class="nav-item ms-2">
+            <%= link_to "Inscription", new_user_registration_path, class: "btn btn-warning btn-sm px-3 text-dark fw-bold" %>
+          </li>
+        <% end %>
+      </ul>
+    </div>
+  </div>
+</nav>
