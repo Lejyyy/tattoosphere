@@ -3,28 +3,24 @@ class TatoueurPolicy < ApplicationPolicy
   def show?   = true
 
   def new?
-    user.tatoueur? && user.tatoueur.nil?
+    user.user? && user.tatoueur.nil?
   end
 
   def create?
-    user.tatoueur? && user.tatoueur.nil?
+    user.user? && user.tatoueur.nil?
   end
 
   def update?
-    user.tatoueur? && record.user == user
+    (user.tatoueur? && record.user == user) || user.admin?
   end
 
-  def destroy?
-    update? || user.admin?
-  end
+  def edit?    = update?
+  def destroy? = update?
 
-  def verification?
-    user.tatoueur? && record.user == user
-  end
-
-  def submit_verification?
-    verification?
-  end
+  def verification?        = update?
+  def submit_verification? = update?
+  def connect_paypal?      = update?
+  def paypal_callback?     = update?
 
   class Scope < ApplicationPolicy::Scope
     def resolve

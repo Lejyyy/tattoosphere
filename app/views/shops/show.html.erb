@@ -34,8 +34,8 @@
 <%= render "favorites/button", favoritable: @shop %>
 
 <% if user_signed_in? %>
-  <%= link_to "Contacter #{@shop.name}",
-      conversations_path(shop_id: @shop.id),
-      data: { turbo_method: :post },
-      class: "hero-cta mt-3" %>
+  <%= button_to "✉️ Contacter",
+    conversations_path(shop_id: @shop.id),
+    method: :post,
+    class: "hero-cta" %>
 <% end %>

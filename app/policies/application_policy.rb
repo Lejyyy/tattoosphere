@@ -2,6 +2,7 @@ class ApplicationPolicy
   attr_reader :user, :record
 
   def initialize(user, record)
+    raise Pundit::NotAuthorizedError, "Vous devez être connecté." unless user
     @user   = user
     @record = record
   end
@@ -14,17 +15,8 @@ class ApplicationPolicy
   def edit?    = update?
   def destroy? = false
 
-  # ================================
-  # HELPERS
-  # ================================
-
-  def user_connected?
-    user.present?
-  end
-
-  def admin?
-    user&.admin?
-  end
+  def user_connected? = user.present?
+  def admin?          = user&.admin?
 
   class Scope
     attr_reader :user, :scope

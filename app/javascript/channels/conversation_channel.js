@@ -46,10 +46,21 @@ const initConversationChannel = (conversationId) => {
 const buildMessageHTML = (data) => {
   const isOwn = data.sender === document.getElementById("messages").dataset.currentUserNickname
 
+  let attachmentHTML = ""
+  if (data.attachment_url) {
+    const isImage = data.attachment_name?.match(/\.(png|jpg|jpeg)$/i)
+    if (isImage) {
+      attachmentHTML = `<div class="mt-2"><img src="${data.attachment_url}" style="max-width:250px;max-height:250px;object-fit:cover;border:1px solid #2A2A2A;" /></div>`
+    } else {
+      attachmentHTML = `<div class="mt-2"><a href="${data.attachment_url}" target="_blank" style="color:#F5C500;font-size:0.85rem;">📎 ${escapeHTML(data.attachment_name)}</a></div>`
+    }
+  }
+
   return `
     <div class="message ${isOwn ? "message--own" : "message--other"}" id="message-${data.message_id}">
       <div class="message__bubble">
-        <p class="message__content mb-0">${escapeHTML(data.message)}</p>
+        ${data.message ? `<p class="message__content mb-0">${escapeHTML(data.message)}</p>` : ""}
+        ${attachmentHTML}
       </div>
       <span class="message__meta text-secondary">${data.sender} · ${data.created_at}</span>
     </div>

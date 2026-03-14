@@ -10,7 +10,7 @@
           <div class="flex-grow-1 min-width-0">
             <div class="d-flex justify-content-between align-items-center">
               <span class="fw-semibold <%= unread > 0 ? 'text-warning' : '' %>">
-                <%= other&.nickname || other&.first_name || "Inconnu" %>
+                <%= other&.try(:nickname) || other&.try(:name) || other&.try(:first_name) || "Inconnu" %>
               </span>
               <span class="text-secondary small">
                 <%= last_message&.created_at&.strftime("%d/%m %H:%M") %>

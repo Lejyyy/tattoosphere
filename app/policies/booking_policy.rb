@@ -1,19 +1,10 @@
 class BookingPolicy < ApplicationPolicy
-  def index?  = true
-  def show?   = record.user == user || tatoueur_owns_booking? || user.admin?
-  def new?    = create?
-
-  def create?
-    user.user?
-  end
-
-  def update?
-    record.user == user || tatoueur_owns_booking? || user.admin?
-  end
-
-  def destroy?
-    (record.user == user && record.cancellable?) || user.admin?
-  end
+  def index?   = true
+  def new?     = create?
+  def show?    = record.user == user || tatoueur_owner? || shop_owner? || user.admin?
+  def create?  = user.user? || user.admin?
+  def update?  = tatoueur_owner? || shop_owner? || user.admin?
+  def destroy? = record.user == user || tatoueur_owner? || shop_owner? || user.admin?
 
   class Scope < ApplicationPolicy::Scope
     def resolve
@@ -21,6 +12,8 @@ class BookingPolicy < ApplicationPolicy
         scope.all
       elsif user.tatoueur?
         scope.where(user: user).or(scope.where(tatoueur: user.tatoueur))
+      elsif user.shop_owner?
+        scope.where(shop: user.shop)
       else
         scope.where(user: user)
       end
@@ -29,7 +22,11 @@ class BookingPolicy < ApplicationPolicy
 
   private
 
-  def tatoueur_owns_booking?
+  def tatoueur_owner?
     user.tatoueur? && user.tatoueur == record.tatoueur
+  end
+
+  def shop_owner?
+    user.shop_owner? && user.shop == record.shop
   end
 end

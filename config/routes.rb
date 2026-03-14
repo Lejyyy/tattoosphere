@@ -79,12 +79,16 @@ Rails.application.routes.draw do
   # ================================
   resources :favorites, only: [ :index ]
 
-  # ================================
-  # CONVERSATIONS & MESSAGES
-  # ================================
-  resources :conversations, only: [ :index, :show, :create ] do
-    resources :messages, only: [ :create ]
+# ================================
+# CONVERSATIONS & MESSAGES
+# ================================
+# Dans config/routes.rb, remplace le bloc conversations :
+resources :conversations, only: [ :index, :show, :create ] do
+  resources :messages, only: [ :create ]
+  member do
+    patch :mark_read
   end
+end
 
   # ================================
   # ACTION CABLE

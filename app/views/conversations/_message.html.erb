@@ -1,0 +1,27 @@
+<% is_own = message.user == current_user %>
+<div class="message <%= is_own ? "message--own" : "message--other" %>" id="message-<%= message.id %>">
+  <div class="message__bubble">
+    <% if message.content.present? %>
+      <p class="message__content mb-0"><%= message.content %></p>
+    <% end %>
+
+    <% if message.attachment.attached? %>
+      <div class="mt-2">
+        <% if message.attachment.image? %>
+          <%= image_tag rails_blob_path(message.attachment, only_path: true),
+              style: "max-width:250px;max-height:250px;object-fit:cover;border:1px solid #2A2A2A;",
+              class: "d-block" %>
+        <% else %>
+          <a href="<%= rails_blob_path(message.attachment, only_path: true) %>"
+             target="_blank"
+             style="color:#F5C500;font-size:0.85rem;display:flex;align-items:center;gap:0.5rem;">
+            📎 <%= message.attachment.filename %>
+          </a>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+  <span class="message__meta text-secondary">
+    <%= message.user.nickname || message.user.first_name %> · <%= message.created_at.strftime("%H:%M") %>
+  </span>
+</div>

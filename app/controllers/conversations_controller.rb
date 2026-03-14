@@ -18,17 +18,17 @@ class ConversationsController < ApplicationController
                  .update_all(read_at: Time.current)
   end
 
-  def create
-    recipient = find_recipient
-    if recipient.nil?
-      redirect_to root_path, alert: "Destinataire introuvable." and return
-    end
-    if recipient == current_user
-      redirect_to root_path, alert: "Vous ne pouvez pas vous envoyer un message." and return
-    end
-    @conversation = Conversation.find_or_create_between(current_user, recipient)
-    redirect_to conversation_path(@conversation)
+ def create
+  recipient = find_recipient
+  if recipient.nil?
+    redirect_to root_path, alert: "Destinataire introuvable." and return
   end
+  if recipient == current_user
+    redirect_to root_path, alert: "Vous ne pouvez pas vous envoyer un message." and return
+  end
+  @conversation = Conversation.find_or_create_between(current_user, recipient)
+  redirect_to conversation_path(@conversation)
+end
 
   def mark_read
     @conversation.messages
