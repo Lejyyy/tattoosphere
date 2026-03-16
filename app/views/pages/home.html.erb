@@ -1,41 +1,198 @@
 <%# ================================ %>
+<%# HERO %>
+<%# ================================ %>
+<section class="hero">
+  <div class="container position-relative">
+    <div class="row align-items-center">
+      <div class="col-lg-7">
+        <p style="font-family:'Barlow Condensed',sans-serif;font-size:0.9rem;font-weight:700;letter-spacing:0.2em;color:#F5C500;text-transform:uppercase;margin-bottom:1rem;">
+          La nouvelle maison du tatouage !
+        </p>
+        <h1 class="hero-title">
+          Trouve ton
+          <span>tatoueur.</span>
+        </h1>
+        <p class="hero-subtitle mt-4">
+          Découvre des artistes tatoués passionnés, réserve en ligne et rejoins une communauté qui vit pour l'encre.
+        </p>
+        <div class="d-flex flex-wrap gap-3 mt-5">
+          <%= link_to "Explorer les tatoueurs", tatoueurs_path, class: "hero-cta" %>
+          <%= link_to "Voir les shops", shops_path, class: "hero-cta-outline" %>
+        </div>
+
+        <%# Stats %>
+        <div class="d-flex gap-5 mt-5">
+          <div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:2.5rem;color:#F5C500;line-height:1;">
+              <%= Tatoueur.where(is_active: true).count %>+
+            </div>
+            <div class="text-secondary" style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.08em;">Tatoueurs</div>
+          </div>
+          <div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:2.5rem;color:#F5C500;line-height:1;">
+              <%= Shop.where(is_active: true).count %>+
+            </div>
+            <div class="text-secondary" style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.08em;">Shops</div>
+          </div>
+          <div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:2.5rem;color:#F5C500;line-height:1;">
+              <%= Booking.count %>+
+            </div>
+            <div class="text-secondary" style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.08em;">Réservations</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-decoration">INK</div>
+</section>
+
+<%# ================================ %>
+<%# SEARCH %>
+<%# ================================ %>
+<section style="background:#111;padding:3rem 0;border-top:1px solid #1A1A1A;border-bottom:1px solid #1A1A1A;">
+  <div class="container">
+
+    <%# Titre %>
+    <div class="text-center mb-4">
+      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:#fff;letter-spacing:0.05em;margin-bottom:0.25rem;">
+        Trouve ton artiste
+      </h2>
+      <p class="text-secondary" style="font-size:0.9rem;">Recherche par style, ville ou type</p>
+    </div>
+
+    <%# Toggle tabs %>
+    <div class="d-flex justify-content-center mb-4">
+      <div style="background:#1A1A1A;border:1px solid #2A2A2A;display:inline-flex;">
+        <button type="button" onclick="switchSearch('tatoueurs')" id="tab-tatoueurs"
+                style="background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:0.08em;padding:0.6rem 2rem;cursor:pointer;text-transform:uppercase;transition:all 0.2s;">
+          🖋️ Tatoueurs
+        </button>
+        <button type="button" onclick="switchSearch('shops')" id="tab-shops"
+                style="background:transparent;color:#666;border:none;font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:0.08em;padding:0.6rem 2rem;cursor:pointer;text-transform:uppercase;transition:all 0.2s;">
+          🏠 Shops
+        </button>
+      </div>
+    </div>
+
+    <%# Formulaire tatoueurs %>
+    <div id="search-tatoueurs">
+      <%= form_with url: tatoueurs_path, method: :get do |f| %>
+        <div style="background:#1A1A1A;border:1px solid #2A2A2A;display:flex;flex-wrap:wrap;overflow:hidden;max-width:800px;margin:0 auto;">
+          <div style="flex:1;min-width:180px;border-right:1px solid #2A2A2A;">
+            <%= f.select :style_id,
+                TattooStyle.all.map { |s| [s.name, s.id] },
+                { include_blank: "Tous les styles" },
+                style: "width:100%;background:transparent;border:none;color:#fff;padding:1rem 1.25rem;font-family:'Barlow Condensed',sans-serif;font-size:0.95rem;outline:none;appearance:none;cursor:pointer;" %>
+          </div>
+          <div style="flex:1;min-width:200px;border-right:1px solid #2A2A2A;">
+            <%= f.text_field :location,
+                placeholder: "Ville ou code postal...",
+                style: "width:100%;background:transparent;border:none;color:#fff;padding:1rem 1.25rem;font-family:'Barlow Condensed',sans-serif;font-size:0.95rem;outline:none;" %>
+          </div>
+          <%= f.submit "Rechercher →",
+              style: "background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:0.1em;padding:1rem 2rem;cursor:pointer;text-transform:uppercase;white-space:nowrap;transition:background 0.2s;" %>
+        </div>
+      <% end %>
+    </div>
+
+    <%# Formulaire shops %>
+    <div id="search-shops" style="display:none;">
+      <%= form_with url: shops_path, method: :get do |f| %>
+        <div style="background:#1A1A1A;border:1px solid #2A2A2A;display:flex;flex-wrap:wrap;overflow:hidden;max-width:800px;margin:0 auto;">
+          <div style="flex:1;min-width:200px;border-right:1px solid #2A2A2A;">
+            <%= f.text_field :location,
+                placeholder: "Ville ou code postal...",
+                style: "width:100%;background:transparent;border:none;color:#fff;padding:1rem 1.25rem;font-family:'Barlow Condensed',sans-serif;font-size:0.95rem;outline:none;" %>
+          </div>
+          <%= f.submit "Rechercher →",
+              style: "background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:0.1em;padding:1rem 2rem;cursor:pointer;text-transform:uppercase;white-space:nowrap;transition:background 0.2s;" %>
+        </div>
+      <% end %>
+    </div>
+
+  </div>
+</section>
+
+<script>
+  function switchSearch(type) {
+    ["tatoueurs", "shops"].forEach(t => {
+      const tab  = document.getElementById("tab-" + t)
+      const form = document.getElementById("search-" + t)
+      if (t === type) {
+        tab.style.background = "#F5C500"
+        tab.style.color      = "#000"
+        form.style.display   = "block"
+      } else {
+        tab.style.background = "transparent"
+        tab.style.color      = "#666"
+        form.style.display   = "none"
+      }
+    })
+  }
+</script>
+<%# ================================ %>
 <%# TATOUEURS EN VEDETTE %>
 <%# ================================ %>
-<section class="py-5">
+<section class="section">
   <div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2 class="h4 mb-0">Tatoueurs en vedette</h2>
-      <%= link_to "Voir tous →", tatoueurs_path, class: "text-warning text-decoration-none small" %>
+    <div class="d-flex justify-content-between align-items-end mb-4">
+      <div>
+        <h2 class="section-title mb-1">Tatoueurs en vedette</h2>
+        <p class="text-secondary mb-0" style="padding-left:1.25rem;">Les artistes les mieux notés du moment</p>
+      </div>
+      <%= link_to "Voir tous →", tatoueurs_path, class: "card-link mb-0" %>
     </div>
-    <div class="row g-4">
+
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-4 g-4">
       <% @tatoueurs.each do |tatoueur| %>
-        <div class="col-md-3">
-          <div class="card border-secondary h-100">
-            <%# Avatar %>
+        <div class="col">
+          <div class="card-dark h-100 d-flex flex-column">
+
+            <%# Photo %>
             <% if tatoueur.avatar.attached? %>
-              <%= image_tag tatoueur.avatar, class: "card-img-top", style: "height: 200px; object-fit: cover;" %>
+              <%= image_tag tatoueur.avatar,
+                  style: "width:100%;height:200px;object-fit:cover;",
+                  alt: tatoueur.nickname %>
             <% else %>
-              <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 200px;">
-                <span class="text-muted fs-1"><%= tatoueur.nickname.first.upcase %></span>
+              <div class="card-img-placeholder" style="height:200px;">
+                <span style="font-family:'Bebas Neue',sans-serif;font-size:3rem;color:#2A2A2A;">
+                  <%= tatoueur.nickname.first.upcase %>
+                </span>
               </div>
             <% end %>
-            <div class="card-body">
+
+            <div class="card-body d-flex flex-column flex-grow-1">
+              <%# Nom + badge %>
               <div class="d-flex align-items-center gap-2 mb-1">
-                <h3 class="h6 mb-0"><%= tatoueur.nickname %></h3>
+                <span class="card-name"><%= tatoueur.nickname %></span>
                 <%= render "tatoueurs/verified_badge", tatoueur: tatoueur %>
               </div>
-              <p class="text-secondary small mb-2">
+
+              <%# Note %>
+              <% reviews = tatoueur.reviews %>
+              <% if reviews.any? %>
+                <div class="mb-2" style="font-size:0.8rem;color:#F5C500;">
+                  ⭐ <%= reviews.average(:rating).to_f.round(1) %>
+                  <span class="text-secondary">(<%= reviews.count %>)</span>
+                </div>
+              <% end %>
+
+              <%# Styles %>
+              <p class="card-meta mb-2">
                 <%= tatoueur.tattoo_styles.map(&:name).join(", ").presence || "Style non renseigné" %>
               </p>
+
+              <%# Shop %>
               <% if tatoueur.shops.any? %>
-                <p class="text-secondary small mb-0">
-                  <%= tatoueur.shops.first.name %>
-                </p>
+                <p class="card-meta mb-0">🏠 <%= tatoueur.shops.first.name %></p>
               <% end %>
+
+              <div class="mt-auto pt-3">
+                <%= link_to "Voir le profil →", tatoueur_path(tatoueur), class: "card-link mb-0" %>
+              </div>
             </div>
-            <div class="card-footer border-secondary">
-              <%= link_to "Voir le profil", tatoueur_path(tatoueur), class: "btn btn-outline-warning btn-sm w-100" %>
-            </div>
+
           </div>
         </div>
       <% end %>
@@ -44,32 +201,70 @@
 </section>
 
 <%# ================================ %>
+<%# BANNIÈRE CTA %>
+<%# ================================ %>
+<section style="background:#F5C500;padding:4rem 0;">
+  <div class="container text-center">
+    <h2 style="font-family:'Bebas Neue',sans-serif;font-size:3rem;color:#0D0D0D;letter-spacing:0.05em;margin-bottom:1rem;">
+      Tu es tatoueur ou shop owner ?
+    </h2>
+    <p style="color:#0D0D0D;opacity:0.7;max-width:500px;margin:0 auto 2rem;">
+      Rejoins Tattoosphere et développe ta clientèle. Crée ton profil, gère tes réservations et mets en valeur ton travail.
+    </p>
+    <div class="d-flex justify-content-center gap-3 flex-wrap">
+      <% if user_signed_in? %>
+        <%= link_to "Mon dashboard", dashboard_path,
+            style: "background:#0D0D0D;color:#F5C500;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:0.1em;padding:0.7rem 2rem;text-transform:uppercase;" %>
+      <% else %>
+        <%= link_to "Créer mon compte", new_user_registration_path,
+            style: "background:#0D0D0D;color:#F5C500;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:0.1em;padding:0.7rem 2rem;text-transform:uppercase;" %>
+        <%= link_to "Se connecter", new_user_session_path,
+            style: "background:transparent;color:#0D0D0D;border:2px solid #0D0D0D;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:0.1em;padding:0.7rem 2rem;text-transform:uppercase;" %>
+      <% end %>
+    </div>
+  </div>
+</section>
+
+<%# ================================ %>
 <%# SHOPS EN VEDETTE %>
 <%# ================================ %>
-<section class="py-5" style="background-color: #1e1e1e;">
+<section class="section">
   <div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2 class="h4 mb-0">Shops à découvrir</h2>
-      <%= link_to "Voir tous →", shops_path, class: "text-warning text-decoration-none small" %>
+    <div class="d-flex justify-content-between align-items-end mb-4">
+      <div>
+        <h2 class="section-title mb-1">Shops à découvrir</h2>
+        <p class="text-secondary mb-0" style="padding-left:1.25rem;">Les meilleurs studios près de chez toi</p>
+      </div>
+      <%= link_to "Voir tous →", shops_path, class: "card-link mb-0" %>
     </div>
-    <div class="row g-4">
+
+    <div class="row row-cols-1 row-cols-md-3 g-4">
       <% @shops.each do |shop| %>
-        <div class="col-md-4">
-          <div class="card border-secondary h-100">
+        <div class="col">
+          <div class="card-dark h-100 d-flex flex-column">
+
+            <%# Cover %>
             <% if shop.cover.attached? %>
-              <%= image_tag shop.cover, class: "card-img-top", style: "height: 180px; object-fit: cover;" %>
+              <%= image_tag shop.cover,
+                  style: "width:100%;height:180px;object-fit:cover;",
+                  alt: shop.name %>
             <% else %>
-              <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" style="height: 180px;">
-                <span class="text-muted small">Pas de photo</span>
-              </div>
+              <div class="card-img-placeholder" style="height:180px;">🏠</div>
             <% end %>
-            <div class="card-body">
-              <h3 class="h6 mb-1"><%= shop.name %></h3>
-              <p class="text-secondary small mb-0"><%= shop.address %></p>
+
+            <div class="card-body d-flex flex-column flex-grow-1">
+              <span class="card-name mb-1"><%= shop.name %></span>
+              <p class="card-meta mb-2">📍 <%= shop.address %></p>
+              <% if shop.tatoueurs.any? %>
+                <p class="card-meta mb-0">
+                  🖋️ <%= shop.tatoueurs.count %> tatoueur(s)
+                </p>
+              <% end %>
+              <div class="mt-auto pt-3">
+                <%= link_to "Voir le shop →", shop_path(shop), class: "card-link mb-0" %>
+              </div>
             </div>
-            <div class="card-footer border-secondary">
-              <%= link_to "Voir le shop", shop_path(shop), class: "btn btn-outline-warning btn-sm w-100" %>
-            </div>
+
           </div>
         </div>
       <% end %>
@@ -80,39 +275,78 @@
 <%# ================================ %>
 <%# ÉVÉNEMENTS À VENIR %>
 <%# ================================ %>
-<section class="py-5">
-  <div class="container">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2 class="h4 mb-0">Événements à venir</h2>
-      <%= link_to "Voir tous →", events_path, class: "text-warning text-decoration-none small" %>
-    </div>
-    <% if @events.any? %>
-      <div class="row g-4">
+<% if @events.any? %>
+  <section class="section" style="background:#1A1A1A;">
+    <div class="container">
+      <div class="d-flex justify-content-between align-items-end mb-4">
+        <div>
+          <h2 class="section-title mb-1">Événements à venir</h2>
+          <p class="text-secondary mb-0" style="padding-left:1.25rem;">Conventions, flash days et meet-ups</p>
+        </div>
+        <%= link_to "Voir tous →", events_path, class: "card-link mb-0" %>
+      </div>
+
+      <div class="row row-cols-1 row-cols-md-3 g-4">
         <% @events.each do |event| %>
-          <div class="col-md-4">
-            <div class="card border-secondary h-100">
-              <% if event.banner.attached? %>
-                <%= image_tag event.banner, class: "card-img-top", style: "height: 160px; object-fit: cover;" %>
-              <% end %>
-              <div class="card-body">
-                <h3 class="h6 mb-1"><%= event.name %></h3>
-                <p class="text-secondary small mb-1">
-                  <%= event.start_date&.strftime("%d/%m/%Y") %>
-                  <% if event.location.present? %>
-                    — <%= event.location %>
+          <div class="col">
+            <div class="card-dark h-100 d-flex flex-column" style="border-left:4px solid #F5C500;">
+
+              <div class="card-body d-flex flex-column flex-grow-1">
+                <%# Date badge %>
+                <div style="font-family:'Bebas Neue',sans-serif;font-size:0.9rem;color:#F5C500;letter-spacing:0.08em;margin-bottom:0.5rem;">
+                  📅 <%= event.start_date&.strftime("%d %B %Y — %Hh%M").upcase %>
+                </div>
+
+                <span class="card-name mb-2"><%= event.name %></span>
+
+                <% if event.location.present? %>
+                  <p class="card-meta mb-2">📍 <%= event.location %></p>
+                <% end %>
+
+                <% if event.description.present? %>
+                  <p class="text-secondary mb-3" style="font-size:0.85rem;line-height:1.6;">
+                    <%= event.description.truncate(90) %>
+                  </p>
+                <% end %>
+
+                <%# Organisateur %>
+                <div class="mb-3">
+                  <% if event.tatoueur.present? %>
+                    <span class="card-badge">🖋️ <%= event.tatoueur.nickname %></span>
                   <% end %>
-                </p>
-                <p class="text-secondary small mb-0"><%= event.description&.truncate(80) %></p>
+                  <% if event.shop.present? %>
+                    <span class="card-badge">🏠 <%= event.shop.name %></span>
+                  <% end %>
+                </div>
+
+                <div class="mt-auto">
+                  <%= link_to "En savoir plus →", event_path(event), class: "card-link mb-0" %>
+                </div>
               </div>
-              <div class="card-footer border-secondary">
-                <%= link_to "En savoir plus", event_path(event), class: "btn btn-outline-warning btn-sm w-100" %>
-              </div>
+
             </div>
           </div>
         <% end %>
       </div>
-    <% else %>
-      <p class="text-secondary">Aucun événement à venir pour le moment.</p>
-    <% end %>
+    </div>
+  </section>
+<% end %>
+
+<%# ================================ %>
+<%# STYLES DE TATOUAGE %>
+<%# ================================ %>
+<section class="section">
+  <div class="container">
+    <h2 class="section-title mb-4">Explorer par style</h2>
+    <div class="d-flex flex-wrap gap-3">
+      <% TattooStyle.all.each do |style| %>
+        <%= link_to tatoueurs_path(style_id: style.id),
+            style: "background:#1A1A1A;border:1px solid #2A2A2A;color:#fff;padding:0.6rem 1.5rem;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:0.05em;text-transform:uppercase;transition:all 0.2s;",
+            onmouseover: "this.style.borderColor='#F5C500';this.style.color='#F5C500'",
+            onmouseout:  "this.style.borderColor='#2A2A2A';this.style.color='#fff'" do %>
+          <%= style.name %>
+        <% end %>
+      <% end %>
+    </div>
   </div>
 </section>

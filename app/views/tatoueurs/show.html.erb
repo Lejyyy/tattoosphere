@@ -1,7 +1,7 @@
 <% content_for :title, @tatoueur.nickname %>
 
 <%# ================================ %>
-<%# HERO — Profil %>
+<%# HERO %>
 <%# ================================ %>
 <section class="section pb-0">
   <div class="container">
@@ -19,14 +19,13 @@
         <% end %>
       </div>
 
-      <%# Infos principales %>
+      <%# Infos %>
       <div class="col">
         <div class="d-flex align-items-center gap-3 flex-wrap mb-1">
           <h1 class="mb-0" style="font-size:3rem;"><%= @tatoueur.nickname %></h1>
           <%= render "verified_badge", tatoueur: @tatoueur %>
         </div>
 
-        <%# Localisation %>
         <p class="text-secondary mb-2">
           📍
           <% if @tatoueur.address.present? %>
@@ -38,7 +37,6 @@
           <% end %>
         </p>
 
-        <%# Shop rattaché %>
         <% if @tatoueur.shops.any? %>
           <p class="mb-2">
             🏠 Travaille chez
@@ -53,23 +51,19 @@
         <%# Stats %>
         <div class="d-flex gap-4 my-3">
           <div class="text-center">
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:#F5C500;">
-              <%= @tatoueur.portfolio_items.count %>
-            </div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:#F5C500;"><%= @tatoueur.portfolio_items.count %></div>
             <div class="text-secondary" style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em;">Réalisations</div>
           </div>
           <div class="text-center">
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:#F5C500;">
-              <%= @reviews.count %>
-            </div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:#F5C500;"><%= @reviews.count %></div>
             <div class="text-secondary" style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em;">Avis</div>
           </div>
           <% if @reviews.any? %>
             <div class="text-center">
               <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:#F5C500;">
-                <%= number_with_precision(@reviews.average(:rating), precision: 1) %> ⭐
+                <%= number_with_precision(@reviews.average(:rating), precision: 1) %>
               </div>
-              <div class="text-secondary" style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em;">Note moyenne</div>
+              <div class="text-secondary" style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em;">Note / 5</div>
             </div>
           <% end %>
         </div>
@@ -84,114 +78,164 @@
         <%# Actions %>
         <div class="d-flex flex-wrap gap-2 align-items-center">
           <% if user_signed_in? %>
-            <%= link_to "✉️ Contacter",
-                conversations_path(tatoueur_id: @tatoueur.id),
-                data: { turbo_method: :post },
-                class: "hero-cta" %>
-            <% if @tatoueur.shops.any? %>
-              <%= link_to "📅 Réserver",
-                  new_shop_booking_path(@tatoueur.shops.first),
-                  class: "hero-cta-outline" %>
-            <% else %>
-              <span class="hero-cta disabled">Réservation indisponible</span>
+            <% unless current_user.tatoueur == @tatoueur %>
+              <%= link_to "✉️ Contacter",
+                  conversations_path(tatoueur_id: @tatoueur.id),
+                  data: { turbo_method: :post },
+                  class: "hero-cta" %>
+              <% if @tatoueur.shops.any? %>
+                <%= link_to "📅 Réserver",
+                    new_shop_booking_path(@tatoueur.shops.first),
+                    class: "hero-cta-outline" %>
+              <% else %>
+                <span class="hero-cta disabled">Réservation indisponible</span>
+              <% end %>
             <% end %>
           <% else %>
             <%= link_to "Connectez-vous pour contacter", new_user_session_path, class: "hero-cta" %>
           <% end %>
 
-          <%= render "favorites/button", favoritable: @tatoueur %>
+          <% unless current_user&.tatoueur == @tatoueur %>
+            <%= render "favorites/button", favoritable: @tatoueur %>
+          <% end %>
 
-          <%# Actions propriétaire %>
           <% if user_signed_in? && policy(@tatoueur).update? %>
             <%= link_to "Modifier", edit_tatoueur_path(@tatoueur), class: "btn btn-outline-primary btn-sm" %>
           <% end %>
           <% if current_user&.tatoueur == @tatoueur && !@tatoueur.verified? %>
-            <%= link_to "Faire vérifier mon profil",
-                verification_tatoueur_path(@tatoueur),
-                class: "btn btn-outline-warning btn-sm" %>
+            <%= link_to "Faire vérifier mon profil", verification_tatoueur_path(@tatoueur), class: "btn btn-outline-warning btn-sm" %>
           <% end %>
           <% if current_user&.tatoueur == @tatoueur %>
             <% if @tatoueur.paypal_onboarded? %>
               <span class="badge bg-success">✅ PayPal connecté</span>
             <% else %>
-              <%= link_to "Connecter PayPal",
-                  connect_paypal_tatoueur_path(@tatoueur),
-                  class: "btn btn-warning btn-sm" %>
+              <%= link_to "Connecter PayPal", connect_paypal_tatoueur_path(@tatoueur), class: "btn btn-warning btn-sm" %>
             <% end %>
           <% end %>
         </div>
+
+        <% if @tatoueur.description.present? %>
+          <div class="mt-4 pt-4" style="border-top:1px solid #2A2A2A;">
+            <p class="text-secondary" style="max-width:700px;line-height:1.8;"><%= @tatoueur.description %></p>
+          </div>
+        <% end %>
       </div>
     </div>
-
-    <%# Description %>
-    <% if @tatoueur.description.present? %>
-      <div class="mt-4 pt-4" style="border-top:1px solid #2A2A2A;">
-        <p class="text-secondary" style="max-width:700px;line-height:1.8;">
-          <%= @tatoueur.description %>
-        </p>
-      </div>
-    <% end %>
   </div>
 </section>
 
-<hr style="border-color:#2A2A2A;margin:3rem 0;">
+<hr style="border-color:#2A2A2A;margin:2rem 0 0;">
 
 <%# ================================ %>
-<%# PORTFOLIOS %>
+<%# TABS %>
 <%# ================================ %>
-<% if @portfolios.any? %>
-  <section class="section pt-0">
-    <div class="container">
-      <h2 class="section-title mb-4">Portfolios</h2>
-      <div class="row g-4">
-        <% @portfolios.each do |portfolio| %>
-          <div class="col-md-4">
-            <div class="card-dark h-100">
-              <div class="card-img-placeholder">🖼️</div>
-              <div class="card-body">
-                <p class="card-name"><%= portfolio.name %></p>
-                <p class="card-meta"><%= portfolio.description&.truncate(80) %></p>
-                <p class="card-meta"><%= portfolio.portfolio_items.count %> réalisation(s)</p>
-                <%= link_to "Voir le portfolio →",
-                    tatoueur_portfolio_path(@tatoueur, portfolio),
-                    class: "card-link" %>
-              </div>
+<div class="container">
+
+  <%# Navigation tabs %>
+  <div style="display:flex;border-bottom:1px solid #2A2A2A;margin-bottom:2rem;">
+    <% tabs = [] %>
+    <% tabs << { key: "portfolio", label: "Portfolio", count: @tatoueur.portfolio_items.count } if @portfolios.any? || @tatoueur.photos.attached? %>
+    <% tabs << { key: "disponibilites", label: "Disponibilités", count: nil } %>
+    <% tabs << { key: "evenements", label: "Événements", count: @events.count } if @events.any? %>
+    <% tabs << { key: "avis", label: "Avis", count: @reviews.count } %>
+
+    <% tabs.each_with_index do |tab, i| %>
+      <button onclick="showTab('<%= tab[:key] %>')"
+              id="tab-btn-<%= tab[:key] %>"
+              style="background:transparent;border:none;color:<%= i == 0 ? '#F5C500' : '#888' %>;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:0.05em;padding:1rem 1.5rem;cursor:pointer;border-bottom:<%= i == 0 ? '2px solid #F5C500' : '2px solid transparent' %>;margin-bottom:-1px;transition:all 0.2s;">
+        <%= tab[:label] %>
+        <% if tab[:count].present? && tab[:count] > 0 %>
+          <span style="font-size:0.8rem;color:#666;margin-left:0.25rem;">(<%= tab[:count] %>)</span>
+        <% end %>
+      </button>
+    <% end %>
+  </div>
+
+  <%# ======= TAB PORTFOLIO ======= %>
+  <% if @portfolios.any? || @tatoueur.photos.attached? %>
+    <div id="tab-portfolio" class="tab-content">
+
+      <%# Portfolios %>
+      <% if @portfolios.any? %>
+        <h2 class="section-title mb-4">Portfolios</h2>
+        <div class="row g-4 mb-5">
+          <% @portfolios.each do |portfolio| %>
+            <% cover = portfolio.portfolio_items.joins(:images_attachments).first %>
+            <div class="col-md-4">
+              <%= link_to tatoueur_portfolio_path(@tatoueur, portfolio), style: "text-decoration:none;" do %>
+                <div style="position:relative;overflow:hidden;background:#1A1A1A;border:1px solid #2A2A2A;transition:border-color 0.2s;"
+                     onmouseover="this.style.borderColor='#F5C500'"
+                     onmouseout="this.style.borderColor='#2A2A2A'">
+                  <% first_item = portfolio.portfolio_items.first %>
+                  <% if first_item&.images&.attached? %>
+                    <%= image_tag first_item.images.first,
+                        style: "width:100%;height:220px;object-fit:cover;transition:transform 0.3s;",
+                        onmouseover: "this.style.transform='scale(1.05)'",
+                        onmouseout:  "this.style.transform='scale(1)'" %>
+                  <% else %>
+                    <div style="width:100%;height:220px;background:#1A1A1A;display:flex;align-items:center;justify-content:center;font-size:3rem;">🖼️</div>
+                  <% end %>
+                  <div style="padding:1rem;">
+                    <div style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:#fff;"><%= portfolio.name %></div>
+                    <div class="text-secondary" style="font-size:0.85rem;"><%= portfolio.portfolio_items.count %> réalisation(s)</div>
+                  </div>
+                </div>
+              <% end %>
             </div>
+          <% end %>
+        </div>
+      <% end %>
+
+      <%# Flash tattoos %>
+      <% if @tatoueur.photos.attached? %>
+        <h2 class="section-title mb-4">Flash disponibles</h2>
+        <div class="row g-3">
+          <% @tatoueur.photos.each do |photo| %>
+            <div class="col-6 col-md-3" style="overflow:hidden;">
+              <%= image_tag photo,
+                  style: "width:100%;height:220px;object-fit:cover;border:1px solid #2A2A2A;transition:transform 0.3s,border-color 0.2s;",
+                  onmouseover: "this.style.transform='scale(1.04)';this.style.borderColor='#F5C500'",
+                  onmouseout:  "this.style.transform='scale(1)';this.style.borderColor='#2A2A2A'" %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+
+    </div>
+  <% end %>
+
+  <%# Réalisations sans portfolio %>
+<% if @items_sans_portfolio.any? %>
+  <h2 class="section-title mb-4 mt-5">Autres réalisations</h2>
+  <div class="row row-cols-2 row-cols-md-3 row-cols-lg-4 g-3">
+    <% @items_sans_portfolio.each do |item| %>
+      <div style="overflow:hidden;">
+        <% if item.images.attached? %>
+          <div style="position:relative;overflow:hidden;">
+            <%= image_tag item.images.first,
+                style: "width:100%;height:220px;object-fit:cover;border:1px solid #2A2A2A;transition:transform 0.3s,border-color 0.2s;",
+                onmouseover: "this.style.transform='scale(1.05)';this.style.borderColor='#F5C500'",
+                onmouseout:  "this.style.transform='scale(1)';this.style.borderColor='#2A2A2A'" %>
+            <% if item.tattoo_styles.any? %>
+              <div style="position:absolute;bottom:0;left:0;right:0;background:linear-gradient(to top,rgba(0,0,0,0.8),transparent);padding:0.75rem;">
+                <% item.tattoo_styles.each do |style| %>
+                  <span style="background:rgba(245,197,0,0.2);color:#F5C500;font-size:0.7rem;padding:0.15rem 0.5rem;margin-right:0.25rem;text-transform:uppercase;">
+                    <%= style.name %>
+                  </span>
+                <% end %>
+              </div>
+            <% end %>
           </div>
+        <% else %>
+          <div style="width:100%;height:220px;background:#1A1A1A;border:1px solid #2A2A2A;display:flex;align-items:center;justify-content:center;font-size:2rem;">🎨</div>
         <% end %>
       </div>
-    </div>
-  </section>
-  <hr style="border-color:#2A2A2A;margin:3rem 0;">
+    <% end %>
+  </div>
 <% end %>
 
-<%# ================================ %>
-<%# FLASH TATTOOS (photos du tatoueur) %>
-<%# ================================ %>
-<% if @tatoueur.photos.attached? %>
-  <section class="section pt-0">
-    <div class="container">
-      <h2 class="section-title mb-4">Flash disponibles</h2>
-      <div class="row g-3">
-        <% @tatoueur.photos.each do |photo| %>
-          <div class="col-6 col-md-3">
-            <%= image_tag photo,
-                style: "width:100%;height:220px;object-fit:cover;border:1px solid #2A2A2A;transition:border-color 0.2s;",
-                onmouseover: "this.style.borderColor='#F5C500'",
-                onmouseout:  "this.style.borderColor='#2A2A2A'" %>
-          </div>
-        <% end %>
-      </div>
-    </div>
-  </section>
-  <hr style="border-color:#2A2A2A;margin:3rem 0;">
-<% end %>
-
-<%# ================================ %>
-<%# DISPONIBILITÉS %>
-<%# ================================ %>
-<section class="section pt-0">
-  <div class="container">
+  <%# ======= TAB DISPONIBILITÉS ======= %>
+  <div id="tab-disponibilites" class="tab-content" style="display:none;">
     <h2 class="section-title mb-4">Disponibilités</h2>
     <% availabilities = @tatoueur.availabilities %>
     <% if availabilities.any? %>
@@ -200,30 +244,20 @@
         <% availabilities.order(:day_of_week).each do |a| %>
           <div class="col-6 col-md-3">
             <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1rem;">
-              <div style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:#F5C500;">
-                <%= days[a.day_of_week] %>
-              </div>
-              <div class="text-secondary" style="font-size:0.9rem;">
-                <%= a.start_time&.strftime("%Hh%M") %> — <%= a.end_time&.strftime("%Hh%M") %>
-              </div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:#F5C500;"><%= days[a.day_of_week] %></div>
+              <div class="text-secondary" style="font-size:0.9rem;"><%= a.start_time&.strftime("%Hh%M") %> — <%= a.end_time&.strftime("%Hh%M") %></div>
             </div>
           </div>
         <% end %>
       </div>
     <% else %>
-      <p class="text-secondary">Aucune disponibilité renseignée pour le moment.</p>
+      <p class="text-secondary">Aucune disponibilité renseignée.</p>
     <% end %>
   </div>
-</section>
 
-<hr style="border-color:#2A2A2A;margin:3rem 0;">
-
-<%# ================================ %>
-<%# ÉVÉNEMENTS À VENIR %>
-<%# ================================ %>
-<% if @events.any? %>
-  <section class="section pt-0">
-    <div class="container">
+  <%# ======= TAB ÉVÉNEMENTS ======= %>
+  <% if @events.any? %>
+    <div id="tab-evenements" class="tab-content" style="display:none;">
       <h2 class="section-title mb-4">Événements à venir</h2>
       <% @events.each do |event| %>
         <div class="event-item">
@@ -231,50 +265,64 @@
           <div class="event-name"><%= event.name %></div>
           <div class="event-location">📍 <%= event.location %></div>
           <% if event.description.present? %>
-            <p class="text-secondary mt-2 mb-0" style="font-size:0.9rem;">
-              <%= event.description.truncate(120) %>
-            </p>
+            <p class="text-secondary mt-2 mb-0" style="font-size:0.9rem;"><%= event.description.truncate(120) %></p>
           <% end %>
         </div>
       <% end %>
     </div>
-  </section>
-  <hr style="border-color:#2A2A2A;margin:3rem 0;">
-<% end %>
+  <% end %>
 
-<%# ================================ %>
-<%# AVIS %>
-<%# ================================ %>
-<section class="section pt-0">
-  <div class="container">
-    <h2 class="section-title mb-4">
-      Avis
-      <% if @reviews.any? %>
-        <span style="font-size:1.5rem;color:#fff;">
-          — <%= number_with_precision(@reviews.average(:rating), precision: 1) %> / 5 ⭐
-        </span>
-      <% end %>
-    </h2>
-
+  <%# ======= TAB AVIS ======= %>
+  <div id="tab-avis" class="tab-content" style="display:none;">
     <% if @reviews.any? %>
+      <div class="d-flex align-items-center gap-3 mb-4">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:3rem;color:#F5C500;line-height:1;">
+          <%= number_with_precision(@reviews.average(:rating), precision: 1) %>
+        </div>
+        <div>
+          <div style="display:flex;gap:0.2rem;margin-bottom:0.25rem;">
+            <% avg = @reviews.average(:rating).to_f %>
+            <% 5.times do |i| %>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="<%= i < avg.floor ? '#F5C500' : (i < avg ? 'url(#half)' : 'none') %>" stroke="#F5C500" stroke-width="2">
+                <defs>
+                  <linearGradient id="half">
+                    <stop offset="50%" stop-color="#F5C500"/>
+                    <stop offset="50%" stop-color="transparent"/>
+                  </linearGradient>
+                </defs>
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
+            <% end %>
+          </div>
+          <div class="text-secondary" style="font-size:0.85rem;"><%= @reviews.count %> avis</div>
+        </div>
+      </div>
+
       <div class="row g-4">
         <% @reviews.each do |review| %>
           <div class="col-md-6">
             <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1.5rem;">
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <span style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:#F5C500;">
-                  <%= review.user.nickname %>
-                </span>
+              <div class="d-flex justify-content-between align-items-start mb-2">
+                <div>
+                  <span style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:#F5C500;">
+                    <%= review.user.nickname %>
+                  </span>
+                  <div style="display:flex;gap:0.15rem;margin-top:0.25rem;">
+                    <% 5.times do |i| %>
+                      <svg width="14" height="14" viewBox="0 0 24 24"
+                           fill="<%= i < review.rating ? '#F5C500' : 'none' %>"
+                           stroke="<%= i < review.rating ? '#F5C500' : '#444' %>"
+                           stroke-width="2">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                      </svg>
+                    <% end %>
+                  </div>
+                </div>
                 <span class="text-secondary" style="font-size:0.8rem;">
                   <%= review.created_at.strftime("%d/%m/%Y") %>
                 </span>
               </div>
-              <div class="mb-2">
-                <% review.rating.times do %>⭐<% end %>
-              </div>
-              <p class="text-secondary mb-0" style="line-height:1.6;">
-                <%= review.comment %>
-              </p>
+              <p class="text-secondary mb-0" style="line-height:1.6;"><%= review.comment %></p>
             </div>
           </div>
         <% end %>
@@ -283,4 +331,26 @@
       <p class="text-secondary">Aucun avis pour le moment.</p>
     <% end %>
   </div>
-</section>
+
+</div>
+
+<script>
+  const allTabs = ["portfolio", "disponibilites", "evenements", "avis"]
+
+  function showTab(key) {
+    allTabs.forEach(t => {
+      const content = document.getElementById(`tab-${t}`)
+      const btn     = document.getElementById(`tab-btn-${t}`)
+      if (!content || !btn) return
+      if (t === key) {
+        content.style.display = "block"
+        btn.style.color        = "#F5C500"
+        btn.style.borderBottom = "2px solid #F5C500"
+      } else {
+        content.style.display = "none"
+        btn.style.color        = "#888"
+        btn.style.borderBottom = "2px solid transparent"
+      }
+    })
+  }
+</script>

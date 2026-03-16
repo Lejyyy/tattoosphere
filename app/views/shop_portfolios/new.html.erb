@@ -1,0 +1,65 @@
+<div class="container py-5" style="max-width:580px;">
+  <div class="mb-5">
+    <%= link_to "← Retour", shop_path(@shop), class: "btn btn-outline-secondary btn-sm mb-3" %>
+    <h1 style="font-size:2.5rem;">
+      Créer un <span class="text-yellow">portfolio</span>
+    </h1>
+    <p class="text-secondary">Crée un portfolio au nom d'un tatoueur de ton équipe.</p>
+  </div>
+
+  <% if @portfolio.errors.any? %>
+    <div class="alert alert-danger mb-4">
+      <% @portfolio.errors.full_messages.each do |msg| %>
+        <div>⚠️ <%= msg %></div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%= form_with model: [@shop, @portfolio], url: shop_portfolios_path(@shop) do |f| %>
+
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;padding:2rem;margin-bottom:1.5rem;">
+      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:#F5C500;border-left:4px solid #F5C500;padding-left:0.75rem;margin-bottom:1.5rem;">
+        Informations
+      </h2>
+
+      <%# Tatoueur concerné %>
+      <div class="mb-4">
+        <label style="display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;">
+          Tatoueur
+        </label>
+        <%= select_tag "portfolio[tatoueur_id]",
+            options_from_collection_for_select(@tatoueurs, :id, :nickname),
+            include_blank: "Choisir un tatoueur...",
+            style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;outline:none;" %>
+      </div>
+
+      <%# Nom %>
+      <div class="mb-4">
+        <%= f.label :name, "Nom du portfolio",
+            style: "display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;" %>
+        <%= f.text_field :name,
+            placeholder: "Ex : Old School, Réalisme, Flash...",
+            style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;outline:none;",
+            onfocus: "this.style.borderColor='#F5C500'",
+            onblur:  "this.style.borderColor='#2A2A2A'" %>
+      </div>
+
+      <%# Description %>
+      <div>
+        <%= f.label :description, "Description",
+            style: "display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;" %>
+        <%= f.text_area :description,
+            rows: 3,
+            placeholder: "Décris le style ou le contenu de ce portfolio...",
+            style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;outline:none;resize:vertical;",
+            onfocus: "this.style.borderColor='#F5C500'",
+            onblur:  "this.style.borderColor='#2A2A2A'" %>
+      </div>
+    </div>
+
+    <%= f.submit "Créer le portfolio",
+        style: "width:100%;background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:0.1em;padding:1rem;cursor:pointer;text-transform:uppercase;",
+        onmouseover: "this.style.background='#d4a800'",
+        onmouseout:  "this.style.background='#F5C500'" %>
+  <% end %>
+</div>

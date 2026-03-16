@@ -1,41 +1,233 @@
-<h1><%= @shop.name %></h1>
-<p><strong>Adresse :</strong> <%= @shop.address %></p>
-<p><strong>Email :</strong> <%= @shop.email %></p>
-<p><strong>Téléphone :</strong> <%= @shop.phone %></p>
-<p><strong>Horaires :</strong> <%= @shop.open_hours %></p>
-<p><%= @shop.description %></p>
+<%# ================================ %>
+<%# HERO — Profil Shop %>
+<%# ================================ %>
+<section style="position:relative;min-height:420px;display:flex;align-items:flex-end;overflow:hidden;">
+  <% if @shop.cover.attached? %>
+    <div style="position:absolute;top:0;left:0;right:0;bottom:0;background-image:url('<%= url_for(@shop.cover) %>');background-size:cover;background-position:center;"></div>
+    <div style="position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(13,13,13,0.95) 100%);"></div>
+  <% else %>
+    <div style="position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,#1A1A1A 0%,#0D0D0D 100%);"></div>
+  <% end %>
 
-<h2>Tatoueurs</h2>
-<% @shop.tatoueurs.each do |t| %>
-  <p><%= link_to t.nickname, tatoueur_path(t) %></p>
-<% end %>
+  <div class="container position-relative py-5">
+    <div class="row align-items-end g-4">
 
-<h2>Événements</h2>
-<% @shop.events.each do |e| %>
-  <p><%= link_to e.name, event_path(e) %> — <%= e.start_date.strftime("%d/%m/%Y") %></p>
-<% end %>
+      <%# Avatar %>
+      <div class="col-auto">
+        <% profile_photo = @shop.photos.first %>
+        <% if profile_photo %>
+          <%= image_tag profile_photo, style: "width:120px;height:120px;object-fit:cover;border:3px solid #F5C500;" %>
+        <% elsif @shop.cover.attached? %>
+          <%= image_tag @shop.cover, style: "width:120px;height:120px;object-fit:cover;border:3px solid #F5C500;" %>
+        <% else %>
+          <div style="width:120px;height:120px;background:#1A1A1A;border:3px solid #2A2A2A;display:flex;align-items:center;justify-content:center;font-size:3rem;">🏠</div>
+        <% end %>
+      </div>
 
-<% if user_signed_in? %>
-  <%= link_to "Réserver dans ce shop", new_shop_booking_path(@shop), class: "hero-cta" %>
-<% else %>
-  <%= link_to "Connectez-vous pour réserver", new_user_session_path, class: "hero-cta" %>
-<% end %>
+      <%# Infos %>
+      <div class="col">
+        <h1 class="mb-1" style="font-size:3rem;text-shadow:0 2px 8px rgba(0,0,0,0.8);"><%= @shop.name %></h1>
 
-<% if user_signed_in? && policy(@shop).update? %>
-  <%= link_to "Modifier", edit_shop_path(@shop), class: "btn btn-outline-warning btn-sm" %>
-<% end %>
+        <% if @shop.address.present? %>
+          <p class="mb-2" style="color:#ccc;">📍 <%= @shop.address %></p>
+        <% end %>
 
-<% if user_signed_in? %>
-  <%= link_to "Supprimer", @shop,
-      data: { turbo_method: :delete, turbo_confirm: "Supprimer ce shop ?" },
-      class: "btn btn-danger btn-sm" %>
-<% end %>
+        <div class="d-flex flex-wrap gap-3 mb-3">
+          <% if @shop.phone.present? %>
+            <span style="font-size:0.9rem;color:#ccc;">📞 <%= @shop.phone %></span>
+          <% end %>
+          <% if @shop.email.present? %>
+            <span style="font-size:0.9rem;color:#ccc;">✉️ <%= @shop.email %></span>
+          <% end %>
+          <% if @shop.open_hours.present? %>
+            <span style="font-size:0.9rem;color:#ccc;">🕐 <%= @shop.open_hours %></span>
+          <% end %>
+        </div>
 
-<%= render "favorites/button", favoritable: @shop %>
+        <%# Stats %>
+        <div class="d-flex gap-4 mb-4">
+          <div class="text-center">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:#F5C500;"><%= @shop.tatoueurs.count %></div>
+            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em;color:#aaa;">Tatoueurs</div>
+          </div>
+          <div class="text-center">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:#F5C500;"><%= @shop.bookings.count %></div>
+            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em;color:#aaa;">Réservations</div>
+          </div>
+          <div class="text-center">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:#F5C500;"><%= @shop.events.where("start_date >= ?", Time.current).count %></div>
+            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em;color:#aaa;">Événements</div>
+          </div>
+        </div>
 
-<% if user_signed_in? %>
-  <%= button_to "✉️ Contacter",
-    conversations_path(shop_id: @shop.id),
-    method: :post,
-    class: "hero-cta" %>
-<% end %>
+        <%# Actions %>
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+          <% if user_signed_in? %>
+            <% unless current_user.shop == @shop %>
+              <%= link_to "✉️ Contacter",
+                  conversations_path(shop_id: @shop.id),
+                  data: { turbo_method: :post },
+                  class: "hero-cta" %>
+              <%= link_to "📅 Réserver", new_shop_booking_path(@shop), class: "hero-cta-outline" %>
+            <% end %>
+          <% else %>
+            <%= link_to "Connectez-vous pour réserver", new_user_session_path, class: "hero-cta" %>
+          <% end %>
+
+          <% unless current_user&.shop == @shop %>
+            <%= render "favorites/button", favoritable: @shop %>
+          <% end %>
+
+          <% if user_signed_in? && policy(@shop).update? %>
+            <%= link_to "✏️ Modifier", edit_shop_path(@shop), class: "btn btn-outline-primary btn-sm" %>
+            <%= link_to "🖼️ Créer un portfolio", new_shop_portfolio_path(@shop), class: "btn btn-outline-primary btn-sm" %>
+          <% end %>
+
+          <% if user_signed_in? && policy(@shop).destroy? %>
+            <%= link_to "Supprimer", @shop,
+                data: { turbo_method: :delete, turbo_confirm: "Supprimer ce shop ?" },
+                class: "btn btn-outline-danger btn-sm" %>
+          <% end %>
+        </div>
+
+        <% if @shop.description.present? %>
+          <div class="mt-4 pt-4" style="border-top:1px solid rgba(255,255,255,0.1);">
+            <p style="max-width:700px;line-height:1.8;color:#ccc;"><%= @shop.description %></p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr style="border-color:#2A2A2A;margin:2rem 0 0;">
+
+<%# ================================ %>
+<%# TABS %>
+<%# ================================ %>
+<div class="container">
+
+  <%# Navigation tabs %>
+  <div style="display:flex;border-bottom:1px solid #2A2A2A;margin-bottom:2rem;">
+    <% shop_tabs = [] %>
+    <% shop_tabs << { key: "galerie",      label: "Galerie",      count: nil } if @shop.photos.count > 1 %>
+    <% shop_tabs << { key: "tatoueurs",    label: "Tatoueurs",    count: @shop.tatoueurs.count } if @shop.tatoueurs.any? %>
+    <% shop_tabs << { key: "evenements",   label: "Événements",   count: @shop.events.where("start_date >= ?", Time.current).count } if @shop.events.where("start_date >= ?", Time.current).any? %>
+    <% shop_tabs << { key: "carte",        label: "Carte",        count: nil } if @shop.coordinates_valid? %>
+
+    <% shop_tabs.each_with_index do |tab, i| %>
+      <button onclick="showShopTab('<%= tab[:key] %>')"
+              id="shop-tab-btn-<%= tab[:key] %>"
+              style="background:transparent;border:none;color:<%= i == 0 ? '#F5C500' : '#888' %>;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:0.05em;padding:1rem 1.5rem;cursor:pointer;border-bottom:<%= i == 0 ? '2px solid #F5C500' : '2px solid transparent' %>;margin-bottom:-1px;transition:all 0.2s;">
+        <%= tab[:label] %>
+        <% if tab[:count].present? && tab[:count] > 0 %>
+          <span style="font-size:0.8rem;color:#666;margin-left:0.25rem;">(<%= tab[:count] %>)</span>
+        <% end %>
+      </button>
+    <% end %>
+  </div>
+
+  <%# ======= TAB GALERIE ======= %>
+  <% if @shop.photos.count > 1 %>
+    <div id="shop-tab-galerie" class="shop-tab-content" style="display:none;">
+      <div class="row g-3">
+        <% @shop.photos.drop(1).each do |photo| %>
+          <div class="col-6 col-md-3" style="overflow:hidden;">
+            <%= image_tag photo,
+                style: "width:100%;height:220px;object-fit:cover;border:1px solid #2A2A2A;transition:transform 0.3s,border-color 0.2s;",
+                onmouseover: "this.style.transform='scale(1.04)';this.style.borderColor='#F5C500'",
+                onmouseout:  "this.style.transform='scale(1)';this.style.borderColor='#2A2A2A'" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <%# ======= TAB TATOUEURS ======= %>
+  <% if @shop.tatoueurs.any? %>
+    <div id="shop-tab-tatoueurs" class="shop-tab-content">
+      <div class="row g-4">
+        <% @shop.tatoueurs.each do |tatoueur| %>
+          <div class="col-md-4">
+            <%= link_to tatoueur_path(tatoueur), style: "text-decoration:none;" do %>
+              <div style="position:relative;overflow:hidden;background:#1A1A1A;border:1px solid #2A2A2A;transition:border-color 0.2s;"
+                   onmouseover="this.style.borderColor='#F5C500'"
+                   onmouseout="this.style.borderColor='#2A2A2A'">
+                <% if tatoueur.avatar.attached? %>
+                  <%= image_tag tatoueur.avatar,
+                      style: "width:100%;height:200px;object-fit:cover;transition:transform 0.3s;",
+                      onmouseover: "this.style.transform='scale(1.04)'",
+                      onmouseout:  "this.style.transform='scale(1)'" %>
+                <% else %>
+                  <div style="width:100%;height:200px;background:#2A2A2A;display:flex;align-items:center;justify-content:center;font-size:3rem;">🖋️</div>
+                <% end %>
+                <% if tatoueur.verified? %>
+                  <span style="position:absolute;top:0.75rem;right:0.75rem;background:rgba(39,174,96,0.9);color:#fff;font-size:0.7rem;padding:0.2rem 0.5rem;text-transform:uppercase;">✅ Vérifié</span>
+                <% end %>
+                <div style="padding:1rem;">
+                  <div style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:#fff;"><%= tatoueur.nickname %></div>
+                  <div class="text-secondary" style="font-size:0.8rem;">
+                    <%= tatoueur.tattoo_styles.map(&:name).join(", ").presence || "Style non renseigné" %>
+                  </div>
+                </div>
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <%# ======= TAB ÉVÉNEMENTS ======= %>
+  <% shop_events = @shop.events.where("start_date >= ?", Time.current).order(start_date: :asc) %>
+  <% if shop_events.any? %>
+    <div id="shop-tab-evenements" class="shop-tab-content" style="display:none;">
+      <% shop_events.each do |event| %>
+        <div class="event-item">
+          <div class="event-date"><%= event.start_date&.strftime("%d %B %Y — %Hh%M").upcase %></div>
+          <div class="event-name"><%= event.name %></div>
+          <% if event.location.present? %>
+            <div class="event-location">📍 <%= event.location %></div>
+          <% end %>
+          <% if event.description.present? %>
+            <p class="text-secondary mt-2 mb-0" style="font-size:0.9rem;"><%= event.description.truncate(120) %></p>
+          <% end %>
+          <%= link_to "En savoir plus →", event_path(event), class: "card-link mt-2 d-inline-block" %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# ======= TAB CARTE ======= %>
+  <% if @shop.coordinates_valid? %>
+    <div id="shop-tab-carte" class="shop-tab-content" style="display:none;">
+      <%= render "shared/map",
+          map_id:         "shop-map-#{@shop.id}",
+          height:         "400px",
+          tatoueurs_json: "[]",
+          shops_json:     [{ id: @shop.id, name: @shop.name, lat: @shop.latitude, lng: @shop.longitude, url: shop_path(@shop), address: @shop.address, type: "shop" }].to_json %>
+    </div>
+  <% end %>
+
+</div>
+
+<script>
+  const shopTabs = ["galerie", "tatoueurs", "evenements", "carte"]
+
+  function showShopTab(key) {
+    shopTabs.forEach(t => {
+      const content = document.getElementById(`shop-tab-${t}`)
+      const btn     = document.getElementById(`shop-tab-btn-${t}`)
+      if (!content || !btn) return
+      if (t === key) {
+        content.style.display = "block"
+        btn.style.color        = "#F5C500"
+        btn.style.borderBottom = "2px solid #F5C500"
+      } else {
+        content.style.display = "none"
+        btn.style.color        = "#888"
+        btn.style.borderBottom = "2px solid transparent"
+      }
+    })
+  }
+</script>

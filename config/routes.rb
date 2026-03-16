@@ -21,6 +21,7 @@ Rails.application.routes.draw do
     resources :events,    only: [ :index, :show ]
     resources :medias,    only: [ :index ]
     resources :socials,   only: [ :index ]
+    resources :portfolios, only: [ :new, :create ], controller: "shop_portfolios"
     member do
       post   :add_tatoueur
       delete :remove_tatoueur
@@ -55,6 +56,9 @@ Rails.application.routes.draw do
   # BOOKINGS
   # ================================
   resources :bookings, only: [ :index, :show, :edit, :update, :destroy ] do
+    member do
+    get :pdf, to: "bookings#show", defaults: { format: :pdf }
+    end
     resource :review,  only: [ :new, :create ]
     resource :payment, only: [ :new ], controller: "payments" do
       get  :bank_transfer
@@ -101,4 +105,15 @@ end
   resources :tatoueurs, only: [ :index, :show, :update ]
   resources :shops,     only: [ :index, :show, :update ]
   end
+
+  # ================================
+  # Events (participation)
+  # ================================
+
+  resources :events, only: [ :index, :show, :new, :create, :edit, :update, :destroy ] do
+  member do
+    post :participate
+    delete :withdraw
+  end
+end
 end

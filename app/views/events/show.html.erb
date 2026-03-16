@@ -1,14 +1,199 @@
-<h1><%= @event.name %></h1>
-<p><%= @event.description %></p>
-<p><strong>Lieu :</strong> <%= @event.location %></p>
-<p><strong>Début :</strong> <%= @event.start_date.strftime("%d/%m/%Y à %H:%M") %></p>
-<p><strong>Fin :</strong> <%= @event.end_date.strftime("%d/%m/%Y à %H:%M") %></p>
-<% if @event.shop %>
-  <p><strong>Shop :</strong> <%= link_to @event.shop.name, @event.shop %></p>
-<% end %>
-<% if @event.tatoueur %>
-  <p><strong>Tatoueur :</strong> <%= link_to @event.tatoueur.nickname, @event.tatoueur %></p>
-<% end %>
+<div class="container py-5" style="max-width:780px;">
 
-<%= link_to "Modifier", edit_event_path(@event) %>
-<%= link_to "Supprimer", @event, method: :delete, data: { confirm: "Supprimer cet événement ?" } %>
+  <%# Header %>
+  <div class="mb-4">
+    <%= link_to "← Événements", events_path, class: "btn btn-outline-secondary btn-sm mb-3" %>
+
+    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
+      <div>
+        <%# Badge public/privé %>
+        <% if @event.is_public %>
+          <span style="background:rgba(39,174,96,0.15);color:#27AE60;font-size:0.75rem;font-weight:700;padding:0.2rem 0.75rem;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.75rem;display:inline-block;">
+            🌍 Événement public
+          </span>
+        <% else %>
+          <span style="background:rgba(192,57,43,0.15);color:#C0392B;font-size:0.75rem;font-weight:700;padding:0.2rem 0.75rem;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.75rem;display:inline-block;">
+            🔒 Événement privé
+          </span>
+        <% end %>
+        <h1 style="font-size:3rem;margin-bottom:0;"><%= @event.name %></h1>
+      </div>
+
+      <%# Actions (propriétaire uniquement) %>
+      <% if user_signed_in? && policy(@event).update? %>
+        <div class="d-flex gap-2">
+          <%= link_to "✏️ Modifier", edit_event_path(@event),
+              class: "btn btn-outline-primary btn-sm" %>
+          <%= link_to "🗑️ Supprimer", @event,
+              data: { turbo_method: :delete, turbo_confirm: "Supprimer cet événement ?" },
+              class: "btn btn-outline-danger btn-sm" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <div class="row g-4">
+
+    <%# Colonne principale %>
+    <div class="col-lg-7">
+
+      <%# Description %>
+      <% if @event.description.present? %>
+        <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;padding:2rem;margin-bottom:1.5rem;">
+          <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:#F5C500;margin-bottom:1rem;">
+            À propos
+          </h2>
+          <p style="line-height:1.8;color:#ccc;margin-bottom:0;"><%= @event.description %></p>
+        </div>
+      <% end %>
+
+      <%# Organisateur %>
+      <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1.5rem;">
+        <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:#F5C500;margin-bottom:1rem;">
+          Organisateur
+        </h2>
+        <% if @event.tatoueur.present? %>
+          <div class="d-flex align-items-center gap-3">
+            <% if @event.tatoueur.avatar.attached? %>
+              <%= image_tag @event.tatoueur.avatar,
+                  style: "width:56px;height:56px;object-fit:cover;border-radius:50%;border:2px solid #F5C500;" %>
+            <% else %>
+              <div style="width:56px;height:56px;border-radius:50%;background:#2A2A2A;border:2px solid #2A2A2A;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">🖋️</div>
+            <% end %>
+            <div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;">
+                <%= @event.tatoueur.nickname %>
+              </div>
+              <div class="text-secondary" style="font-size:0.85rem;">
+                <%= @event.tatoueur.tattoo_styles.map(&:name).join(", ") %>
+              </div>
+              <%= link_to "Voir le profil →", tatoueur_path(@event.tatoueur), class: "card-link mt-1 d-inline-block" %>
+            </div>
+          </div>
+        <% end %>
+
+        <% if @event.shop.present? %>
+          <div class="d-flex align-items-center gap-3 <%= 'mt-3 pt-3' if @event.tatoueur.present? %>" style="<%= 'border-top:1px solid #2A2A2A;' if @event.tatoueur.present? %>">
+            <% if @event.shop.cover.attached? %>
+              <%= image_tag @event.shop.cover,
+                  style: "width:56px;height:56px;object-fit:cover;border:2px solid #F5C500;" %>
+            <% else %>
+              <div style="width:56px;height:56px;background:#2A2A2A;border:2px solid #2A2A2A;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">🏠</div>
+            <% end %>
+            <div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;">
+                <%= @event.shop.name %>
+              </div>
+              <div class="text-secondary" style="font-size:0.85rem;">
+                📍 <%= @event.shop.address %>
+              </div>
+              <%= link_to "Voir le shop →", shop_path(@event.shop), class: "card-link mt-1 d-inline-block" %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+    </div>
+
+    <%# Colonne droite %>
+    <div class="col-lg-5">
+
+      <%# Infos pratiques %>
+      <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;padding:1.5rem;margin-bottom:1.5rem;">
+        <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:#F5C500;margin-bottom:1rem;">
+          Infos pratiques
+        </h2>
+
+        <div class="d-flex flex-column gap-3">
+          <div style="border-bottom:1px solid #2A2A2A;padding-bottom:0.75rem;">
+            <div class="text-secondary" style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.25rem;">Début</div>
+            <div style="font-weight:600;">
+              📅 <%= @event.start_date&.strftime("%d %B %Y") %>
+              <span class="text-secondary">à <%= @event.start_date&.strftime("%Hh%M") %></span>
+            </div>
+          </div>
+
+          <% if @event.end_date.present? %>
+            <div style="border-bottom:1px solid #2A2A2A;padding-bottom:0.75rem;">
+              <div class="text-secondary" style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.25rem;">Fin</div>
+              <div style="font-weight:600;">
+                📅 <%= @event.end_date&.strftime("%d %B %Y") %>
+                <span class="text-secondary">à <%= @event.end_date&.strftime("%Hh%M") %></span>
+              </div>
+            </div>
+          <% end %>
+
+          <% if @event.location.present? %>
+            <div>
+              <div class="text-secondary" style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:0.25rem;">Lieu</div>
+              <div style="font-weight:600;">📍 <%= @event.location %></div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+   <%# CTA %>
+<% if user_signed_in? %>
+  <% is_owner = (@event.tatoueur&.user == current_user) || (@event.shop&.user == current_user) %>
+  <% is_participating = @event.participants.include?(current_user) %>
+
+  <% unless is_owner %>
+    <%# Participation %>
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1.5rem;margin-bottom:1rem;text-align:center;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:#F5C500;">
+        <%= @event.participants.count %>
+      </div>
+      <div class="text-secondary" style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:1rem;">
+        personne(s) intéressée(s)
+      </div>
+      <% if is_participating %>
+        <%= button_to "✅ Je participe",
+            withdraw_event_path(@event),
+            method: :delete,
+            style: "width:100%;background:rgba(39,174,96,0.15);border:1px solid #27AE60;color:#27AE60;font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:0.08em;padding:0.75rem;cursor:pointer;text-transform:uppercase;" %>
+      <% else %>
+        <%= button_to "🎉 Je participe !",
+            participate_event_path(@event),
+            method: :post,
+            style: "width:100%;background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:0.08em;padding:0.75rem;cursor:pointer;text-transform:uppercase;" %>
+      <% end %>
+    </div>
+
+    <%# Réservation %>
+    <% if @event.tatoueur.present? && @event.tatoueur.shops.any? %>
+      <%= link_to "📅 Réserver avec ce tatoueur",
+          new_shop_booking_path(@event.tatoueur.shops.first),
+          class: "hero-cta w-100 text-center d-block" %>
+    <% elsif @event.shop.present? %>
+      <%= link_to "📅 Réserver dans ce shop",
+          new_shop_booking_path(@event.shop),
+          class: "hero-cta w-100 text-center d-block" %>
+    <% end %>
+  <% else %>
+    <%# Vue propriétaire %>
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1.5rem;text-align:center;">
+      <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:#F5C500;">
+        <%= @event.participants.count %>
+      </div>
+      <div class="text-secondary" style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em;">
+        personne(s) intéressée(s)
+      </div>
+    </div>
+  <% end %>
+<% else %>
+  <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1.5rem;text-align:center;margin-bottom:1rem;">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:#F5C500;">
+      <%= @event.participants.count %>
+    </div>
+    <div class="text-secondary" style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:1rem;">
+      personne(s) intéressée(s)
+    </div>
+    <%= link_to "Connectez-vous pour participer",
+        new_user_session_path,
+        class: "hero-cta-outline w-100 text-center d-block" %>
+  </div>
+<% end %>
+    </div>
+  </div>
+
+</div>

@@ -4,30 +4,45 @@ class TatoueursController < ApplicationController
 
   # GET /tatoueurs
   def index
-    @tatoueurs = Tatoueur.where(is_active: true)
-    @tatoueurs = @tatoueurs.joins(:tattoo_styles)
-                           .where(tattoo_styles: { id: params[:style_id] }) if params[:style_id].present?
-    @tatoueurs = @tatoueurs.near(params[:location], 50) if params[:location].present?
-    @tatoueurs_json = @tatoueurs.where.not(latitude: nil).map do |t|
-      {
-        id:     t.id,
-        name:   t.nickname,
-        lat:    t.latitude,
-        lng:    t.longitude,
-        styles: t.tattoo_styles.map(&:name).join(", "),
-        url:    tatoueur_path(t),
-        type:   "tatoueur"
-      }
-    end.to_json
+  @tatoueurs = Tatoueur.where(is_active: true)
+                       .includes(:tattoo_styles, :reviews, :shops,
+                                 avatar_attachment: :blob,
+                                 photos_attachments: :blob)
+
+  if params[:q].present?
+    q = "%#{params[:q]}%"
+    @tatoueurs = @tatoueurs.where("nickname ILIKE ? OR email ILIKE ?", q, q)
   end
 
+  if params[:style_id].present?
+    @tatoueurs = @tatoueurs.joins(:tattoo_styles)
+                           .where(tattoo_styles: { id: params[:style_id] })
+  end
+
+  @tatoueurs = @tatoueurs.near(params[:location], 50) if params[:location].present?
+
+  @tatoueurs_json = @tatoueurs.where.not(latitude: nil).map do |t|
+    {
+      id:     t.id,
+      name:   t.nickname,
+      lat:    t.latitude,
+      lng:    t.longitude,
+      styles: t.tattoo_styles.map(&:name).join(", "),
+      url:    tatoueur_path(t),
+      type:   "tatoueur"
+    }
+    end.to_json
+  end
   # GET /tatoueurs/:id
   def show
   authorize @tatoueur
-  @portfolios     = @tatoueur.portfolios.includes(:portfolio_items)
-  @reviews        = @tatoueur.reviews.includes(:user).order(created_at: :desc)
-  @events         = @tatoueur.events.where("start_date >= ?", Time.current).order(start_date: :asc)
-  @availabilities = @tatoueur.availabilities.order(:day_of_week)
+  @portfolios      = @tatoueur.portfolios.includes(:portfolio_items)
+  @reviews         = @tatoueur.reviews.includes(:user).order(created_at: :desc)
+  @events          = @tatoueur.events.where("start_date >= ?", Time.current).order(start_date: :asc)
+  @availabilities  = @tatoueur.availabilities.order(:day_of_week)
+  @items_sans_portfolio = @tatoueur.portfolio_items
+                                   .includes(:images_attachments, :tattoo_styles)
+                                   .where(portfolio: nil)
 end
   # GET /tatoueurs/new
   def new
@@ -97,6 +112,10 @@ end
     else
       render :verification, status: :unprocessable_entity
     end
+  end
+
+  def change
+  change_column_null :portfolio_items, :portfolio_id, true
   end
 
   # GET /tatoueurs/:id/connect_paypal

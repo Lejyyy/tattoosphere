@@ -11,6 +11,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <%= javascript_importmap_tags %>
@@ -49,5 +51,9 @@
         <p class="mb-0">&copy; <%= Date.today.year %> Tattoosphere — Tous droits réservés</p>
       </div>
     </footer>
+    <%# CHAT FLOTTANT %>
+    <% if user_signed_in? %>
+    <%= render "shared/chat_bubble" %>
+    <% end %>
   </body>
 </html>

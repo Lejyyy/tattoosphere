@@ -1,11 +1,22 @@
 class PagesController < ApplicationController
   skip_before_action :authenticate_user!
-
-  # GET /
   def home
-    @shops     = Shop.where(is_active: true).limit(3)
-    @tatoueurs = Tatoueur.where(is_active: true).includes(:tattoo_styles).limit(4)
-    @events    = Event.where(is_public: true).where("start_date >= ?", Date.today).order(:start_date).limit(3)
+    @tatoueurs = Tatoueur.where(is_active: true)
+                         .includes(:tattoo_styles, :reviews, :shops,
+                                   avatar_attachment: :blob)
+                         .order(created_at: :desc)
+                         .limit(4)
+
+    @shops = Shop.where(is_active: true)
+                 .includes(:tatoueurs, cover_attachment: :blob)
+                 .order(created_at: :desc)
+                 .limit(3)
+
+    @events = Event.where(is_public: true)
+                   .where("start_date >= ?", Time.current)
+                   .includes(:tatoueur, :shop)
+                   .order(start_date: :asc)
+                   .limit(3)
   end
 
   # GET /map

@@ -1,26 +1,78 @@
-<h2>Log in</h2>
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0D0D0D;padding:2rem;">
+  <div style="width:100%;max-width:420px;">
 
-<%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
-  <div class="field">
-    <p><%= f.label :email %></p>
-    <p><%= f.email_field :email, autofocus: true, autocomplete: "email" %></p>
-  </div>
-
-  <div class="field">
-    <p><%= f.label :password %></p>
-    <p><%= f.password_field :password, autocomplete: "current-password" %></p>
-  </div>
-
-  <% if devise_mapping.rememberable? %>
-    <div class="field">
-      <p><%= f.check_box :remember_me %></p>
-      <p><%= f.label :remember_me %></p>
+    <%# LOGO / TITRE %>
+    <div class="text-center mb-5">
+      <h1 style="font-family:'Bebas Neue',sans-serif;font-size:3rem;color:#fff;letter-spacing:0.1em;margin-bottom:0;">
+        TATTOO<span style="color:#F5C500;">SPHERE</span>
+      </h1>
+      <p class="text-secondary" style="font-size:0.9rem;margin-top:0.5rem;">
+        Connecte-toi pour accéder à ton espace
+      </p>
     </div>
-  <% end %>
 
-  <div class="actions">
-    <%= f.submit "Log in" %>
+    <%# FORMULAIRE %>
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;padding:2.5rem;">
+
+      <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+
+        <div class="mb-4">
+          <%= f.label :email, "Email", style: "display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;" %>
+          <%= f.email_field :email,
+              autofocus: true,
+              autocomplete: "email",
+              placeholder: "ton@email.com",
+              style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;outline:none;transition:border-color 0.2s;",
+              onfocus: "this.style.borderColor='#F5C500'",
+              onblur: "this.style.borderColor='#2A2A2A'" %>
+        </div>
+
+        <div class="mb-4">
+          <%= f.label :password, "Mot de passe", style: "display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;" %>
+          <%= f.password_field :password,
+              autocomplete: "current-password",
+              placeholder: "••••••••",
+              style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;outline:none;transition:border-color 0.2s;",
+              onfocus: "this.style.borderColor='#F5C500'",
+              onblur: "this.style.borderColor='#2A2A2A'" %>
+        </div>
+
+        <% if devise_mapping.rememberable? %>
+          <div class="d-flex align-items-center gap-2 mb-4">
+            <%= f.check_box :remember_me,
+                style: "accent-color:#F5C500;width:16px;height:16px;cursor:pointer;" %>
+            <%= f.label :remember_me, "Se souvenir de moi",
+                style: "font-size:0.85rem;color:#888;cursor:pointer;margin:0;" %>
+          </div>
+        <% end %>
+
+        <%= f.submit "Se connecter",
+            style: "width:100%;background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:0.1em;padding:0.85rem;cursor:pointer;text-transform:uppercase;transition:background 0.2s;",
+            onmouseover: "this.style.background='#d4a800'",
+            onmouseout:  "this.style.background='#F5C500'" %>
+
+      <% end %>
+
+      <%# LIENS %>
+      <div class="text-center mt-4" style="border-top:1px solid #2A2A2A;padding-top:1.5rem;">
+        <% if devise_mapping.recoverable? && controller_name != 'passwords' && controller_name != 'registrations' %>
+          <p class="mb-2">
+            <%= link_to "Mot de passe oublié ?", new_password_path(resource_name),
+                style: "color:#888;font-size:0.85rem;text-decoration:none;",
+                onmouseover: "this.style.color='#F5C500'",
+                onmouseout:  "this.style.color='#888'" %>
+          </p>
+        <% end %>
+        <% if devise_mapping.registerable? && controller_name != 'registrations' %>
+          <p class="mb-0">
+            <span style="color:#666;font-size:0.85rem;">Pas encore de compte ?</span>
+            <%= link_to "S'inscrire", new_registration_path(resource_name),
+                style: "color:#F5C500;font-size:0.85rem;font-weight:700;text-decoration:none;margin-left:0.4rem;" %>
+          </p>
+        <% end %>
+      </div>
+
+    </div>
+
   </div>
-<% end %>
-
-<%= render "devise/shared/links" %>
+</div>

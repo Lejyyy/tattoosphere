@@ -1,2 +1,120 @@
-<h1>Nouvelle réservation chez <%= @shop.name %></h1>
-<%= render "form" %>
+<div class="container py-5" style="max-width:680px;">
+
+  <%# Header %>
+  <div class="mb-5">
+    <%= link_to "← Retour", shop_path(@shop), class: "btn btn-outline-secondary btn-sm mb-3" %>
+    <h1 style="font-size:2.5rem;">
+      Réserver chez
+      <span class="text-yellow"><%= @shop.name %></span>
+    </h1>
+    <p class="text-secondary">Remplis le formulaire ci-dessous et nous te confirmerons ton rendez-vous.</p>
+  </div>
+
+  <%# Erreurs %>
+  <% if @booking.errors.any? %>
+    <div class="alert alert-danger mb-4">
+      <% @booking.errors.full_messages.each do |msg| %>
+        <div>⚠️ <%= msg %></div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# Formulaire %>
+  <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;padding:2.5rem;">
+    <%= form_with model: [@shop, @booking] do |f| %>
+
+      <%# Tatoueur %>
+      <div class="mb-4">
+        <%= f.label :tatoueur_id, "Tatoueur",
+            style: "display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;" %>
+        <%= f.collection_select :tatoueur_id, @tatoueurs, :id, :nickname,
+            { include_blank: "Choisir un tatoueur" },
+            style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;outline:none;transition:border-color 0.2s;",
+            onfocus: "this.style.borderColor='#F5C500'",
+            onblur:  "this.style.borderColor='#2A2A2A'" %>
+      </div>
+
+      <%# Date %>
+      <div class="mb-4">
+        <%= f.label :date, "Date du rendez-vous",
+            style: "display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;" %>
+        <%= f.date_field :date,
+            style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;outline:none;transition:border-color 0.2s;color-scheme:dark;",
+            onfocus: "this.style.borderColor='#F5C500'",
+            onblur:  "this.style.borderColor='#2A2A2A'" %>
+      </div>
+
+      <%# Créneau horaire — généré dans le contrôleur via @slots %>
+      <div class="mb-4">
+        <%= f.label :start_time, "Heure de début",
+            style: "display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;" %>
+        <% if @slots.any? %>
+          <%= f.select :start_time,
+              @slots.map { |s| [s, s] },
+              { include_blank: "Choisir un créneau" },
+              style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;outline:none;",
+              onfocus: "this.style.borderColor='#F5C500'",
+              onblur:  "this.style.borderColor='#2A2A2A'" %>
+        <% else %>
+          <div style="background:#0D0D0D;border:1px solid #2A2A2A;padding:0.85rem 1rem;color:#555;font-size:0.9rem;">
+            <% if @booking.tatoueur_id.present? %>
+              ⚠️ Ce tatoueur n'a pas encore renseigné ses disponibilités.
+            <% else %>
+              Sélectionne d'abord un tatoueur pour voir ses créneaux.
+            <% end %>
+          </div>
+          <%= f.time_field :start_time, style: "display:none;" %>
+        <% end %>
+      </div>
+
+      <%# Description %>
+      <div class="mb-4">
+        <%= f.label :description, "Description du projet",
+            style: "display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;" %>
+        <p style="font-size:0.8rem;color:#555;margin-bottom:0.5rem;">
+          Décris ton projet : style, placement, taille, références...
+        </p>
+        <%= f.text_area :description,
+            rows: 5,
+            placeholder: "Ex : Je souhaite un tatouage Old School sur l'avant-bras, environ 10cm, avec une ancre et des roses...",
+            style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;outline:none;transition:border-color 0.2s;resize:vertical;",
+            onfocus: "this.style.borderColor='#F5C500'",
+            onblur:  "this.style.borderColor='#2A2A2A'" %>
+      </div>
+
+      <%# Budget %>
+      <div class="mb-5">
+        <%= f.label :price_estimated, "Budget estimé (€)",
+            style: "display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;" %>
+        <p style="font-size:0.8rem;color:#555;margin-bottom:0.5rem;">
+          Donne une fourchette approximative, le tatoueur confirmera le prix final.
+        </p>
+        <div style="position:relative;">
+          <span style="position:absolute;left:1rem;top:50%;transform:translateY(-50%);color:#F5C500;font-family:'Bebas Neue',sans-serif;font-size:1rem;">€</span>
+          <%= f.number_field :price_estimated,
+              step: 0.01,
+              min: 0,
+              placeholder: "150.00",
+              style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;padding:0.85rem 1rem 0.85rem 2.5rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;outline:none;transition:border-color 0.2s;",
+              onfocus: "this.style.borderColor='#F5C500'",
+              onblur:  "this.style.borderColor='#2A2A2A'" %>
+        </div>
+      </div>
+
+      <%# Info acompte %>
+      <div style="background:rgba(245,197,0,0.08);border:1px solid rgba(245,197,0,0.2);padding:1rem 1.25rem;margin-bottom:2rem;">
+        <p class="mb-0" style="font-size:0.85rem;color:#F5C500;">
+          💳 Un acompte vous sera demandé après confirmation de la réservation.
+        </p>
+      </div>
+
+      <%# Submit %>
+      <%= f.submit "Envoyer ma demande",
+          style: "width:100%;background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:0.1em;padding:1rem;cursor:pointer;text-transform:uppercase;transition:background 0.2s;",
+          onmouseover: "this.style.background='#d4a800'",
+          onmouseout:  "this.style.background='#F5C500'" %>
+
+    <% end %>
+  </div>
+
+</div>

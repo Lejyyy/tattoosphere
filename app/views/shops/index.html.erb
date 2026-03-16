@@ -1,20 +1,147 @@
+<%# ================================ %>
+<%# HEADER %>
+<%# ================================ %>
+<section class="section pb-0">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+      <h1 class="section-title mb-0">Shops</h1>
+      <% if user_signed_in? && current_user.shop_owner? && current_user.shop.nil? %>
+        <%= link_to "Ajouter mon shop", new_shop_path, class: "hero-cta" %>
+      <% end %>
+    </div>
 
-<h1>Tous les shops</h1>
-<%= link_to "Ajouter un shop", new_shop_path %>
-
-<% @shops.each do |shop| %>
-  <div class="shop-card">
-    <h2><%= link_to shop.name, shop %></h2>
-    <p><%= shop.address %></p>
-    <p><%= shop.description %></p>
+    <%# FILTRES %>
+    <%= form_with url: shops_path, method: :get, class: "d-flex flex-wrap gap-2 mb-4" do |f| %>
+      <%= f.text_field :location,
+          value: params[:location],
+          placeholder: "Ville ou code postal...",
+          class: "form-control form-control-sm",
+          style: "width:220px;" %>
+      <%= f.submit "Filtrer", class: "btn btn-outline-primary btn-sm" %>
+      <% if params[:location].present? %>
+        <%= link_to "Réinitialiser", shops_path, class: "btn btn-outline-secondary btn-sm" %>
+      <% end %>
+    <% end %>
   </div>
-<% end %>
+</section>
 
-<div class="container mt-5">
-  <h2 class="section-title">Carte des shops</h2>
-  <%= render "shared/map",
-      map_id: "shops-map",
-      height: "400px",
-      tatoueurs_json: "[]",
-      shops_json: @shops_json %>
-</div>
+<%# ================================ %>
+<%# GRILLE SHOPS %>
+<%# ================================ %>
+<section class="section pt-3">
+  <div class="container">
+    <% if @shops.any? %>
+      <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        <% @shops.each do |shop| %>
+          <div class="col">
+            <div class="card-dark h-100 d-flex flex-column">
+
+              <%# CAROUSEL PHOTOS %>
+              <% photos = shop.photos.first(5) %>
+              <% if shop.cover.attached? || photos.any? %>
+                <div id="carousel-shop-<%= shop.id %>" class="carousel slide" data-bs-ride="false">
+                  <div class="carousel-inner">
+                    <% if shop.cover.attached? %>
+                      <div class="carousel-item active">
+                        <%= image_tag shop.cover,
+                            style: "width:100%;height:220px;object-fit:cover;",
+                            alt: shop.name %>
+                      </div>
+                    <% end %>
+                    <% photos.each_with_index do |photo, i| %>
+                      <div class="carousel-item <%= 'active' if i == 0 && !shop.cover.attached? %>">
+                        <%= image_tag photo,
+                            style: "width:100%;height:220px;object-fit:cover;",
+                            alt: shop.name %>
+                      </div>
+                    <% end %>
+                  </div>
+                  <% total = (shop.cover.attached? ? 1 : 0) + photos.size %>
+                  <% if total > 1 %>
+                    <button class="carousel-control-prev" type="button"
+                            data-bs-target="#carousel-shop-<%= shop.id %>"
+                            data-bs-slide="prev">
+                      <span class="carousel-control-prev-icon"></span>
+                    </button>
+                    <button class="carousel-control-next" type="button"
+                            data-bs-target="#carousel-shop-<%= shop.id %>"
+                            data-bs-slide="next">
+                      <span class="carousel-control-next-icon"></span>
+                    </button>
+                  <% end %>
+                  <%# Nombre de tatoueurs %>
+                  <span style="position:absolute;bottom:0.5rem;right:0.75rem;background:rgba(0,0,0,0.6);color:#fff;font-size:0.75rem;padding:0.2rem 0.5rem;">
+                    <%= shop.tatoueurs.count %> tatoueur(s)
+                  </span>
+                </div>
+              <% else %>
+                <div class="card-img-placeholder">🏠</div>
+              <% end %>
+
+              <%# CONTENU CARD %>
+              <div class="card-body d-flex flex-column flex-grow-1">
+
+                <%# Nom %>
+                <div class="card-name mb-2"><%= shop.name %></div>
+
+                <%# Localisation %>
+                <% city = shop.address&.split(",")&.first %>
+                <% if city.present? %>
+                  <p class="card-meta mb-2">📍 <%= city.strip %></p>
+                <% end %>
+
+                <%# Horaires %>
+                <% if shop.open_hours.present? %>
+                  <p class="card-meta mb-2">🕐 <%= shop.open_hours %></p>
+                <% end %>
+
+                <%# Description %>
+                <% if shop.description.present? %>
+                  <p class="text-secondary mb-3" style="font-size:0.85rem;line-height:1.6;">
+                    <%= shop.description.truncate(100) %>
+                  </p>
+                <% end %>
+
+                <%# Tatoueurs du shop %>
+                <% if shop.tatoueurs.any? %>
+                  <div class="d-flex flex-wrap gap-1 mb-3">
+                    <% shop.tatoueurs.first(3).each do |t| %>
+                      <span class="card-badge">🖋️ <%= t.nickname %></span>
+                    <% end %>
+                    <% if shop.tatoueurs.count > 3 %>
+                      <span class="card-badge">+<%= shop.tatoueurs.count - 3 %></span>
+                    <% end %>
+                  </div>
+                <% end %>
+
+                <%# Liens %>
+                <div class="d-flex justify-content-between align-items-center mt-auto">
+                  <%= link_to "Voir le shop →", shop_path(shop), class: "card-link mb-0" %>
+                  <%= render "favorites/button", favoritable: shop %>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+    <% else %>
+      <p class="text-secondary">Aucun shop trouvé.</p>
+    <% end %>
+  </div>
+</section>
+
+<%# ================================ %>
+<%# CARTE %>
+<%# ================================ %>
+<section class="section pt-0">
+  <div class="container">
+    <h2 class="section-title mb-4">Carte des shops</h2>
+    <%= render "shared/map",
+        map_id: "shops-map",
+        height: "400px",
+        tatoueurs_json: "[]",
+        shops_json: @shops_json %>
+  </div>
+</section>

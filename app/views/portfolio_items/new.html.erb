@@ -1,31 +1,11 @@
-<h1>Nouvelle réalisation</h1>
-<%= render "form" %>
-
-# app/views/portfolio_items/edit.html.erb
-<h1>Modifier la réalisation</h1>
-<%= render "form" %>
-
-# app/views/portfolio_items/_form.html.erb
-<%= form_with model: [@tatoueur, @portfolio, @portfolio_item] do |f| %>
-  <% if @portfolio_item.errors.any? %>
-    <div class="errors">
-      <% @portfolio_item.errors.full_messages.each do |msg| %>
-        <p><%= msg %></p>
-      <% end %>
-    </div>
-  <% end %>
-
-  <div>
-    <%= f.label :description %>
-    <%= f.text_area :description %>
+<div class="container py-5" style="max-width:680px;">
+  <div class="mb-5">
+    <%= link_to "← Retour", tatoueur_portfolio_path(@tatoueur, @portfolio), class: "btn btn-outline-secondary btn-sm mb-3" %>
+    <h1 style="font-size:2.5rem;">
+      Nouvelle <span class="text-yellow">réalisation</span>
+    </h1>
+    <p class="text-secondary">Ajoute une réalisation au portfolio <strong style="color:#fff;"><%= @portfolio.name %></strong>.</p>
   </div>
-  <div>
-    <%= f.label :price, "Prix (€)" %>
-    <%= f.number_field :price, step: 0.01 %>
-  </div>
-  <div>
-    <%= f.label :tattoo_style_ids, "Styles" %>
-    <%= f.collection_check_boxes :tattoo_style_ids, TattooStyle.all, :id, :name %>
-  </div>
-  <%= f.submit %>
-<% end %>
+
+  <%= render "form", portfolio_item: @portfolio_item %>
+</div>

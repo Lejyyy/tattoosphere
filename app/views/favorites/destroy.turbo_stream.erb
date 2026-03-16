@@ -1,3 +1,7 @@
+<%# Retire le bouton favori (pour les pages show) %>
 <%= turbo_stream.replace "favorite-#{@favoritable.class.name.downcase}-#{@favoritable.id}" do %>
   <%= render "favorites/button", favoritable: @favoritable %>
 <% end %>
+
+<%# Retire la card entière (pour la page index des favoris) %>
+<%= turbo_stream.remove "favorite-card-#{@favoritable.class.name.downcase}-#{@favoritable.id}" %>

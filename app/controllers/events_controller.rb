@@ -6,19 +6,23 @@ class EventsController < ApplicationController
   # GET /shops/:shop_id/events
   # GET /tatoueurs/:tatoueur_id/events
   def index
-    @events = policy_scope(Event).order(:start_date)
-    @events = @events.where(is_public: true) unless current_user&.admin?
+  @events = Event.where(is_public: true).includes(:tatoueur, :shop).order(start_date: :asc)
 
-    if params[:shop_id]
-      @owner  = Shop.find(params[:shop_id])
-      @events = @events.where(shop: @owner)
-    elsif params[:tatoueur_id]
-      @owner  = Tatoueur.find(params[:tatoueur_id])
-      @events = @events.where(tatoueur: @owner)
-    end
-
-    @events = @events.where("start_date >= ?", Date.today) unless params[:past].present?
+  if params[:location].present?
+    @events = @events.where("location ILIKE ?", "%#{params[:location]}%")
   end
+
+  if params[:from].present?
+    @events = @events.where("start_date >= ?", params[:from])
+  end
+
+  if params[:to].present?
+    @events = @events.where("start_date <= ?", params[:to].to_date.end_of_day)
+  end
+
+  # Uniquement les événements à venir par défaut
+  @events = @events.where("start_date >= ?", Time.current) unless params[:from].present?
+end
 
   # GET /events/:id
   def show
@@ -62,6 +66,21 @@ class EventsController < ApplicationController
     authorize @event
     @event.destroy
     redirect_to events_path, notice: "Événement supprimé."
+  end
+
+  def participate
+  @event = Event.find(params[:id])
+  unless @event.participants.include?(current_user)
+    @event.event_participations.create!(user: current_user)
+  end
+  redirect_to @event, notice: "Tu participes à cet événement ! 🎉"
+  end
+
+  def withdraw
+    @event = Event.find(params[:id])
+    participation = @event.event_participations.find_by(user: current_user)
+    participation&.destroy
+    redirect_to @event, notice: "Tu ne participes plus à cet événement."
   end
 
   private

@@ -17,6 +17,9 @@ class User < ApplicationRecord
   has_many :favorite_shops,           through: :favorites, source: :favoritable, source_type: "Shop"
   has_many :favorite_portfolios,      through: :favorites, source: :favoritable, source_type: "Portfolio"
   has_many :favorite_portfolio_items, through: :favorites, source: :favoritable, source_type: "PortfolioItem"
+  has_one_attached :avatar
+  has_many :event_participations, dependent: :destroy
+  has_many :participated_events, through: :event_participations, source: :event
 
   # ================================
   # VALIDATIONS

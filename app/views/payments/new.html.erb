@@ -1,26 +1,85 @@
-<div class="container py-4">
-  <h1 class="h4 mb-3">Payer l'acompte</h1>
-  <p>Montant : <strong><%= number_to_currency(@booking.deposit_amount, unit: "€", format: "%n %u") %></strong></p>
-  <p>Tatoueur : <strong><%= @tatoueur.nickname %></strong></p>
+<div class="container py-5" style="max-width:580px;">
 
-  <div class="d-flex flex-column gap-3 mt-4">
+  <%# Header %>
+  <div class="mb-5">
+    <%= link_to "← Retour", booking_path(@booking), class: "btn btn-outline-secondary btn-sm mb-3" %>
+    <h1 style="font-size:2.5rem;">
+      Payer l'<span class="text-yellow">acompte</span>
+    </h1>
+    <p class="text-secondary">Sécurise ta réservation en réglant l'acompte.</p>
+  </div>
 
+  <%# Récap réservation %>
+  <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;padding:1.5rem;margin-bottom:2rem;">
+    <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:#F5C500;margin-bottom:1rem;">
+      Récapitulatif
+    </h3>
+    <div class="d-flex flex-column gap-2">
+      <div class="d-flex justify-content-between" style="border-bottom:1px solid #2A2A2A;padding-bottom:0.75rem;">
+        <span class="text-secondary" style="font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;">Tatoueur</span>
+        <span style="font-weight:600;"><%= @tatoueur.nickname %></span>
+      </div>
+      <div class="d-flex justify-content-between" style="border-bottom:1px solid #2A2A2A;padding-bottom:0.75rem;">
+        <span class="text-secondary" style="font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;">Date</span>
+        <span style="font-weight:600;">📅 <%= @booking.date&.strftime("%d %B %Y") %></span>
+      </div>
+      <div class="d-flex justify-content-between pt-1">
+        <span class="text-secondary" style="font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;">Montant dû</span>
+        <span style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:#F5C500;line-height:1;">
+          <%= number_to_currency(@booking.deposit_amount, unit: "€", format: "%n %u") %>
+        </span>
+      </div>
+    </div>
+  </div>
+
+  <%# Options de paiement %>
+  <div class="d-flex flex-column gap-3">
+
+    <%# PayPal %>
     <% if @tatoueur.paypal_onboarded? %>
-      <div>
-        <h5>Payer par PayPal</h5>
+      <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1.5rem;">
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:#fff;">Payer par PayPal</span>
+          <span style="background:rgba(245,197,0,0.1);color:#F5C500;font-size:0.75rem;padding:0.2rem 0.6rem;text-transform:uppercase;letter-spacing:0.05em;">Recommandé</span>
+        </div>
+        <p class="text-secondary" style="font-size:0.85rem;margin-bottom:1rem;">
+          Paiement sécurisé, confirmation instantanée.
+        </p>
         <div id="paypal-button-container"></div>
       </div>
     <% end %>
 
+    <%# Virement bancaire %>
     <% if @tatoueur.bank_details_complete? %>
-      <%= link_to "Payer par virement bancaire",
-          bank_transfer_booking_payment_path(@booking),
-          class: "btn btn-outline-secondary" %>
+      <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1.5rem;">
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:#fff;">Payer par virement bancaire</span>
+        </div>
+        <p class="text-secondary" style="font-size:0.85rem;margin-bottom:1rem;">
+          Confirmation manuelle par le tatoueur sous 24-48h.
+        </p>
+        <%= link_to "Choisir le virement →",
+            bank_transfer_booking_payment_path(@booking),
+            style: "display:block;width:100%;background:transparent;border:1px solid #2A2A2A;color:#fff;font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:0.08em;padding:0.85rem 1rem;text-align:center;text-transform:uppercase;transition:border-color 0.2s;",
+            onmouseover: "this.style.borderColor='#F5C500';this.style.color='#F5C500'",
+            onmouseout:  "this.style.borderColor='#2A2A2A';this.style.color='#fff'" %>
+      </div>
+    <% end %>
+
+    <%# Aucune option disponible %>
+    <% unless @tatoueur.paypal_onboarded? || @tatoueur.bank_details_complete? %>
+      <div style="background:rgba(192,57,43,0.1);border:1px solid rgba(192,57,43,0.3);padding:1.5rem;">
+        <p style="color:#C0392B;margin-bottom:0;">
+          ⚠️ Ce tatoueur n'a pas encore configuré ses moyens de paiement. Contacte-le directement.
+        </p>
+      </div>
     <% end %>
 
   </div>
+
 </div>
 
+<%# PayPal SDK %>
 <% if @tatoueur.paypal_onboarded? %>
   <script src="https://www.paypal.com/sdk/js?client-id=<%= ENV['PAYPAL_CLIENT_ID'] %>&currency=EUR"></script>
   <script>

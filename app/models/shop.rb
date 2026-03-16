@@ -2,6 +2,7 @@ class Shop < ApplicationRecord
   belongs_to :user
   has_one_attached :cover            # photo principale du shop
   has_many_attached :photos          # galerie photos du shop
+  has_one_attached :avatar
 
   has_many :conversation_participants, as: :participant
   has_many :conversations, through: :conversation_participants

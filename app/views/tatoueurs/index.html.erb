@@ -1,35 +1,196 @@
-<h1>Tous les tatoueurs</h1>
+<%# ================================ %>
+<%# HEADER %>
+<%# ================================ %>
+<div style="background:#0D0D0D;border-bottom:1px solid #1A1A1A;padding:1rem 1.5rem;">
+  <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
 
-<%= form_with url: tatoueurs_path, method: :get do |f| %>
-  <%= f.select :style_id, TattooStyle.all.map { |s| [s.name, s.id] }, include_blank: "Tous les styles" %>
-  <%= f.submit "Filtrer" %>
-<% end %>
+    <%# Titre + tagline %>
+    <div>
+      <h1 style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:#fff;letter-spacing:0.05em;margin:0;">
+        Tatoueurs
+      </h1>
+      <p style="font-size:0.85rem;color:#666;margin:0;">Trouvez votre artiste tatoueur</p>
+    </div>
 
-<% @tatoueurs.each do |t| %>
-  <div class="tatoueur-card">
-    <h2><%= link_to t.nickname, tatoueur_path(t) %></h2>
-    <p><%= t.first_name %> <%= t.last_name %></p>
-    <p><%= t.tattoo_styles.map(&:name).join(", ") %></p>
+    <%# Toggle grille / carte %>
+    <div style="display:flex;gap:0.5rem;align-items:center;">
+      <button id="btn-grille" onclick="switchView('grille')"
+              style="background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;font-size:0.95rem;letter-spacing:0.08em;padding:0.5rem 1.25rem;cursor:pointer;">
+        ⊞ Grille
+      </button>
+      <button id="btn-carte" onclick="switchView('carte')"
+              style="background:transparent;color:#888;border:1px solid #2A2A2A;font-family:'Bebas Neue',sans-serif;font-size:0.95rem;letter-spacing:0.08em;padding:0.5rem 1.25rem;cursor:pointer;">
+        🗺 Carte
+      </button>
+    </div>
   </div>
-<% end %>
+</div>
 
-<%= link_to "Ajouter un tatoueur", new_tatoueur_path %>
+<%# ================================ %>
+<%# BARRE DE RECHERCHE %>
+<%# ================================ %>
+<div style="background:#111;border-bottom:1px solid #1A1A1A;padding:0.75rem 1.5rem;">
+  <%= form_with url: tatoueurs_path, method: :get, class: "d-flex gap-2 flex-wrap align-items-center" do |f| %>
+    <div style="position:relative;flex:1;min-width:200px;">
+      <span style="position:absolute;left:1rem;top:50%;transform:translateY(-50%);color:#555;">🔍</span>
+      <%= f.text_field :q,
+          value: params[:q],
+          placeholder: "Rechercher par nom, ville, style...",
+          style: "width:100%;background:#1A1A1A;border:1px solid #2A2A2A;color:#fff;padding:0.7rem 1rem 0.7rem 2.5rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;outline:none;",
+          onfocus: "this.style.borderColor='#F5C500'",
+          onblur:  "this.style.borderColor='#2A2A2A'" %>
+    </div>
+    <%= f.select :style_id,
+        TattooStyle.all.map { |s| [s.name, s.id] },
+        { include_blank: "Tous les styles" },
+        style: "background:#1A1A1A;border:1px solid #2A2A2A;color:#fff;padding:0.7rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:0.95rem;outline:none;cursor:pointer;" %>
+    <%= f.text_field :location,
+        value: params[:location],
+        placeholder: "Ville...",
+        style: "background:#1A1A1A;border:1px solid #2A2A2A;color:#fff;padding:0.7rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:0.95rem;outline:none;width:160px;",
+        onfocus: "this.style.borderColor='#F5C500'",
+        onblur:  "this.style.borderColor='#2A2A2A'" %>
+    <%= f.submit "Rechercher",
+        style: "background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;font-size:0.95rem;letter-spacing:0.08em;padding:0.7rem 1.5rem;cursor:pointer;text-transform:uppercase;" %>
+    <% if params[:style_id].present? || params[:location].present? || params[:q].present? %>
+      <%= link_to "✕", tatoueurs_path,
+          style: "color:#888;font-size:1.2rem;line-height:1;text-decoration:none;" %>
+    <% end %>
+  <% end %>
+</div>
 
-<% if user_signed_in? && current_user.tatoueur? %>
-  <%= link_to "Créer mon profil tatoueur", new_tatoueur_path, class: "hero-cta" %>
-<% end %>
+<%# ================================ %>
+<%# COMPTEUR %>
+<%# ================================ %>
+<div style="padding:0.75rem 1.5rem;border-bottom:1px solid #1A1A1A;">
+  <span style="font-size:0.9rem;color:#888;">
+    <strong style="color:#F5C500;"><%= @tatoueurs.count %></strong>
+    artiste<%= @tatoueurs.count > 1 ? "s" : "" %> disponible<%= @tatoueurs.count > 1 ? "s" : "" %>
+  </span>
+</div>
 
-# Sur la page index des shops
-# app/views/shops/index.html.erb
-<% if user_signed_in? && current_user.shop_owner? %>
-  <%= link_to "Ajouter mon shop", new_shop_path, class: "hero-cta" %>
-<% end %>
+<%# ================================ %>
+<%# VUE GRILLE %>
+<%# ================================ %>
+<div id="view-grille" style="padding:1.5rem;">
+  <% if @tatoueurs.any? %>
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+      <% @tatoueurs.each do |tatoueur| %>
+        <div class="col">
+          <%= link_to tatoueur_path(tatoueur), style: "text-decoration:none;display:block;" do %>
+            <div style="position:relative;overflow:hidden;background:#1A1A1A;border:1px solid #2A2A2A;transition:border-color 0.2s;"
+                 onmouseover="this.style.borderColor='#F5C500'"
+                 onmouseout="this.style.borderColor='#2A2A2A'">
 
-<div class="container mt-5">
-  <h2 class="section-title">Carte des tatoueurs</h2>
+              <%# Photo principale %>
+              <% photo = tatoueur.photos.first || (tatoueur.avatar.attached? ? tatoueur.avatar : nil) %>
+              <% if photo %>
+                <%= image_tag photo,
+                    style: "width:100%;height:320px;object-fit:cover;display:block;transition:transform 0.3s;",
+                    onmouseover: "this.style.transform='scale(1.03)'",
+                    onmouseout:  "this.style.transform='scale(1)'" %>
+              <% else %>
+                <div style="width:100%;height:320px;background:#1A1A1A;display:flex;align-items:center;justify-content:center;font-size:4rem;">🖋️</div>
+              <% end %>
+
+              <%# Badge vérifié %>
+              <% if tatoueur.verified? %>
+                <span style="position:absolute;top:0.75rem;right:0.75rem;background:rgba(39,174,96,0.9);color:#fff;font-size:0.7rem;font-weight:700;padding:0.2rem 0.5rem;text-transform:uppercase;letter-spacing:0.05em;">
+                  ✅ Vérifié
+                </span>
+              <% end %>
+
+              <%# Infos en bas de la card %>
+              <div style="padding:1rem;background:linear-gradient(to top, #0D0D0D 0%, rgba(13,13,13,0.95) 100%);">
+                <div class="d-flex align-items-center gap-2 mb-1">
+                  <% if tatoueur.avatar.attached? %>
+                    <%= image_tag tatoueur.avatar,
+                        style: "width:36px;height:36px;object-fit:cover;border-radius:50%;border:2px solid #F5C500;flex-shrink:0;" %>
+                  <% end %>
+                  <div>
+                    <div style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:#fff;letter-spacing:0.03em;">
+                      <%= tatoueur.nickname %>
+                    </div>
+                    <% if tatoueur.shops.any? %>
+                      <div style="font-size:0.8rem;color:#888;"><%= tatoueur.shops.first.name %></div>
+                    <% end %>
+                  </div>
+                </div>
+
+                <%# Note %>
+                <% if tatoueur.reviews.any? %>
+                  <% avg = tatoueur.reviews.average(:rating).to_f.round(1) %>
+                  <div style="font-size:0.8rem;color:#F5C500;">
+                    ⭐ <%= avg %> <span style="color:#666;">(<%= tatoueur.reviews.count %> avis)</span>
+                  </div>
+                <% end %>
+
+                <%# Styles %>
+                <% if tatoueur.tattoo_styles.any? %>
+                  <div class="d-flex flex-wrap gap-1 mt-2">
+                    <% tatoueur.tattoo_styles.first(3).each do |style| %>
+                      <span style="background:rgba(245,197,0,0.15);color:#F5C500;font-size:0.7rem;padding:0.15rem 0.5rem;text-transform:uppercase;letter-spacing:0.05em;">
+                        <%= style.name %>
+                      </span>
+                    <% end %>
+                    <% if tatoueur.tattoo_styles.count > 3 %>
+                      <span style="color:#666;font-size:0.7rem;">+<%= tatoueur.tattoo_styles.count - 3 %></span>
+                    <% end %>
+                  </div>
+                <% end %>
+              </div>
+
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+
+  <% else %>
+    <div style="text-align:center;padding:4rem 2rem;color:#555;">
+      <div style="font-size:3rem;margin-bottom:1rem;">🖋️</div>
+      <p>Aucun tatoueur trouvé.</p>
+      <%= link_to "Réinitialiser la recherche", tatoueurs_path, style: "color:#F5C500;" %>
+    </div>
+  <% end %>
+</div>
+
+<%# ================================ %>
+<%# VUE CARTE %>
+<%# ================================ %>
+<div id="view-carte" style="display:none;">
   <%= render "shared/map",
       map_id: "tatoueurs-map",
-      height: "400px",
+      height: "calc(100vh - 180px)",
       tatoueurs_json: @tatoueurs_json,
       shops_json: "[]" %>
 </div>
+
+<script>
+  function switchView(view) {
+    const grille = document.getElementById("view-grille")
+    const carte  = document.getElementById("view-carte")
+    const btnG   = document.getElementById("btn-grille")
+    const btnC   = document.getElementById("btn-carte")
+
+    if (view === "grille") {
+      grille.style.display = "block"
+      carte.style.display  = "none"
+      btnG.style.background   = "#F5C500"
+      btnG.style.color        = "#000"
+      btnG.style.border       = "none"
+      btnC.style.background   = "transparent"
+      btnC.style.color        = "#888"
+      btnC.style.border       = "1px solid #2A2A2A"
+    } else {
+      grille.style.display = "none"
+      carte.style.display  = "block"
+      btnC.style.background   = "#F5C500"
+      btnC.style.color        = "#000"
+      btnC.style.border       = "none"
+      btnG.style.background   = "transparent"
+      btnG.style.color        = "#888"
+      btnG.style.border       = "1px solid #2A2A2A"
+    }
+  }
+</script>

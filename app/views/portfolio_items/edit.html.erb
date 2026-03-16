@@ -1,2 +1,10 @@
-<h1>PortfolioItems#edit</h1>
-<p>Find me in app/views/portfolio_items/edit.html.erb</p>
+<div class="container py-5" style="max-width:680px;">
+  <div class="mb-5">
+    <%= link_to "← Retour", tatoueur_portfolio_path(@tatoueur, @portfolio), class: "btn btn-outline-secondary btn-sm mb-3" %>
+    <h1 style="font-size:2.5rem;">
+      Modifier la <span class="text-yellow">réalisation</span>
+    </h1>
+  </div>
+
+  <%= render "form", portfolio_item: @portfolio_item %>
+</div>

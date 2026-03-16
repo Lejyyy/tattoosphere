@@ -1,16 +1,126 @@
-<h1>Événements</h1>
-<%= link_to "Créer un événement", new_event_path %>
+<%# ================================ %>
+<%# HEADER %>
+<%# ================================ %>
+<section class="section pb-0">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+      <h1 class="section-title mb-0">Événements</h1>
+      <% if user_signed_in? && (current_user.tatoueur.present? || current_user.shop.present? || current_user.admin?) %>
+        <%= link_to "Créer un événement", new_event_path, class: "hero-cta" %>
+      <% end %>
+    </div>
 
-<% @events.each do |e| %>
-  <div class="event-card">
-    <h2><%= link_to e.name, e %></h2>
-    <p><%= e.location %></p>
-    <p><%= e.start_date.strftime("%d/%m/%Y à %H:%M") %></p>
-    <% if e.shop %>
-      <p>Par <%= link_to e.shop.name, e.shop %></p>
-    <% end %>
-    <% if e.tatoueur %>
-      <p>Par <%= link_to e.tatoueur.nickname, e.tatoueur %></p>
+    <%# FILTRES %>
+    <%= form_with url: events_path, method: :get, class: "d-flex flex-wrap gap-2 mb-4" do |f| %>
+      <%= f.text_field :location,
+          value: params[:location],
+          placeholder: "Ville...",
+          class: "form-control form-control-sm",
+          style: "width:180px;" %>
+      <%= f.date_field :from,
+          value: params[:from],
+          class: "form-control form-control-sm",
+          style: "width:160px;",
+          placeholder: "Du..." %>
+      <%= f.date_field :to,
+          value: params[:to],
+          class: "form-control form-control-sm",
+          style: "width:160px;",
+          placeholder: "Au..." %>
+      <%= f.submit "Filtrer", class: "btn btn-outline-primary btn-sm" %>
+      <% if params[:location].present? || params[:from].present? || params[:to].present? %>
+        <%= link_to "Réinitialiser", events_path, class: "btn btn-outline-secondary btn-sm" %>
+      <% end %>
     <% end %>
   </div>
-<% end %>
+</section>
+
+<%# ================================ %>
+<%# GRILLE ÉVÉNEMENTS %>
+<%# ================================ %>
+<section class="section pt-3">
+  <div class="container">
+    <% if @events.any? %>
+      <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        <% @events.each do |event| %>
+          <div class="col">
+            <div class="card-dark h-100 d-flex flex-column">
+
+              <%# IMAGE %>
+              <div style="position:relative;">
+                <div class="card-img-placeholder" style="height:180px;font-size:3rem;">🎨</div>
+                <%# Badge date %>
+                <div style="position:absolute;top:0.75rem;left:0.75rem;background:#F5C500;color:#000;font-family:'Bebas Neue',sans-serif;padding:0.3rem 0.75rem;font-size:0.95rem;letter-spacing:0.05em;">
+                  <%= event.start_date&.strftime("%d %b").upcase %>
+                </div>
+                <%# Badge public/privé %>
+                <% if event.is_public %>
+                  <div style="position:absolute;top:0.75rem;right:0.75rem;background:rgba(0,0,0,0.7);color:#27AE60;font-size:0.75rem;padding:0.2rem 0.5rem;text-transform:uppercase;letter-spacing:0.05em;">
+                    Public
+                  </div>
+                <% else %>
+                  <div style="position:absolute;top:0.75rem;right:0.75rem;background:rgba(0,0,0,0.7);color:#C0392B;font-size:0.75rem;padding:0.2rem 0.5rem;text-transform:uppercase;letter-spacing:0.05em;">
+                    Privé
+                  </div>
+                <% end %>
+              </div>
+
+              <%# CONTENU %>
+              <div class="card-body d-flex flex-column flex-grow-1">
+
+                <%# Nom %>
+                <div class="card-name mb-2"><%= event.name %></div>
+
+                <%# Dates %>
+                <div class="d-flex align-items-center gap-2 mb-2">
+                  <span style="color:#F5C500;font-size:0.85rem;">📅</span>
+                  <span class="text-secondary" style="font-size:0.85rem;">
+                    <%= event.start_date&.strftime("%d/%m/%Y à %Hh%M") %>
+                    <% if event.end_date.present? %>
+                      → <%= event.end_date&.strftime("%d/%m/%Y") %>
+                    <% end %>
+                  </span>
+                </div>
+
+                <%# Localisation %>
+                <% if event.location.present? %>
+                  <p class="card-meta mb-2">📍 <%= event.location %></p>
+                <% end %>
+
+                <%# Description %>
+                <% if event.description.present? %>
+                  <p class="text-secondary mb-3" style="font-size:0.85rem;line-height:1.6;">
+                    <%= event.description.truncate(100) %>
+                  </p>
+                <% end %>
+
+                <%# Organisateur %>
+                <div class="mb-3">
+                  <% if event.tatoueur.present? %>
+                    <span class="card-badge">
+                      🖋️ <%= link_to event.tatoueur.nickname, tatoueur_path(event.tatoueur), style: "color:inherit;" %>
+                    </span>
+                  <% end %>
+                  <% if event.shop.present? %>
+                    <span class="card-badge">
+                      🏠 <%= link_to event.shop.name, shop_path(event.shop), style: "color:inherit;" %>
+                    </span>
+                  <% end %>
+                </div>
+
+                <%# Lien %>
+                <div class="mt-auto">
+                  <%= link_to "Voir l'événement →", event_path(event), class: "card-link mb-0" %>
+                </div>
+
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
+    <% else %>
+      <p class="text-secondary">Aucun événement trouvé.</p>
+    <% end %>
+  </div>
+</section>

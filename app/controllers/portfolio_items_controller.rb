@@ -57,10 +57,14 @@ class PortfolioItemsController < ApplicationController
   end
 
   def authorize_tatoueur!
-    unless current_user.tatoueur == @tatoueur
-      redirect_to tatoueur_portfolio_path(@tatoueur, @portfolio), alert: "Vous n'êtes pas autorisé à effectuer cette action."
-    end
+  is_tatoueur_owner = current_user.tatoueur == @tatoueur
+  is_shop_owner     = current_user.shop.present? && current_user.shop.tatoueurs.include?(@tatoueur)
+
+  unless is_tatoueur_owner || is_shop_owner || current_user.admin?
+    redirect_to tatoueur_portfolio_path(@tatoueur, @portfolio),
+                alert: "Vous n'êtes pas autorisé à effectuer cette action."
   end
+end
 
   def portfolio_item_params
     params.require(:portfolio_item).permit(

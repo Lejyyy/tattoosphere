@@ -1,54 +1,155 @@
-<h1>Réservation #<%= @booking.id %></h1>
-<p><strong>Shop :</strong> <%= @booking.shop.name %></p>
-<p><strong>Tatoueur :</strong> <%= @booking.tatoueur.nickname %></p>
-<p><strong>Date :</strong> <%= @booking.date.strftime("%d/%m/%Y") %></p>
-<p><strong>Horaire :</strong> <%= @booking.start_time&.strftime("%H:%M") %> - <%= @booking.end_time&.strftime("%H:%M") %></p>
-<p><strong>Statut :</strong> <%= @booking.status %></p>
-<p><strong>Prix estimé :</strong> <%= @booking.price_estimated %> €</p>
-<p><strong>Description :</strong> <%= @booking.description %></p>
+<div class="container py-5" style="max-width:780px;">
 
-<%= link_to "Modifier", edit_booking_path(@booking) %>
-<%= link_to "Annuler", @booking, method: :delete, data: { confirm: "Annuler cette réservation ?" } %>
+  <%# Header %>
+  <div class="mb-4">
+    <%= link_to "← Mes réservations", bookings_path, class: "btn btn-outline-secondary btn-sm mb-3" %>
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
+      <h1 style="font-size:2.5rem;margin-bottom:0;">
+        Réservation <span class="text-yellow">#<%= @booking.id %></span>
+      </h1>
+      <%# Badge statut %>
+      <% status_styles = {
+          "pending"   => { bg: "rgba(245,197,0,0.15)",   color: "#F5C500",  label: "⏳ En attente" },
+          "confirmed" => { bg: "rgba(39,174,96,0.15)",   color: "#27AE60",  label: "✅ Confirmée" },
+          "done"      => { bg: "rgba(39,174,96,0.1)",    color: "#27AE60",  label: "🎉 Terminée" },
+          "cancelled" => { bg: "rgba(192,57,43,0.15)",   color: "#C0392B",  label: "❌ Annulée" }
+        } %>
+      <% s = status_styles[@booking.status] || { bg: "#1A1A1A", color: "#888", label: @booking.status } %>
+      <span style="background:<%= s[:bg] %>;color:<%= s[:color] %>;font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:0.08em;padding:0.4rem 1.25rem;border:1px solid <%= s[:color] %>;">
+        <%= s[:label] %>
+      </span>
+    </div>
+  </div>
 
- <div class="card-dark p-4 mt-4">
-   <h3 style="color:#fff;">Acompte</h3>
+  <div class="row g-4">
 
-   <% if @booking.deposit_paid? %>
-     <div style="color:#28a745;">
-       ✅ Acompte de <%= @booking.deposit_amount %> € réglé
-       le <%= @booking.deposit_paid_at.strftime("%d/%m/%Y à %H:%M") %>
-     </div>
-   <% elsif @booking.cancellable? %>
-     <p>Montant de l'acompte : <strong style="color:#c9a84c;"><%= @booking.deposit_amount %> €</strong></p>
-     <%= link_to "Payer l'acompte via PayPal",
-         new_booking_payment_path(@booking),
-         class: "hero-cta" %>
-   <% end %>
+    <%# Colonne principale %>
+    <div class="col-lg-7">
 
-   <% if @booking.cancellable? %>
-    <div class="mt-3">
-     <%= button_to "Annuler le rendez-vous",
-           @booking,
-           method: :delete,
-           data: { confirm: "Confirmer l'annulation ?" },
-           class: "btn btn-outline-danger btn-sm" %>
-       </div>
-    <% end %>
+      <%# Infos réservation %>
+      <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;padding:2rem;margin-bottom:1.5rem;">
+        <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:#F5C500;border-left:4px solid #F5C500;padding-left:0.75rem;margin-bottom:1.5rem;">
+          Détails
+        </h2>
+
+        <div class="d-flex flex-column gap-3">
+          <div class="d-flex justify-content-between" style="border-bottom:1px solid #2A2A2A;padding-bottom:0.75rem;">
+            <span class="text-secondary" style="font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;">Shop</span>
+            <%= link_to @booking.shop.name, shop_path(@booking.shop), style: "color:#fff;font-weight:600;" %>
+          </div>
+          <div class="d-flex justify-content-between" style="border-bottom:1px solid #2A2A2A;padding-bottom:0.75rem;">
+            <span class="text-secondary" style="font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;">Tatoueur</span>
+            <%= link_to @booking.tatoueur.nickname, tatoueur_path(@booking.tatoueur), style: "color:#fff;font-weight:600;" %>
+          </div>
+          <div class="d-flex justify-content-between" style="border-bottom:1px solid #2A2A2A;padding-bottom:0.75rem;">
+            <span class="text-secondary" style="font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;">Date</span>
+            <span style="font-weight:600;">📅 <%= @booking.date&.strftime("%d %B %Y") %></span>
+          </div>
+          <% if @booking.start_time.present? %>
+            <div class="d-flex justify-content-between" style="border-bottom:1px solid #2A2A2A;padding-bottom:0.75rem;">
+              <span class="text-secondary" style="font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;">Horaire</span>
+              <span style="font-weight:600;">
+                🕐 <%= @booking.start_time.strftime("%Hh%M") %>
+                <% if @booking.end_time.present? %> → <%= @booking.end_time.strftime("%Hh%M") %><% end %>
+              </span>
+            </div>
+          <% end %>
+          <% if @booking.price_estimated.present? %>
+            <div class="d-flex justify-content-between" style="border-bottom:1px solid #2A2A2A;padding-bottom:0.75rem;">
+              <span class="text-secondary" style="font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;">Budget estimé</span>
+              <span style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:#F5C500;">
+                <%= number_to_currency(@booking.price_estimated, unit: "€", format: "%n %u") %>
+              </span>
+            </div>
+          <% end %>
+        </div>
+
+        <% if @booking.description.present? %>
+          <div class="mt-3">
+            <p class="text-secondary" style="font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem;">Description du projet</p>
+            <p style="line-height:1.8;color:#ccc;"><%= @booking.description %></p>
+          </div>
+        <% end %>
+      </div>
+
+      <%# Confirmation virement (tatoueur uniquement) %>
+      <% if @booking.payment_method == "bank_transfer" && !@booking.deposit_paid? %>
+        <% if current_user.tatoueur? && current_user.tatoueur == @booking.tatoueur %>
+          <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-left:4px solid #F5C500;padding:1.5rem;margin-bottom:1.5rem;">
+            <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:#F5C500;margin-bottom:1rem;">
+              Confirmation du virement
+            </h3>
+            <p class="text-secondary" style="font-size:0.9rem;">
+              Le client doit vous verser
+              <strong style="color:#F5C500;"><%= @booking.deposit_amount %> €</strong>
+              par virement avec la référence
+              <strong style="color:#fff;">RDV-<%= @booking.id %>-<%= @booking.user.id %></strong>.
+            </p>
+            <%= button_to "✅ J'ai reçu le virement",
+                confirm_transfer_booking_payment_path(@booking),
+                method: :post,
+                class: "hero-cta mt-2",
+                data: { turbo_confirm: "Confirmer la réception du virement ?" } %>
+          </div>
+        <% end %>
+      <% end %>
+
     </div>
 
-<% if @booking.payment_method == "bank_transfer" && !@booking.deposit_paid? %>
-  <% if current_user.tatoueur? && current_user.tatoueur == @booking.tatoueur %>
-    <div class="card-dark p-4 mt-4">
-      <h3 style="color:#fff;">Confirmation du virement</h3>
-      <p style="color:#888;">
-        Le client doit vous verser <strong style="color:#c9a84c;"><%= @booking.deposit_amount %> €</strong>
-        par virement avec la référence <strong>RDV-<%= @booking.id %>-<%= @booking.user.id %></strong>.
-      </p>
-      <%= button_to "✅ J'ai reçu le virement",
-          confirm_transfer_booking_payment_path(@booking),
-          method: :post,
-          class: "hero-cta",
-          data: { confirm: "Confirmer la réception du virement ?" } %>
+    <%# Colonne droite %>
+    <div class="col-lg-5">
+
+      <%# Acompte %>
+      <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid <%= @booking.deposit_paid? ? '#27AE60' : '#F5C500' %>;padding:1.5rem;margin-bottom:1.5rem;">
+        <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:#fff;margin-bottom:1rem;">
+          Acompte
+        </h3>
+
+        <% if @booking.deposit_paid? %>
+          <div style="color:#27AE60;font-size:0.95rem;">
+            <div style="font-size:1.5rem;margin-bottom:0.5rem;">✅</div>
+            <strong><%= @booking.deposit_amount %> € réglé</strong>
+            <div class="text-secondary" style="font-size:0.8rem;margin-top:0.25rem;">
+              Le <%= @booking.deposit_paid_at&.strftime("%d/%m/%Y à %Hh%M") %>
+            </div>
+          </div>
+        <% elsif @booking.cancellable? %>
+          <p class="text-secondary" style="font-size:0.9rem;margin-bottom:1rem;">
+            Montant dû :
+            <span style="font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:#F5C500;display:block;">
+              <%= @booking.deposit_amount %> €
+            </span>
+          </p>
+          <%= link_to "💳 Payer l'acompte",
+              new_booking_payment_path(@booking),
+              class: "hero-cta w-100 text-center d-block" %>
+        <% end %>
+      </div>
+
+      <%= link_to "📄 Télécharger la facture PDF",
+    pdf_booking_path(@booking),
+    class: "btn btn-outline-primary btn-sm",
+    target: "_blank" %>
+
+      <%# Actions %>
+      <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1.5rem;">
+        <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:#fff;margin-bottom:1rem;">
+          Actions
+        </h3>
+        <div class="d-flex flex-column gap-2">
+          <%= link_to "✏️ Modifier", edit_booking_path(@booking),
+              class: "btn btn-outline-primary btn-sm w-100" %>
+          <% if @booking.cancellable? %>
+            <%= button_to "❌ Annuler le rendez-vous",
+                @booking,
+                method: :delete,
+                data: { turbo_confirm: "Confirmer l'annulation de cette réservation ?" },
+                class: "btn btn-outline-danger btn-sm w-100" %>
+          <% end %>
+        </div>
+      </div>
+
     </div>
-  <% end %>
-<% end %>
+  </div>
+
+</div>

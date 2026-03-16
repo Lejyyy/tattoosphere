@@ -18,7 +18,7 @@ class Booking < ApplicationRecord
 
   has_one :payment
 
-
+  after_initialize :set_default_status
 
   def deposit_paid?
     deposit_paid == true
@@ -53,4 +53,8 @@ class Booking < ApplicationRecord
   def send_deposit_confirmed_email
     BookingMailer.deposit_confirmed(self).deliver_later
   end
+
+  def set_default_status
+  self.status ||= "pending"
+end
 end

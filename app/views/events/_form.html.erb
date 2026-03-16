@@ -1,47 +1,161 @@
-<%= form_with model: @event, html: { enctype: "multipart/form-data" } do |f| %>
+<div class="container py-5" style="max-width:680px;">
 
-  <%# Afficher la bannière actuelle %>
-  <% if @event.banner.attached? %>
-    <div>
-      <%= image_tag @event.banner, width: 600 %>
+  <%# Header %>
+  <div class="mb-5">
+    <%= link_to "← Retour", events_path, class: "btn btn-outline-secondary btn-sm mb-3" %>
+    <h1 style="font-size:2.5rem;">
+      Créer un <span class="text-yellow">événement</span>
+    </h1>
+    <p class="text-secondary">Partage ton prochain flash day, convention ou meet-up.</p>
+  </div>
+
+  <%# Erreurs %>
+  <% if @event.errors.any? %>
+    <div class="alert alert-danger mb-4">
+      <% @event.errors.full_messages.each do |msg| %>
+        <div>⚠️ <%= msg %></div>
+      <% end %>
     </div>
   <% end %>
 
-  <div>
-    <%= f.label :banner, "Bannière de l'événement" %>
-    <%= f.file_field :banner, accept: "image/*" %>
-  </div>
-  <div>
-    <%= f.label :name, "Nom" %>
-    <%= f.text_field :name %>
-  </div>
-  <div>
-    <%= f.label :description %>
-    <%= f.text_area :description %>
-  </div>
-  <div>
-    <%= f.label :location, "Lieu" %>
-    <%= f.text_field :location %>
-  </div>
-  <div>
-    <%= f.label :start_date, "Date de début" %>
-    <%= f.datetime_field :start_date %>
-  </div>
-  <div>
-    <%= f.label :end_date, "Date de fin" %>
-    <%= f.datetime_field :end_date %>
-  </div>
-  <div>
-    <%= f.label :is_public, "Public ?" %>
-    <%= f.check_box :is_public %>
-  </div>
-  <div>
-    <%= f.label :shop_id, "Shop (optionnel)" %>
-    <%= f.collection_select :shop_id, Shop.all, :id, :name, include_blank: true %>
-  </div>
-  <div>
-    <%= f.label :tatoueur_id, "Tatoueur (optionnel)" %>
-    <%= f.collection_select :tatoueur_id, Tatoueur.all, :id, :nickname, include_blank: true %>
-  </div>
-  <%= f.submit %>
-<% end %>
+  <%= form_with model: @event, html: { enctype: "multipart/form-data" } do |f| %>
+
+    <%# BANNIÈRE %>
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;padding:2rem;margin-bottom:1.5rem;">
+      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:#F5C500;border-left:4px solid #F5C500;padding-left:0.75rem;margin-bottom:1.5rem;">
+        Bannière
+      </h2>
+
+      <% if @event.banner.attached? %>
+        <div class="mb-3">
+          <%= image_tag @event.banner,
+              style: "width:100%;max-height:200px;object-fit:cover;border:1px solid #2A2A2A;" %>
+        </div>
+      <% end %>
+
+      <%= f.label :banner, "Image de l'événement",
+          style: "display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;" %>
+      <%= f.file_field :banner,
+          accept: "image/*",
+          style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#888;padding:0.6rem 1rem;font-size:0.85rem;cursor:pointer;" %>
+      <p style="font-size:0.75rem;color:#555;margin-top:0.4rem;">PNG, JPG ou WEBP recommandé</p>
+    </div>
+
+    <%# INFOS GÉNÉRALES %>
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:2rem;margin-bottom:1.5rem;">
+      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:#F5C500;border-left:4px solid #F5C500;padding-left:0.75rem;margin-bottom:1.5rem;">
+        Informations
+      </h2>
+
+      <div class="mb-4">
+        <%= f.label :name, "Nom de l'événement",
+            style: "display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;" %>
+        <%= f.text_field :name,
+            placeholder: "Ex : Flash Day Old School, Convention Paris...",
+            style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;outline:none;",
+            onfocus: "this.style.borderColor='#F5C500'",
+            onblur:  "this.style.borderColor='#2A2A2A'" %>
+      </div>
+
+      <div class="mb-4">
+        <%= f.label :description, "Description",
+            style: "display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;" %>
+        <%= f.text_area :description,
+            rows: 4,
+            placeholder: "Décris l'événement, ce qui est prévu, les artistes présents...",
+            style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;outline:none;resize:vertical;",
+            onfocus: "this.style.borderColor='#F5C500'",
+            onblur:  "this.style.borderColor='#2A2A2A'" %>
+      </div>
+
+      <div class="mb-4">
+        <%= f.label :location, "Lieu",
+            style: "display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;" %>
+        <%= f.text_field :location,
+            placeholder: "Adresse ou nom du lieu...",
+            style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;outline:none;",
+            onfocus: "this.style.borderColor='#F5C500'",
+            onblur:  "this.style.borderColor='#2A2A2A'" %>
+      </div>
+
+      <%# Visibilité %>
+      <div class="d-flex align-items-center gap-3">
+        <%= f.check_box :is_public,
+            style: "accent-color:#F5C500;width:18px;height:18px;cursor:pointer;" %>
+        <div>
+          <%= f.label :is_public, "Événement public",
+              style: "font-size:0.9rem;color:#fff;cursor:pointer;margin:0;" %>
+          <p style="font-size:0.75rem;color:#555;margin:0;">Visible par tous les visiteurs</p>
+        </div>
+      </div>
+    </div>
+
+    <%# DATES %>
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:2rem;margin-bottom:1.5rem;">
+      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:#F5C500;border-left:4px solid #F5C500;padding-left:0.75rem;margin-bottom:1.5rem;">
+        Dates
+      </h2>
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <%= f.label :start_date, "Date de début",
+              style: "display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;" %>
+          <%= f.datetime_field :start_date,
+              style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;outline:none;color-scheme:dark;",
+              onfocus: "this.style.borderColor='#F5C500'",
+              onblur:  "this.style.borderColor='#2A2A2A'" %>
+        </div>
+        <div class="col-md-6">
+          <%= f.label :end_date, "Date de fin",
+              style: "display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;" %>
+          <%= f.datetime_field :end_date,
+              style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;outline:none;color-scheme:dark;",
+              onfocus: "this.style.borderColor='#F5C500'",
+              onblur:  "this.style.borderColor='#2A2A2A'" %>
+        </div>
+      </div>
+    </div>
+
+    <%# ORGANISATEUR %>
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:2rem;margin-bottom:2rem;">
+      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:#F5C500;border-left:4px solid #F5C500;padding-left:0.75rem;margin-bottom:0.5rem;">
+        Organisateur
+      </h2>
+      <p style="font-size:0.8rem;color:#555;margin-bottom:1.5rem;">
+        Associe l'événement à ton shop ou ton profil tatoueur.
+      </p>
+
+      <div class="row g-3">
+        <% if current_user.shop.present? %>
+          <div class="col-md-6">
+            <%= f.label :shop_id, "Shop",
+                style: "display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;" %>
+            <%= f.collection_select :shop_id,
+                [current_user.shop], :id, :name,
+                { include_blank: "— Aucun shop —" },
+                style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;outline:none;" %>
+          </div>
+        <% end %>
+
+        <% if current_user.tatoueur.present? %>
+          <div class="col-md-6">
+            <%= f.label :tatoueur_id, "Tatoueur",
+                style: "display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;" %>
+            <%= f.collection_select :tatoueur_id,
+                [current_user.tatoueur], :id, :nickname,
+                { include_blank: "— Aucun tatoueur —" },
+                style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;outline:none;" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <%# SUBMIT %>
+    <%= f.submit @event.persisted? ? "Mettre à jour" : "Créer l'événement",
+        style: "width:100%;background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:0.1em;padding:1rem;cursor:pointer;text-transform:uppercase;transition:background 0.2s;",
+        onmouseover: "this.style.background='#d4a800'",
+        onmouseout:  "this.style.background='#F5C500'" %>
+
+  <% end %>
+
+</div>

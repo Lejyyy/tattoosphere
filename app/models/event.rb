@@ -1,15 +1,15 @@
 class Event < ApplicationRecord
   belongs_to :shop, optional: true
   belongs_to :tatoueur, optional: true
-  has_one_attached :banner           # bannière de l'événement
+  has_one_attached :banner
   has_many :medias
+  has_many :event_participations, dependent: :destroy
+  has_many :participants, through: :event_participations, source: :user
 
   validates :name, presence: true
+  validates :start_date, :end_date, presence: true
   validate :must_have_owner
-
-  validates :start_at, :end_at, presence: true
   validate :end_after_start
-
   validates :banner, content_type: [ :png, :jpg, :jpeg, :webp ],
                      size: { less_than: 5.megabytes }
 
@@ -18,9 +18,9 @@ class Event < ApplicationRecord
   def must_have_owner
     errors.add(:base, "Un événement doit appartenir à un shop ou un tatoueur") if shop.nil? && tatoueur.nil?
   end
-end
 
-def end_after_start
-  return unless start_at && end_at
-  errors.add(:end_at, "doit être après la date de début") if end_at <= start_at
+  def end_after_start
+    return unless start_date && end_date
+    errors.add(:end_date, "doit être après la date de début") if end_date <= start_date
+  end
 end
