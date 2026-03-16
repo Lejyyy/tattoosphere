@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_15_194948) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_16_131724) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -42,6 +42,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_15_194948) do
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
   end
 
+  create_table "admin_logs", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "availabilities", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.integer "day_of_week"
@@ -50,6 +55,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_15_194948) do
     t.bigint "tatoueur_id", null: false
     t.datetime "updated_at", null: false
     t.index ["tatoueur_id"], name: "index_availabilities_on_tatoueur_id"
+  end
+
+  create_table "blocked_slots", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.date "date", default: "2000-01-01", null: false
+    t.time "end_time", default: "2000-01-01 00:00:00", null: false
+    t.string "reason"
+    t.time "start_time", default: "2000-01-01 00:00:00", null: false
+    t.bigint "tatoueur_id", default: 0, null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "bookings", force: :cascade do |t|
@@ -178,6 +193,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_15_194948) do
     t.index ["tatoueur_id"], name: "index_portfolios_on_tatoueur_id"
   end
 
+  create_table "reports", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
   create_table "reviews", force: :cascade do |t|
     t.bigint "booking_id", null: false
     t.text "comment"
@@ -204,6 +224,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_15_194948) do
 
   create_table "shops", force: :cascade do |t|
     t.string "address"
+    t.string "cover_color"
     t.datetime "created_at", null: false
     t.text "description"
     t.string "email"
@@ -242,6 +263,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_15_194948) do
     t.string "address"
     t.string "bank_name"
     t.string "bic"
+    t.string "cover_color"
     t.datetime "created_at", null: false
     t.decimal "deposit_amount"
     t.text "description"
@@ -294,6 +316,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_15_194948) do
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "availabilities", "tatoueurs"
+  add_foreign_key "blocked_slots", "tatoueurs", name: "fk_blocked_slots_tatoueur"
   add_foreign_key "bookings", "shops"
   add_foreign_key "bookings", "tatoueurs"
   add_foreign_key "bookings", "users"

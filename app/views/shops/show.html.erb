@@ -1,62 +1,94 @@
+<% content_for :title, @shop.name %>
+
 <%# ================================ %>
-<%# HERO — Profil Shop %>
+<%# HERO %>
 <%# ================================ %>
-<section style="position:relative;min-height:420px;display:flex;align-items:flex-end;overflow:hidden;">
-  <% if @shop.cover.attached? %>
-    <div style="position:absolute;top:0;left:0;right:0;bottom:0;background-image:url('<%= url_for(@shop.cover) %>');background-size:cover;background-position:center;"></div>
-    <div style="position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(13,13,13,0.95) 100%);"></div>
-  <% else %>
-    <div style="position:absolute;top:0;left:0;right:0;bottom:0;background:linear-gradient(135deg,#1A1A1A 0%,#0D0D0D 100%);"></div>
-  <% end %>
+<% bg_style = if @shop.cover.attached?
+    "background-image:url('#{url_for(@shop.cover)}');background-size:cover;background-position:center;"
+  elsif @shop.cover_color.present?
+    "background-color:#{@shop.cover_color};"
+  else
+    "background:linear-gradient(135deg,#1A1A1A 0%,#0D0D0D 100%);"
+  end %>
+
+<section style="position:relative;min-height:480px;display:flex;align-items:flex-end;overflow:hidden;">
+
+  <%# Fond %>
+  <div style="position:absolute;top:0;left:0;right:0;bottom:0;<%= bg_style %>"></div>
+  <div style="position:absolute;top:0;left:0;right:0;bottom:0;
+              background:linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(13,13,13,0.98) 100%);"></div>
 
   <div class="container position-relative py-5">
     <div class="row align-items-end g-4">
 
-      <%# Avatar %>
+      <%# Avatar / Logo %>
       <div class="col-auto">
         <% profile_photo = @shop.photos.first %>
         <% if profile_photo %>
-          <%= image_tag profile_photo, style: "width:120px;height:120px;object-fit:cover;border:3px solid #F5C500;" %>
+          <%= image_tag profile_photo,
+              style: "width:130px;height:130px;object-fit:cover;
+                      border:3px solid #F5C500;box-shadow:0 4px 24px rgba(0,0,0,0.6);" %>
         <% elsif @shop.cover.attached? %>
-          <%= image_tag @shop.cover, style: "width:120px;height:120px;object-fit:cover;border:3px solid #F5C500;" %>
+          <%= image_tag @shop.cover,
+              style: "width:130px;height:130px;object-fit:cover;
+                      border:3px solid #F5C500;box-shadow:0 4px 24px rgba(0,0,0,0.6);" %>
         <% else %>
-          <div style="width:120px;height:120px;background:#1A1A1A;border:3px solid #2A2A2A;display:flex;align-items:center;justify-content:center;font-size:3rem;">🏠</div>
+          <div style="width:130px;height:130px;background:#1A1A1A;border:3px solid #2A2A2A;
+                      display:flex;align-items:center;justify-content:center;font-size:3rem;
+                      box-shadow:0 4px 24px rgba(0,0,0,0.6);">🏠</div>
         <% end %>
       </div>
 
       <%# Infos %>
       <div class="col">
-        <h1 class="mb-1" style="font-size:3rem;text-shadow:0 2px 8px rgba(0,0,0,0.8);"><%= @shop.name %></h1>
+        <h1 style="font-family:'Bebas Neue',sans-serif;font-size:3.5rem;letter-spacing:0.04em;
+                   text-shadow:0 2px 12px rgba(0,0,0,0.8);margin-bottom:0.5rem;">
+          <%= @shop.name %>
+        </h1>
 
-        <% if @shop.address.present? %>
-          <p class="mb-2" style="color:#ccc;">📍 <%= @shop.address %></p>
-        <% end %>
-
-        <div class="d-flex flex-wrap gap-3 mb-3">
+        <%# Méta %>
+        <div class="d-flex flex-wrap gap-3 mb-3" style="color:#bbb;font-size:0.9rem;">
+          <% if @shop.address.present? %>
+            <span>📍 <%= @shop.address %></span>
+          <% end %>
           <% if @shop.phone.present? %>
-            <span style="font-size:0.9rem;color:#ccc;">📞 <%= @shop.phone %></span>
+            <span>📞 <%= @shop.phone %></span>
           <% end %>
           <% if @shop.email.present? %>
-            <span style="font-size:0.9rem;color:#ccc;">✉️ <%= @shop.email %></span>
+            <span>✉️ <%= @shop.email %></span>
           <% end %>
           <% if @shop.open_hours.present? %>
-            <span style="font-size:0.9rem;color:#ccc;">🕐 <%= @shop.open_hours %></span>
+            <span>🕐 <%= @shop.open_hours %></span>
           <% end %>
         </div>
 
         <%# Stats %>
         <div class="d-flex gap-4 mb-4">
           <div class="text-center">
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:#F5C500;"><%= @shop.tatoueurs.count %></div>
-            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em;color:#aaa;">Tatoueurs</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:2.2rem;color:#F5C500;line-height:1;">
+              <%= @shop.tatoueurs.count %>
+            </div>
+            <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em;color:#888;">
+              Tatoueurs
+            </div>
           </div>
+          <div style="width:1px;background:#2A2A2A;margin:0.2rem 0;"></div>
           <div class="text-center">
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:#F5C500;"><%= @shop.bookings.count %></div>
-            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em;color:#aaa;">Réservations</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:2.2rem;color:#F5C500;line-height:1;">
+              <%= @shop.bookings.count %>
+            </div>
+            <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em;color:#888;">
+              Réservations
+            </div>
           </div>
+          <div style="width:1px;background:#2A2A2A;margin:0.2rem 0;"></div>
           <div class="text-center">
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:#F5C500;"><%= @shop.events.where("start_date >= ?", Time.current).count %></div>
-            <div style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.05em;color:#aaa;">Événements</div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:2.2rem;color:#F5C500;line-height:1;">
+              <%= @shop.events.where("start_date >= ?", Time.current).count %>
+            </div>
+            <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em;color:#888;">
+              Événements
+            </div>
           </div>
         </div>
 
@@ -91,50 +123,64 @@
         </div>
 
         <% if @shop.description.present? %>
-          <div class="mt-4 pt-4" style="border-top:1px solid rgba(255,255,255,0.1);">
-            <p style="max-width:700px;line-height:1.8;color:#ccc;"><%= @shop.description %></p>
+          <div class="mt-4 pt-4" style="border-top:1px solid rgba(255,255,255,0.08);">
+            <p style="max-width:700px;line-height:1.8;color:#bbb;"><%= @shop.description %></p>
           </div>
         <% end %>
       </div>
+
     </div>
   </div>
 </section>
 
-<hr style="border-color:#2A2A2A;margin:2rem 0 0;">
+<%# Éditeur de fond %>
+<% if user_signed_in? && policy(@shop).update? %>
+  <%= render "shared/cover_editor",
+      record:      @shop,
+      update_path: shop_path(@shop),
+      param_name:  "shop" %>
+<% end %>
+
+<hr style="border-color:#2A2A2A;margin:0;">
 
 <%# ================================ %>
 <%# TABS %>
 <%# ================================ %>
 <div class="container">
 
-  <%# Navigation tabs %>
   <div style="display:flex;border-bottom:1px solid #2A2A2A;margin-bottom:2rem;">
     <% shop_tabs = [] %>
-    <% shop_tabs << { key: "galerie",      label: "Galerie",      count: nil } if @shop.photos.count > 1 %>
-    <% shop_tabs << { key: "tatoueurs",    label: "Tatoueurs",    count: @shop.tatoueurs.count } if @shop.tatoueurs.any? %>
-    <% shop_tabs << { key: "evenements",   label: "Événements",   count: @shop.events.where("start_date >= ?", Time.current).count } if @shop.events.where("start_date >= ?", Time.current).any? %>
-    <% shop_tabs << { key: "carte",        label: "Carte",        count: nil } if @shop.coordinates_valid? %>
+    <% shop_tabs << { key: "galerie",    label: "Galerie",    count: nil } if @shop.photos.count > 1 %>
+    <% shop_tabs << { key: "tatoueurs",  label: "Tatoueurs",  count: @shop.tatoueurs.count } if @shop.tatoueurs.any? %>
+    <% shop_tabs << { key: "evenements", label: "Événements", count: @shop.events.where("start_date >= ?", Time.current).count } if @shop.events.where("start_date >= ?", Time.current).any? %>
+    <% shop_tabs << { key: "carte",      label: "Carte",      count: nil } if @shop.coordinates_valid? %>
 
     <% shop_tabs.each_with_index do |tab, i| %>
       <button onclick="showShopTab('<%= tab[:key] %>')"
               id="shop-tab-btn-<%= tab[:key] %>"
-              style="background:transparent;border:none;color:<%= i == 0 ? '#F5C500' : '#888' %>;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:0.05em;padding:1rem 1.5rem;cursor:pointer;border-bottom:<%= i == 0 ? '2px solid #F5C500' : '2px solid transparent' %>;margin-bottom:-1px;transition:all 0.2s;">
+              style="background:transparent;border:none;
+                     color:<%= i == 0 ? '#F5C500' : '#888' %>;
+                     font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:0.05em;
+                     padding:1rem 1.5rem;cursor:pointer;
+                     border-bottom:<%= i == 0 ? '2px solid #F5C500' : '2px solid transparent' %>;
+                     margin-bottom:-1px;transition:all 0.2s;">
         <%= tab[:label] %>
         <% if tab[:count].present? && tab[:count] > 0 %>
-          <span style="font-size:0.8rem;color:#666;margin-left:0.25rem;">(<%= tab[:count] %>)</span>
+          <span style="font-size:0.8rem;color:#555;margin-left:0.25rem;">(<%= tab[:count] %>)</span>
         <% end %>
       </button>
     <% end %>
   </div>
 
-  <%# ======= TAB GALERIE ======= %>
+  <%# ── Galerie ── %>
   <% if @shop.photos.count > 1 %>
-    <div id="shop-tab-galerie" class="shop-tab-content" style="display:none;">
-      <div class="row g-3">
+    <div id="shop-tab-galerie" class="shop-tab-content">
+      <div class="row row-cols-2 row-cols-md-4 g-3">
         <% @shop.photos.drop(1).each do |photo| %>
-          <div class="col-6 col-md-3" style="overflow:hidden;">
+          <div class="col" style="overflow:hidden;">
             <%= image_tag photo,
-                style: "width:100%;height:220px;object-fit:cover;border:1px solid #2A2A2A;transition:transform 0.3s,border-color 0.2s;",
+                style: "width:100%;height:220px;object-fit:cover;border:1px solid #2A2A2A;
+                        transition:transform 0.3s,border-color 0.2s;display:block;",
                 onmouseover: "this.style.transform='scale(1.04)';this.style.borderColor='#F5C500'",
                 onmouseout:  "this.style.transform='scale(1)';this.style.borderColor='#2A2A2A'" %>
           </div>
@@ -143,30 +189,42 @@
     </div>
   <% end %>
 
-  <%# ======= TAB TATOUEURS ======= %>
+  <%# ── Tatoueurs ── %>
   <% if @shop.tatoueurs.any? %>
-    <div id="shop-tab-tatoueurs" class="shop-tab-content">
+    <div id="shop-tab-tatoueurs" class="shop-tab-content" style="<%= @shop.photos.count > 1 ? 'display:none;' : '' %>">
       <div class="row g-4">
         <% @shop.tatoueurs.each do |tatoueur| %>
           <div class="col-md-4">
             <%= link_to tatoueur_path(tatoueur), style: "text-decoration:none;" do %>
-              <div style="position:relative;overflow:hidden;background:#1A1A1A;border:1px solid #2A2A2A;transition:border-color 0.2s;"
+              <div style="background:#1A1A1A;border:1px solid #2A2A2A;
+                          overflow:hidden;transition:border-color 0.2s;"
                    onmouseover="this.style.borderColor='#F5C500'"
                    onmouseout="this.style.borderColor='#2A2A2A'">
                 <% if tatoueur.avatar.attached? %>
-                  <%= image_tag tatoueur.avatar,
-                      style: "width:100%;height:200px;object-fit:cover;transition:transform 0.3s;",
-                      onmouseover: "this.style.transform='scale(1.04)'",
-                      onmouseout:  "this.style.transform='scale(1)'" %>
+                  <div style="overflow:hidden;">
+                    <%= image_tag tatoueur.avatar,
+                        style: "width:100%;height:200px;object-fit:cover;
+                                transition:transform 0.3s;display:block;",
+                        onmouseover: "this.style.transform='scale(1.04)'",
+                        onmouseout:  "this.style.transform='scale(1)'" %>
+                  </div>
                 <% else %>
-                  <div style="width:100%;height:200px;background:#2A2A2A;display:flex;align-items:center;justify-content:center;font-size:3rem;">🖋️</div>
+                  <div style="width:100%;height:200px;background:#2A2A2A;
+                              display:flex;align-items:center;justify-content:center;font-size:3rem;">🖋️</div>
                 <% end %>
                 <% if tatoueur.verified? %>
-                  <span style="position:absolute;top:0.75rem;right:0.75rem;background:rgba(39,174,96,0.9);color:#fff;font-size:0.7rem;padding:0.2rem 0.5rem;text-transform:uppercase;">✅ Vérifié</span>
+                  <span style="position:absolute;top:0.75rem;right:0.75rem;
+                               background:rgba(39,174,96,0.9);color:#fff;
+                               font-size:0.7rem;padding:0.2rem 0.5rem;text-transform:uppercase;">
+                    ✅ Vérifié
+                  </span>
                 <% end %>
                 <div style="padding:1rem;">
-                  <div style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:#fff;"><%= tatoueur.nickname %></div>
-                  <div class="text-secondary" style="font-size:0.8rem;">
+                  <div style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;
+                              color:#fff;margin-bottom:0.2rem;">
+                    <%= tatoueur.nickname %>
+                  </div>
+                  <div style="color:#666;font-size:0.8rem;">
                     <%= tatoueur.tattoo_styles.map(&:name).join(", ").presence || "Style non renseigné" %>
                   </div>
                 </div>
@@ -178,34 +236,82 @@
     </div>
   <% end %>
 
-  <%# ======= TAB ÉVÉNEMENTS ======= %>
+  <%# ── Événements ── %>
   <% shop_events = @shop.events.where("start_date >= ?", Time.current).order(start_date: :asc) %>
   <% if shop_events.any? %>
     <div id="shop-tab-evenements" class="shop-tab-content" style="display:none;">
-      <% shop_events.each do |event| %>
-        <div class="event-item">
-          <div class="event-date"><%= event.start_date&.strftime("%d %B %Y — %Hh%M").upcase %></div>
-          <div class="event-name"><%= event.name %></div>
-          <% if event.location.present? %>
-            <div class="event-location">📍 <%= event.location %></div>
-          <% end %>
-          <% if event.description.present? %>
-            <p class="text-secondary mt-2 mb-0" style="font-size:0.9rem;"><%= event.description.truncate(120) %></p>
-          <% end %>
-          <%= link_to "En savoir plus →", event_path(event), class: "card-link mt-2 d-inline-block" %>
-        </div>
-      <% end %>
+      <div class="row g-4">
+        <% shop_events.each do |event| %>
+          <div class="col-md-4">
+            <%= link_to event_path(event), style: "text-decoration:none;" do %>
+              <div style="background:#1A1A1A;border:1px solid #2A2A2A;overflow:hidden;
+                          transition:border-color 0.2s;"
+                   onmouseover="this.style.borderColor='#F5C500'"
+                   onmouseout="this.style.borderColor='#2A2A2A'">
+
+                <%# Banner %>
+                <% if event.banner.attached? %>
+                  <div style="overflow:hidden;">
+                    <%= image_tag event.banner,
+                        style: "width:100%;height:180px;object-fit:cover;
+                                transition:transform 0.3s;display:block;",
+                        onmouseover: "this.style.transform='scale(1.04)'",
+                        onmouseout:  "this.style.transform='scale(1)'" %>
+                  </div>
+                <% else %>
+                  <div style="width:100%;height:180px;background:#111;
+                              display:flex;align-items:center;justify-content:center;font-size:3rem;">
+                    🎪
+                  </div>
+                <% end %>
+
+                <div style="padding:1rem;">
+                  <%# Date %>
+                  <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em;
+                              color:#F5C500;margin-bottom:0.4rem;">
+                    <%= event.start_date&.strftime("%d %b %Y — %Hh%M") %>
+                  </div>
+
+                  <%# Nom %>
+                  <div style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;
+                              color:#fff;letter-spacing:0.04em;margin-bottom:0.3rem;">
+                    <%= event.name %>
+                  </div>
+
+                  <%# Lieu %>
+                  <% if event.location.present? %>
+                    <div style="font-size:0.8rem;color:#666;">
+                      📍 <%= event.location %>
+                    </div>
+                  <% end %>
+
+                  <%# Description %>
+                  <% if event.description.present? %>
+                    <p style="font-size:0.85rem;color:#888;margin-top:0.5rem;margin-bottom:0;
+                              line-height:1.5;">
+                      <%= event.description.truncate(80) %>
+                    </p>
+                  <% end %>
+                </div>
+
+              </div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
     </div>
   <% end %>
 
-  <%# ======= TAB CARTE ======= %>
+  <%# ── Carte ── %>
   <% if @shop.coordinates_valid? %>
     <div id="shop-tab-carte" class="shop-tab-content" style="display:none;">
       <%= render "shared/map",
           map_id:         "shop-map-#{@shop.id}",
           height:         "400px",
           tatoueurs_json: "[]",
-          shops_json:     [{ id: @shop.id, name: @shop.name, lat: @shop.latitude, lng: @shop.longitude, url: shop_path(@shop), address: @shop.address, type: "shop" }].to_json %>
+          shops_json:     [{ id: @shop.id, name: @shop.name, lat: @shop.latitude,
+                             lng: @shop.longitude, url: shop_path(@shop),
+                             address: @shop.address, type: "shop" }].to_json %>
     </div>
   <% end %>
 

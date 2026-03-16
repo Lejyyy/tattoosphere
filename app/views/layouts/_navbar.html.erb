@@ -1,11 +1,16 @@
 <nav class="navbar navbar-expand-lg sticky-top">
   <div class="container">
-    <%= link_to "Tattoosphere", root_path, class: "navbar-brand" %>
+    <%= link_to root_path, class: "navbar-brand" do %>
+  <span style="color:#fff;">Tattoo</span><span style="color:#F5C500;">sphere</span>
+<% end %>
     <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto align-items-center gap-2">
+        <li class="nav-item">
+          <%= link_to "Explorer", explore_path, class: "nav-link" %>
+        </li>
         <li class="nav-item">
           <%= link_to "Shops", shops_path, class: "nav-link" %>
         </li>

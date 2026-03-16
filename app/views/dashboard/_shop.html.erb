@@ -57,6 +57,88 @@
       <% end %>
     </div>
 
+
+<h2 class="section-title mb-3 mt-4">Disponibilités de l'équipe</h2>
+
+<% if @shop.tatoueurs.any? %>
+  <% days_label = %w[Dim Lun Mar Mer Jeu Ven Sam] %>
+  <% @shop.tatoueurs.each do |tatoueur| %>
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1rem 1.5rem;
+                margin-bottom:0.75rem;">
+
+      <%# En-tête tatoueur %>
+      <div class="d-flex align-items-center justify-content-between mb-2">
+        <div class="d-flex align-items-center gap-2">
+          <% if tatoueur.avatar.attached? %>
+            <%= image_tag tatoueur.avatar,
+                style: "width:32px;height:32px;object-fit:cover;border:2px solid #F5C500;" %>
+          <% else %>
+            <div style="width:32px;height:32px;background:#2A2A2A;display:flex;
+                        align-items:center;justify-content:center;">🖋️</div>
+          <% end %>
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:#fff;">
+            <%= tatoueur.nickname %>
+          </span>
+        </div>
+        <%= link_to "Voir les dispos →",
+            tatoueur_availabilities_path(tatoueur),
+            style: "font-size:0.75rem;color:#F5C500;text-decoration:none;
+                    border:1px solid rgba(245,197,0,0.4);padding:0.2rem 0.6rem;
+                    font-family:'Bebas Neue',sans-serif;letter-spacing:0.05em;" %>
+      </div>
+
+      <%# Mini grille Lun→Dim %>
+      <% avails = tatoueur.availabilities.group_by(&:day_of_week) %>
+      <% confirmed_days = tatoueur.bookings
+             .where(status: "confirmed")
+             .where(date: Date.today.beginning_of_week..Date.today.end_of_week)
+             .pluck(:date).map(&:wday).uniq %>
+
+      <div style="display:flex;gap:0.3rem;">
+        <% [1,2,3,4,5,6,0].each do |day_num| %>
+          <% slots      = avails[day_num] %>
+          <% has_rdv    = confirmed_days.include?(day_num) %>
+          <% color      = if has_rdv then "#E67E22"
+                          elsif slots&.any? then "#F5C500"
+                          else nil end %>
+          <div style="flex:1;text-align:center;">
+            <div style="font-size:0.65rem;color:#555;text-transform:uppercase;
+                        letter-spacing:0.04em;margin-bottom:0.25rem;">
+              <%= days_label[day_num] %>
+            </div>
+            <div style="height:26px;border-radius:2px;
+                        background:<%= color || '#111' %>;
+                        border:<%= color ? 'none' : '1px solid #2A2A2A' %>;"
+                 title="<%= has_rdv ? 'RDV confirmé' : (slots&.any? ? "#{slots.count} créneaux" : 'Indisponible') %>">
+            </div>
+            <% if slots&.any? && !has_rdv %>
+              <div style="font-size:0.6rem;color:#888;margin-top:0.2rem;"><%= slots.count %></div>
+            <% elsif has_rdv %>
+              <div style="font-size:0.6rem;color:#E67E22;margin-top:0.2rem;">RDV</div>
+            <% end %>
+          </div>
+        <% end %>
+      </div>
+
+      <%# Légende compacte %>
+      <div style="display:flex;gap:1rem;margin-top:0.75rem;">
+        <span style="font-size:0.7rem;color:#888;display:flex;align-items:center;gap:0.3rem;">
+          <span style="width:10px;height:10px;background:#F5C500;display:inline-block;border-radius:1px;"></span> Disponible
+        </span>
+        <span style="font-size:0.7rem;color:#888;display:flex;align-items:center;gap:0.3rem;">
+          <span style="width:10px;height:10px;background:#E67E22;display:inline-block;border-radius:1px;"></span> RDV confirmé
+        </span>
+        <span style="font-size:0.7rem;color:#888;display:flex;align-items:center;gap:0.3rem;">
+          <span style="width:10px;height:10px;background:#111;border:1px solid #2A2A2A;display:inline-block;border-radius:1px;"></span> Indisponible
+        </span>
+      </div>
+
+    </div>
+  <% end %>
+<% else %>
+  <p class="text-secondary">Aucun tatoueur rattaché.</p>
+<% end %>
+
     <%# Réservations à venir %>
     <h2 class="section-title mb-3 mt-4">Réservations à venir</h2>
     <% shop_bookings = @shop.bookings.where("date >= ?", Date.today).order(date: :asc).limit(5) %>

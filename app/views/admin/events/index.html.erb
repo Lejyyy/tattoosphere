@@ -1,0 +1,76 @@
+<% content_for :title, "Admin — Événements" %>
+
+<h1 style="font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.05em;margin-bottom:1.5rem;">
+  Événements <span style="color:#F5C500;">(<%= @events.total_count rescue @events.count %>)</span>
+</h1>
+
+<%= form_with url: admin_events_path, method: :get,
+              html: { style: "display:flex;gap:0.75rem;flex-wrap:wrap;margin-bottom:1.5rem;" } do |f| %>
+  <%= f.text_field :q, value: params[:q], placeholder: "Rechercher...",
+      style: "background:#1A1A1A;border:1px solid #2A2A2A;color:#fff;
+              padding:0.6rem 1rem;font-size:0.9rem;outline:none;flex:1;min-width:200px;" %>
+  <%= f.select :filter,
+      options_for_select([["Tous",""],["En avant","featured"]], params[:filter]),
+      {},
+      style: "background:#1A1A1A;border:1px solid #2A2A2A;color:#fff;
+              padding:0.6rem 1rem;font-size:0.9rem;outline:none;cursor:pointer;" %>
+  <%= f.submit "Filtrer",
+      style: "background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;
+              font-size:1rem;letter-spacing:0.08em;padding:0.6rem 1.25rem;cursor:pointer;" %>
+<% end %>
+
+<div style="background:#1A1A1A;border:1px solid #2A2A2A;">
+  <table style="width:100%;border-collapse:collapse;">
+    <thead>
+      <tr style="border-bottom:1px solid #2A2A2A;">
+        <% ["Événement", "Date", "Organisateur", "Featured", ""].each do |h| %>
+          <th style="padding:0.75rem 1rem;font-size:0.72rem;text-transform:uppercase;
+                     letter-spacing:0.08em;color:#555;text-align:left;font-weight:400;"><%= h %></th>
+        <% end %>
+      </tr>
+    </thead>
+    <tbody>
+      <% @events.each do |event| %>
+        <tr style="border-bottom:1px solid #1f1f1f;"
+            onmouseover="this.style.background='rgba(255,255,255,0.02)'"
+            onmouseout="this.style.background='transparent'">
+          <td style="padding:0.65rem 1rem;">
+            <span style="font-family:'Bebas Neue',sans-serif;color:#fff;font-size:1rem;">
+              <%= event.name %>
+              <% if event.featured? %><span style="color:#F5C500;">⭐</span><% end %>
+            </span>
+            <% if event.location.present? %>
+              <div style="font-size:0.78rem;color:#555;">📍 <%= event.location %></div>
+            <% end %>
+          </td>
+          <td style="padding:0.65rem 1rem;color:#888;font-size:0.85rem;white-space:nowrap;">
+            <%= event.start_date&.strftime("%d/%m/%Y") %>
+          </td>
+          <td style="padding:0.65rem 1rem;color:#888;font-size:0.85rem;">
+            <%= event.tatoueur&.nickname || event.shop&.name %>
+          </td>
+          <td style="padding:0.65rem 1rem;">
+            <% if event.featured? %>
+              <%= button_to "✕", unfeature_admin_event_path(event), method: :patch,
+                  style: "background:transparent;border:1px solid #555;color:#555;
+                          font-size:0.75rem;padding:0.2rem 0.5rem;cursor:pointer;" %>
+            <% else %>
+              <%= button_to "⭐", feature_admin_event_path(event), method: :patch,
+                  style: "background:transparent;border:1px solid #F5C500;color:#F5C500;
+                          font-size:0.75rem;padding:0.2rem 0.5rem;cursor:pointer;" %>
+            <% end %>
+          </td>
+          <td style="padding:0.65rem 1rem;display:flex;gap:0.5rem;">
+            <%= link_to "✏️", edit_admin_event_path(event),
+                style: "color:#888;text-decoration:none;font-size:0.85rem;" %>
+            <%= link_to "→", admin_event_path(event),
+                style: "color:#F5C500;text-decoration:none;font-family:'Bebas Neue',sans-serif;" %>
+            <%= button_to "🗑️", admin_event_path(event), method: :delete,
+                data: { turbo_confirm: "Supprimer cet événement ?" },
+                style: "background:transparent;border:none;color:#E74C3C;cursor:pointer;font-size:0.85rem;" %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

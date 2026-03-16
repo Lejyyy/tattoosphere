@@ -1,120 +1,486 @@
+<% content_for :title, "Nouvelle réservation" %>
+
 <div class="container py-5" style="max-width:680px;">
 
-  <%# Header %>
+  <%# ── En-tête ── %>
   <div class="mb-5">
-    <%= link_to "← Retour", shop_path(@shop), class: "btn btn-outline-secondary btn-sm mb-3" %>
-    <h1 style="font-size:2.5rem;">
-      Réserver chez
-      <span class="text-yellow"><%= @shop.name %></span>
+    <%= link_to "← Retour", shop_path(@shop),
+        style: "font-size:0.8rem;font-weight:700;text-transform:uppercase;
+                letter-spacing:0.08em;color:#888;text-decoration:none;" %>
+    <h1 style="font-family:'Bebas Neue',sans-serif;font-size:3rem;
+               letter-spacing:0.05em;margin-top:1rem;margin-bottom:0.25rem;">
+      Réserver chez <span style="color:#F5C500;"><%= @shop.name %></span>
     </h1>
-    <p class="text-secondary">Remplis le formulaire ci-dessous et nous te confirmerons ton rendez-vous.</p>
   </div>
 
-  <%# Erreurs %>
+  <%# ── Erreurs ── %>
   <% if @booking.errors.any? %>
-    <div class="alert alert-danger mb-4">
+    <div style="background:#1a0000;border:1px solid #ff4444;padding:1rem 1.25rem;margin-bottom:1.5rem;">
       <% @booking.errors.full_messages.each do |msg| %>
-        <div>⚠️ <%= msg %></div>
+        <p style="color:#ff6666;margin:0;font-size:0.9rem;">⚠️ <%= msg %></p>
       <% end %>
     </div>
   <% end %>
 
-  <%# Formulaire %>
-  <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;padding:2.5rem;">
-    <%= form_with model: [@shop, @booking] do |f| %>
-
-      <%# Tatoueur %>
-      <div class="mb-4">
-        <%= f.label :tatoueur_id, "Tatoueur",
-            style: "display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;" %>
-        <%= f.collection_select :tatoueur_id, @tatoueurs, :id, :nickname,
-            { include_blank: "Choisir un tatoueur" },
-            style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;outline:none;transition:border-color 0.2s;",
-            onfocus: "this.style.borderColor='#F5C500'",
-            onblur:  "this.style.borderColor='#2A2A2A'" %>
+  <%# ── Barre de progression ── %>
+  <div style="display:flex;gap:0;margin-bottom:2.5rem;" id="stepper-bar">
+    <% steps = ["Tatoueur", "Date & Heure", "Projet", "Récap"] %>
+    <% steps.each_with_index do |label, i| %>
+      <div id="step-bar-<%= i %>"
+           style="flex:1;text-align:center;padding:0.6rem 0.25rem;
+                  font-family:'Bebas Neue',sans-serif;font-size:0.9rem;letter-spacing:0.05em;
+                  border-bottom:3px solid <%= i == 0 ? '#F5C500' : '#2A2A2A' %>;
+                  color:<%= i == 0 ? '#F5C500' : '#555' %>;transition:all 0.2s;">
+        <span style="display:inline-block;width:22px;height:22px;line-height:22px;
+                     border-radius:50%;margin-right:0.3rem;font-size:0.75rem;
+                     background:<%= i == 0 ? '#F5C500' : '#2A2A2A' %>;
+                     color:<%= i == 0 ? '#000' : '#555' %>;">
+          <%= i + 1 %>
+        </span>
+        <%= label %>
       </div>
-
-      <%# Date %>
-      <div class="mb-4">
-        <%= f.label :date, "Date du rendez-vous",
-            style: "display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;" %>
-        <%= f.date_field :date,
-            style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;outline:none;transition:border-color 0.2s;color-scheme:dark;",
-            onfocus: "this.style.borderColor='#F5C500'",
-            onblur:  "this.style.borderColor='#2A2A2A'" %>
-      </div>
-
-      <%# Créneau horaire — généré dans le contrôleur via @slots %>
-      <div class="mb-4">
-        <%= f.label :start_time, "Heure de début",
-            style: "display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;" %>
-        <% if @slots.any? %>
-          <%= f.select :start_time,
-              @slots.map { |s| [s, s] },
-              { include_blank: "Choisir un créneau" },
-              style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;outline:none;",
-              onfocus: "this.style.borderColor='#F5C500'",
-              onblur:  "this.style.borderColor='#2A2A2A'" %>
-        <% else %>
-          <div style="background:#0D0D0D;border:1px solid #2A2A2A;padding:0.85rem 1rem;color:#555;font-size:0.9rem;">
-            <% if @booking.tatoueur_id.present? %>
-              ⚠️ Ce tatoueur n'a pas encore renseigné ses disponibilités.
-            <% else %>
-              Sélectionne d'abord un tatoueur pour voir ses créneaux.
-            <% end %>
-          </div>
-          <%= f.time_field :start_time, style: "display:none;" %>
-        <% end %>
-      </div>
-
-      <%# Description %>
-      <div class="mb-4">
-        <%= f.label :description, "Description du projet",
-            style: "display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;" %>
-        <p style="font-size:0.8rem;color:#555;margin-bottom:0.5rem;">
-          Décris ton projet : style, placement, taille, références...
-        </p>
-        <%= f.text_area :description,
-            rows: 5,
-            placeholder: "Ex : Je souhaite un tatouage Old School sur l'avant-bras, environ 10cm, avec une ancre et des roses...",
-            style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;outline:none;transition:border-color 0.2s;resize:vertical;",
-            onfocus: "this.style.borderColor='#F5C500'",
-            onblur:  "this.style.borderColor='#2A2A2A'" %>
-      </div>
-
-      <%# Budget %>
-      <div class="mb-5">
-        <%= f.label :price_estimated, "Budget estimé (€)",
-            style: "display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;" %>
-        <p style="font-size:0.8rem;color:#555;margin-bottom:0.5rem;">
-          Donne une fourchette approximative, le tatoueur confirmera le prix final.
-        </p>
-        <div style="position:relative;">
-          <span style="position:absolute;left:1rem;top:50%;transform:translateY(-50%);color:#F5C500;font-family:'Bebas Neue',sans-serif;font-size:1rem;">€</span>
-          <%= f.number_field :price_estimated,
-              step: 0.01,
-              min: 0,
-              placeholder: "150.00",
-              style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;padding:0.85rem 1rem 0.85rem 2.5rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;outline:none;transition:border-color 0.2s;",
-              onfocus: "this.style.borderColor='#F5C500'",
-              onblur:  "this.style.borderColor='#2A2A2A'" %>
-        </div>
-      </div>
-
-      <%# Info acompte %>
-      <div style="background:rgba(245,197,0,0.08);border:1px solid rgba(245,197,0,0.2);padding:1rem 1.25rem;margin-bottom:2rem;">
-        <p class="mb-0" style="font-size:0.85rem;color:#F5C500;">
-          💳 Un acompte vous sera demandé après confirmation de la réservation.
-        </p>
-      </div>
-
-      <%# Submit %>
-      <%= f.submit "Envoyer ma demande",
-          style: "width:100%;background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:0.1em;padding:1rem;cursor:pointer;text-transform:uppercase;transition:background 0.2s;",
-          onmouseover: "this.style.background='#d4a800'",
-          onmouseout:  "this.style.background='#F5C500'" %>
-
     <% end %>
   </div>
 
+  <%= form_with model: [@shop, @booking], id: "booking-form" do |f| %>
+
+    <%# ════════════════════════════════ %>
+    <%# ÉTAPE 1 — Tatoueur %>
+    <%# ════════════════════════════════ %>
+    <div id="step-0" class="booking-step">
+      <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;padding:2rem;">
+        <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:#F5C500;
+                   border-left:4px solid #F5C500;padding-left:0.75rem;margin-bottom:1.5rem;">
+          Choisis ton tatoueur
+        </h2>
+
+        <div class="row g-3">
+          <% @tatoueurs.each do |tatoueur| %>
+            <div class="col-6">
+              <label style="display:block;cursor:pointer;">
+                <input type="radio" name="booking[tatoueur_id]"
+                       value="<%= tatoueur.id %>"
+                       style="display:none;"
+                       onchange="selectTatoueur(this, <%= tatoueur.id %>, '<%= tatoueur.nickname %>')">
+                <div id="tatoueur-card-<%= tatoueur.id %>"
+                     style="background:#0D0D0D;border:2px solid #2A2A2A;padding:1rem;
+                            transition:all 0.15s;text-align:center;">
+                  <% if tatoueur.avatar.attached? %>
+                    <%= image_tag tatoueur.avatar,
+                        style: "width:70px;height:70px;object-fit:cover;
+                                border:2px solid #2A2A2A;margin-bottom:0.6rem;display:block;margin:0 auto 0.6rem;" %>
+                  <% else %>
+                    <div style="width:70px;height:70px;background:#1A1A1A;border:2px solid #2A2A2A;
+                                display:flex;align-items:center;justify-content:center;
+                                font-size:1.8rem;margin:0 auto 0.6rem;">🖋️</div>
+                  <% end %>
+                  <div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;
+                              color:#fff;letter-spacing:0.04em;"><%= tatoueur.nickname %></div>
+                  <div style="font-size:0.75rem;color:#666;margin-top:0.2rem;">
+                    <%= tatoueur.tattoo_styles.map(&:name).first(2).join(", ").presence || "—" %>
+                  </div>
+                </div>
+              </label>
+            </div>
+          <% end %>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:flex-end;margin-top:1rem;">
+        <button type="button" onclick="goToStep(1)"
+                style="background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;
+                       font-size:1.1rem;letter-spacing:0.08em;padding:0.75rem 2rem;cursor:pointer;">
+          Suivant →
+        </button>
+      </div>
+    </div>
+
+    <%# ════════════════════════════════ %>
+    <%# ÉTAPE 2 — Date & Heure %>
+    <%# ════════════════════════════════ %>
+    <div id="step-1" class="booking-step" style="display:none;">
+      <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;padding:2rem;">
+        <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:#F5C500;
+                   border-left:4px solid #F5C500;padding-left:0.75rem;margin-bottom:1.5rem;">
+          Date & Heure
+        </h2>
+
+        <%# Date %>
+        <div class="mb-4">
+          <label style="display:block;font-size:0.75rem;font-weight:700;text-transform:uppercase;
+                        letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;">
+            Date du rendez-vous
+          </label>
+          <%= f.date_field :date,
+              style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;
+                      padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;
+                      font-size:1rem;outline:none;color-scheme:dark;",
+              onfocus: "this.style.borderColor='#F5C500'",
+              onblur:  "this.style.borderColor='#2A2A2A'" %>
+        </div>
+
+        <%# Heure %>
+        <div>
+          <label style="display:block;font-size:0.75rem;font-weight:700;text-transform:uppercase;
+                        letter-spacing:0.08em;color:#888;margin-bottom:0.75rem;">
+            Moment de la journée
+          </label>
+          <%= f.hidden_field :start_time, id: "start-time-hidden" %>
+          <div style="display:flex;gap:0.75rem;">
+            <label id="btn-matin" onclick="selectPeriod('matin')"
+                   style="flex:1;display:flex;align-items:center;justify-content:center;gap:0.6rem;
+                          background:#0D0D0D;border:2px solid #2A2A2A;color:#888;
+                          padding:1.25rem;cursor:pointer;transition:all 0.15s;
+                          font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:0.05em;">
+              🌅 Matin
+            </label>
+            <label id="btn-aprem" onclick="selectPeriod('aprem')"
+                   style="flex:1;display:flex;align-items:center;justify-content:center;gap:0.6rem;
+                          background:#0D0D0D;border:2px solid #2A2A2A;color:#888;
+                          padding:1.25rem;cursor:pointer;transition:all 0.15s;
+                          font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:0.05em;">
+              🌇 Après-midi
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;margin-top:1rem;">
+        <button type="button" onclick="goToStep(0)"
+                style="background:transparent;color:#888;border:1px solid #444;
+                       font-family:'Bebas Neue',sans-serif;font-size:1rem;
+                       letter-spacing:0.08em;padding:0.75rem 1.5rem;cursor:pointer;">
+          ← Retour
+        </button>
+        <button type="button" onclick="goToStep(2)"
+                style="background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;
+                       font-size:1.1rem;letter-spacing:0.08em;padding:0.75rem 2rem;cursor:pointer;">
+          Suivant →
+        </button>
+      </div>
+    </div>
+
+    <%# ════════════════════════════════ %>
+    <%# ÉTAPE 3 — Projet %>
+    <%# ════════════════════════════════ %>
+    <div id="step-2" class="booking-step" style="display:none;">
+      <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;padding:2rem;">
+        <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:#F5C500;
+                   border-left:4px solid #F5C500;padding-left:0.75rem;margin-bottom:1.5rem;">
+          Ton projet
+        </h2>
+
+        <%# Nom du projet %>
+        <div class="mb-4">
+          <label style="display:block;font-size:0.75rem;font-weight:700;text-transform:uppercase;
+                        letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;">
+            Nom du projet
+          </label>
+          <input type="text" name="booking[project_name]"
+                 placeholder="Ex : Ancre Old School, Portrait réaliste..."
+                 style="width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;
+                        padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;
+                        font-size:1rem;outline:none;"
+                 onfocus="this.style.borderColor='#F5C500'"
+                 onblur="this.style.borderColor='#2A2A2A'">
+        </div>
+
+        <%# Description %>
+        <div class="mb-4">
+          <label style="display:block;font-size:0.75rem;font-weight:700;text-transform:uppercase;
+                        letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;">
+            Description
+          </label>
+          <%= f.text_area :description, rows: 4,
+              placeholder: "Style, placement, taille, références...",
+              style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;
+                      padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;
+                      font-size:1rem;outline:none;resize:vertical;",
+              onfocus: "this.style.borderColor='#F5C500'",
+              onblur:  "this.style.borderColor='#2A2A2A'" %>
+        </div>
+
+        <%# Budget %>
+        <div class="mb-4">
+          <label style="display:block;font-size:0.75rem;font-weight:700;text-transform:uppercase;
+                        letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;">
+            Budget estimé (€)
+          </label>
+          <div style="position:relative;">
+            <span style="position:absolute;left:1rem;top:50%;transform:translateY(-50%);
+                         color:#F5C500;font-family:'Bebas Neue',sans-serif;">€</span>
+            <%= f.number_field :price_estimated, step: 0.01, min: 0, placeholder: "150",
+                style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;
+                        padding:0.85rem 1rem 0.85rem 2.5rem;font-family:'Barlow Condensed',sans-serif;
+                        font-size:1rem;outline:none;",
+                onfocus: "this.style.borderColor='#F5C500'",
+                onblur:  "this.style.borderColor='#2A2A2A'" %>
+          </div>
+        </div>
+
+        <%# Associer une image de référence %>
+        <div>
+          <label style="display:block;font-size:0.75rem;font-weight:700;text-transform:uppercase;
+                        letter-spacing:0.08em;color:#888;margin-bottom:0.75rem;">
+            Image de référence <span style="color:#555;font-weight:400;">(optionnel)</span>
+          </label>
+          <p style="font-size:0.8rem;color:#555;margin-bottom:1rem;">
+            Choisis une réalisation du tatoueur comme inspiration, ou laisse vide.
+          </p>
+
+          <%# Récupère toutes les images disponibles du tatoueur sélectionné %>
+          <% selected_tatoueur = @tatoueurs.first %>
+          <% all_images = [] %>
+
+          <% @tatoueurs.each do |t| %>
+            <% t.portfolio_items.includes(:images_attachments).each do |item| %>
+              <% item.images.each do |img| %>
+                <% all_images << { tatoueur_id: t.id, src: url_for(img), label: item.description&.truncate(30) } %>
+              <% end %>
+            <% end %>
+            <% t.photos.each do |photo| %>
+              <% all_images << { tatoueur_id: t.id, src: url_for(photo), label: "Photo de #{t.nickname}" } %>
+            <% end %>
+          <% end %>
+
+          <% if all_images.any? %>
+            <div id="ref-images" style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.5rem;">
+              <% all_images.each_with_index do |img, i| %>
+                <div class="ref-img-wrap"
+                     data-tatoueur="<%= img[:tatoueur_id] %>"
+                     style="position:relative;cursor:pointer;border:2px solid #2A2A2A;
+                            transition:border-color 0.15s;overflow:hidden;"
+                     onclick="selectRefImage(this, '<%= img[:src] %>')">
+                  <img src="<%= img[:src] %>"
+                       style="width:100%;height:90px;object-fit:cover;display:block;
+                              transition:transform 0.2s;"
+                       onmouseover="this.style.transform='scale(1.05)'"
+                       onmouseout="this.style.transform='scale(1)'">
+                  <div class="ref-check"
+                       style="display:none;position:absolute;top:0.3rem;right:0.3rem;
+                              background:#F5C500;color:#000;width:20px;height:20px;
+                              border-radius:50%;font-size:0.7rem;line-height:20px;text-align:center;">
+                    ✓
+                  </div>
+                </div>
+              <% end %>
+            </div>
+            <input type="hidden" name="booking[reference_image_url]" id="ref-image-input">
+          <% else %>
+            <p style="color:#555;font-size:0.85rem;">
+              Aucune réalisation disponible pour ce tatoueur.
+            </p>
+          <% end %>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;margin-top:1rem;">
+        <button type="button" onclick="goToStep(1)"
+                style="background:transparent;color:#888;border:1px solid #444;
+                       font-family:'Bebas Neue',sans-serif;font-size:1rem;
+                       letter-spacing:0.08em;padding:0.75rem 1.5rem;cursor:pointer;">
+          ← Retour
+        </button>
+        <button type="button" onclick="goToStep(3)"
+                style="background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;
+                       font-size:1.1rem;letter-spacing:0.08em;padding:0.75rem 2rem;cursor:pointer;">
+          Suivant →
+        </button>
+      </div>
+    </div>
+
+    <%# ════════════════════════════════ %>
+    <%# ÉTAPE 4 — Récap %>
+    <%# ════════════════════════════════ %>
+    <div id="step-3" class="booking-step" style="display:none;">
+      <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;padding:2rem;">
+        <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:#F5C500;
+                   border-left:4px solid #F5C500;padding-left:0.75rem;margin-bottom:1.5rem;">
+          Récapitulatif
+        </h2>
+
+        <div style="display:flex;flex-direction:column;gap:0.75rem;">
+          <div style="display:flex;justify-content:space-between;padding:0.75rem 0;
+                      border-bottom:1px solid #2A2A2A;">
+            <span style="color:#888;font-size:0.85rem;text-transform:uppercase;
+                         letter-spacing:0.05em;">Tatoueur</span>
+            <span id="recap-tatoueur" style="color:#fff;font-family:'Bebas Neue',sans-serif;
+                                             font-size:1rem;">—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:0.75rem 0;
+                      border-bottom:1px solid #2A2A2A;">
+            <span style="color:#888;font-size:0.85rem;text-transform:uppercase;
+                         letter-spacing:0.05em;">Date</span>
+            <span id="recap-date" style="color:#fff;font-family:'Bebas Neue',sans-serif;
+                                         font-size:1rem;">—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:0.75rem 0;
+                      border-bottom:1px solid #2A2A2A;">
+            <span style="color:#888;font-size:0.85rem;text-transform:uppercase;
+                         letter-spacing:0.05em;">Moment</span>
+            <span id="recap-heure" style="color:#fff;font-family:'Bebas Neue',sans-serif;
+                                          font-size:1rem;">—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:0.75rem 0;
+                      border-bottom:1px solid #2A2A2A;">
+            <span style="color:#888;font-size:0.85rem;text-transform:uppercase;
+                         letter-spacing:0.05em;">Projet</span>
+            <span id="recap-projet" style="color:#fff;font-family:'Bebas Neue',sans-serif;
+                                           font-size:1rem;">—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:0.75rem 0;">
+            <span style="color:#888;font-size:0.85rem;text-transform:uppercase;
+                         letter-spacing:0.05em;">Budget</span>
+            <span id="recap-budget" style="color:#F5C500;font-family:'Bebas Neue',sans-serif;
+                                           font-size:1rem;">—</span>
+          </div>
+        </div>
+
+        <%# Image de référence %>
+        <div id="recap-ref-wrap" style="display:none;margin-top:1rem;padding-top:1rem;
+                                         border-top:1px solid #2A2A2A;">
+          <p style="color:#888;font-size:0.75rem;text-transform:uppercase;
+                    letter-spacing:0.05em;margin-bottom:0.5rem;">Image de référence</p>
+          <img id="recap-ref-img" src="" style="max-height:120px;object-fit:cover;
+                                                  border:1px solid #2A2A2A;">
+        </div>
+
+        <div style="background:rgba(245,197,0,0.08);border:1px solid rgba(245,197,0,0.2);
+                    padding:1rem;margin-top:1.5rem;">
+          <p style="margin:0;font-size:0.85rem;color:#F5C500;">
+            💳 Un acompte vous sera demandé après confirmation de la réservation.
+          </p>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;margin-top:1rem;">
+        <button type="button" onclick="goToStep(2)"
+                style="background:transparent;color:#888;border:1px solid #444;
+                       font-family:'Bebas Neue',sans-serif;font-size:1rem;
+                       letter-spacing:0.08em;padding:0.75rem 1.5rem;cursor:pointer;">
+          ← Retour
+        </button>
+        <%= f.submit "Envoyer ma demande",
+            style: "background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;
+                    font-size:1.2rem;letter-spacing:0.1em;padding:0.75rem 2rem;cursor:pointer;",
+            onmouseover: "this.style.background='#d4a800'",
+            onmouseout:  "this.style.background='#F5C500'" %>
+      </div>
+    </div>
+
+  <% end %>
 </div>
+
+<script>
+  let currentStep = 0
+  let selectedTatoueurName = ""
+  let selectedPeriod = ""
+
+  // ── Navigation ───────────────────────────────────
+  function goToStep(idx) {
+    document.querySelectorAll('.booking-step').forEach((el, i) => {
+      el.style.display = i === idx ? 'block' : 'none'
+    })
+    document.querySelectorAll('[id^="step-bar-"]').forEach((el, i) => {
+      el.style.borderBottomColor = i === idx ? '#F5C500' : '#2A2A2A'
+      el.style.color             = i === idx ? '#F5C500' : '#555'
+      const dot = el.querySelector('span')
+      if (dot) {
+        dot.style.background = i <= idx ? '#F5C500' : '#2A2A2A'
+        dot.style.color      = i <= idx ? '#000'    : '#555'
+      }
+    })
+    currentStep = idx
+    if (idx === 3) buildRecap()
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  // ── Étape 1 : sélection tatoueur ─────────────────
+  function selectTatoueur(input, id, name) {
+    document.querySelectorAll('[id^="tatoueur-card-"]').forEach(c => {
+      c.style.borderColor = '#2A2A2A'
+      c.style.background  = '#0D0D0D'
+    })
+    const card = document.getElementById(`tatoueur-card-${id}`)
+    if (card) {
+      card.style.borderColor = '#F5C500'
+      card.style.background  = 'rgba(245,197,0,0.06)'
+    }
+    selectedTatoueurName = name
+
+    // Filtre les images de référence
+    document.querySelectorAll('.ref-img-wrap').forEach(w => {
+      w.style.display = (w.dataset.tatoueur == id) ? 'block' : 'none'
+    })
+  }
+
+  // ── Étape 2 : période ────────────────────────────
+  function selectPeriod(period) {
+    const matin  = document.getElementById('btn-matin')
+    const aprem  = document.getElementById('btn-aprem')
+    const hidden = document.getElementById('start-time-hidden')
+
+    ;[matin, aprem].forEach(b => {
+      if (!b) return
+      b.style.background  = '#0D0D0D'
+      b.style.color       = '#888'
+      b.style.borderColor = '#2A2A2A'
+    })
+
+    const active = period === 'matin' ? matin : aprem
+    if (active) {
+      active.style.background  = '#F5C500'
+      active.style.color       = '#000'
+      active.style.borderColor = '#F5C500'
+    }
+
+    selectedPeriod = period === 'matin' ? 'Matin' : 'Après-midi'
+    if (hidden) hidden.value = period === 'matin' ? '09:00' : '14:00'
+  }
+
+  // ── Étape 3 : image de référence ─────────────────
+  function selectRefImage(el, src) {
+    const input = document.getElementById('ref-image-input')
+    const alreadySelected = el.style.borderColor === 'rgb(245, 197, 0)'
+
+    // Reset tout
+    document.querySelectorAll('.ref-img-wrap').forEach(w => {
+      w.style.borderColor = '#2A2A2A'
+      w.querySelector('.ref-check').style.display = 'none'
+    })
+
+    // Si c'était déjà sélectionné → on déselectionne
+    if (alreadySelected) {
+      input.value = ''
+    } else {
+      el.style.borderColor = '#F5C500'
+      el.querySelector('.ref-check').style.display = 'block'
+      input.value = src
+    }
+  }
+
+  // ── Étape 4 : récap ──────────────────────────────
+  function buildRecap() {
+    const dateVal = document.querySelector('input[name="booking[date]"]')?.value
+    const budget  = document.querySelector('input[name="booking[price_estimated]"]')?.value
+    const projet  = document.querySelector('input[name="booking[project_name]"]')?.value
+    const refSrc  = document.getElementById('ref-image-input')?.value
+
+    document.getElementById('recap-tatoueur').textContent = selectedTatoueurName || '—'
+    document.getElementById('recap-date').textContent     = dateVal
+      ? new Date(dateVal).toLocaleDateString('fr-FR', { day:'numeric', month:'long', year:'numeric' })
+      : '—'
+    document.getElementById('recap-heure').textContent   = selectedPeriod || '—'
+    document.getElementById('recap-projet').textContent  = projet || '—'
+    document.getElementById('recap-budget').textContent  = budget ? `${budget} €` : '—'
+
+    const wrap = document.getElementById('recap-ref-wrap')
+    const img  = document.getElementById('recap-ref-img')
+    if (refSrc) {
+      wrap.style.display = 'block'
+      img.src = refSrc
+    } else {
+      wrap.style.display = 'none'
+    }
+  }
+</script>

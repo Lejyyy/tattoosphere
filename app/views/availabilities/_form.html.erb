@@ -1,0 +1,65 @@
+<%= form_with model: [@tatoueur, @availability] do |f| %>
+
+  <% if @availability.errors.any? %>
+    <div style="background:#1a0000;border:1px solid #ff4444;padding:1rem;margin-bottom:1rem;">
+      <% @availability.errors.full_messages.each do |msg| %>
+        <p style="color:#ff6666;margin:0;font-size:0.9rem;">⚠️ <%= msg %></p>
+      <% end %>
+    </div>
+  <% end %>
+
+  <div class="row g-3">
+
+    <%# Jour de la semaine %>
+    <div class="col-md-4">
+      <%= f.label :day_of_week, "Jour",
+          style: "display:block;font-size:0.75rem;font-weight:700;text-transform:uppercase;
+                  letter-spacing:0.08em;color:#888;margin-bottom:0.4rem;" %>
+      <%= f.select :day_of_week,
+          [["Dimanche", 0], ["Lundi", 1], ["Mardi", 2], ["Mercredi", 3],
+           ["Jeudi", 4], ["Vendredi", 5], ["Samedi", 6]],
+          { include_blank: "Choisir..." },
+          style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;
+                  padding:0.75rem 1rem;font-family:'Barlow Condensed',sans-serif;
+                  font-size:1rem;outline:none;cursor:pointer;",
+          onfocus: "this.style.borderColor='#F5C500'",
+          onblur:  "this.style.borderColor='#2A2A2A'" %>
+    </div>
+
+    <%# Heure de début %>
+    <div class="col-md-4">
+      <%= f.label :start_time, "Début",
+          style: "display:block;font-size:0.75rem;font-weight:700;text-transform:uppercase;
+                  letter-spacing:0.08em;color:#888;margin-bottom:0.4rem;" %>
+      <%= f.time_field :start_time,
+          style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;
+                  padding:0.75rem 1rem;font-family:'Barlow Condensed',sans-serif;
+                  font-size:1rem;outline:none;color-scheme:dark;",
+          onfocus: "this.style.borderColor='#F5C500'",
+          onblur:  "this.style.borderColor='#2A2A2A'" %>
+    </div>
+
+    <%# Heure de fin %>
+    <div class="col-md-4">
+      <%= f.label :end_time, "Fin",
+          style: "display:block;font-size:0.75rem;font-weight:700;text-transform:uppercase;
+                  letter-spacing:0.08em;color:#888;margin-bottom:0.4rem;" %>
+      <%= f.time_field :end_time,
+          style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;
+                  padding:0.75rem 1rem;font-family:'Barlow Condensed',sans-serif;
+                  font-size:1rem;outline:none;color-scheme:dark;",
+          onfocus: "this.style.borderColor='#F5C500'",
+          onblur:  "this.style.borderColor='#2A2A2A'" %>
+    </div>
+
+  </div>
+
+  <div style="margin-top:1rem;">
+    <%= f.submit @availability.new_record? ? "Ajouter" : "Enregistrer",
+        style: "background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;
+                font-size:1.1rem;letter-spacing:0.08em;padding:0.65rem 2rem;cursor:pointer;",
+        onmouseover: "this.style.background='#d4a800'",
+        onmouseout:  "this.style.background='#F5C500'" %>
+  </div>
+
+<% end %>

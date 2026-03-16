@@ -4,33 +4,76 @@
 <section class="section pb-0">
   <div class="container">
     <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
-      <h1 class="section-title mb-0">Événements</h1>
+      <div>
+        <h1 style="font-family:'Bebas Neue',sans-serif;font-size:3.5rem;
+                   letter-spacing:0.05em;margin-bottom:0.25rem;">
+          Événements <span style="color:#F5C500;">à venir</span>
+        </h1>
+        <p style="color:#888;font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;">
+          <%= @events.count %> événement<%= @events.count > 1 ? "s" : "" %>
+        </p>
+      </div>
       <% if user_signed_in? && (current_user.tatoueur.present? || current_user.shop.present? || current_user.admin?) %>
-        <%= link_to "Créer un événement", new_event_path, class: "hero-cta" %>
+        <%= link_to "➕ Créer un événement", new_event_path, class: "hero-cta" %>
       <% end %>
     </div>
 
     <%# FILTRES %>
-    <%= form_with url: events_path, method: :get, class: "d-flex flex-wrap gap-2 mb-4" do |f| %>
-      <%= f.text_field :location,
-          value: params[:location],
-          placeholder: "Ville...",
-          class: "form-control form-control-sm",
-          style: "width:180px;" %>
-      <%= f.date_field :from,
-          value: params[:from],
-          class: "form-control form-control-sm",
-          style: "width:160px;",
-          placeholder: "Du..." %>
-      <%= f.date_field :to,
-          value: params[:to],
-          class: "form-control form-control-sm",
-          style: "width:160px;",
-          placeholder: "Au..." %>
-      <%= f.submit "Filtrer", class: "btn btn-outline-primary btn-sm" %>
+    <%= form_with url: events_path, method: :get,
+                  html: { style: "display:flex;flex-wrap:wrap;gap:0.75rem;align-items:flex-end;margin-bottom:2rem;" } do |f| %>
+
+      <div style="flex:1;min-width:140px;">
+        <label style="display:block;font-size:0.75rem;font-weight:700;text-transform:uppercase;
+                      letter-spacing:0.08em;color:#888;margin-bottom:0.4rem;">Ville</label>
+        <%= f.text_field :location, value: params[:location], placeholder: "Paris, Lyon…",
+            style: "width:100%;background:#1A1A1A;border:1px solid #2A2A2A;color:#fff;
+                    padding:0.65rem 1rem;font-family:'Barlow Condensed',sans-serif;
+                    font-size:1rem;outline:none;",
+            onfocus: "this.style.borderColor='#F5C500'",
+            onblur:  "this.style.borderColor='#2A2A2A'" %>
+      </div>
+
+      <div>
+        <label style="display:block;font-size:0.75rem;font-weight:700;text-transform:uppercase;
+                      letter-spacing:0.08em;color:#888;margin-bottom:0.4rem;">Du</label>
+        <%= f.date_field :from, value: params[:from],
+            style: "background:#1A1A1A;border:1px solid #2A2A2A;color:#fff;
+                    padding:0.65rem 1rem;font-family:'Barlow Condensed',sans-serif;
+                    font-size:1rem;outline:none;color-scheme:dark;",
+            onfocus: "this.style.borderColor='#F5C500'",
+            onblur:  "this.style.borderColor='#2A2A2A'" %>
+      </div>
+
+      <div>
+        <label style="display:block;font-size:0.75rem;font-weight:700;text-transform:uppercase;
+                      letter-spacing:0.08em;color:#888;margin-bottom:0.4rem;">Au</label>
+        <%= f.date_field :to, value: params[:to],
+            style: "background:#1A1A1A;border:1px solid #2A2A2A;color:#fff;
+                    padding:0.65rem 1rem;font-family:'Barlow Condensed',sans-serif;
+                    font-size:1rem;outline:none;color-scheme:dark;",
+            onfocus: "this.style.borderColor='#F5C500'",
+            onblur:  "this.style.borderColor='#2A2A2A'" %>
+      </div>
+
+      <div>
+        <label style="display:block;font-size:0.75rem;color:transparent;margin-bottom:0.4rem;">.</label>
+        <%= f.submit "Filtrer",
+            style: "background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;
+                    font-size:1.1rem;letter-spacing:0.1em;padding:0.65rem 1.5rem;cursor:pointer;",
+            onmouseover: "this.style.background='#d4a800'",
+            onmouseout:  "this.style.background='#F5C500'" %>
+      </div>
+
       <% if params[:location].present? || params[:from].present? || params[:to].present? %>
-        <%= link_to "Réinitialiser", events_path, class: "btn btn-outline-secondary btn-sm" %>
+        <div>
+          <label style="display:block;font-size:0.75rem;color:transparent;margin-bottom:0.4rem;">.</label>
+          <%= link_to "✕ Réinitialiser", events_path,
+              style: "display:inline-block;padding:0.65rem 1rem;border:1px solid #444;
+                      color:#888;font-family:'Bebas Neue',sans-serif;font-size:1rem;
+                      letter-spacing:0.05em;text-decoration:none;" %>
+        </div>
       <% end %>
+
     <% end %>
   </div>
 </section>
@@ -44,83 +87,121 @@
       <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
         <% @events.each do |event| %>
           <div class="col">
-            <div class="card-dark h-100 d-flex flex-column">
+            <%= link_to event_path(event), style: "text-decoration:none;" do %>
+              <div style="background:#1A1A1A;border:1px solid #2A2A2A;overflow:hidden;
+                          transition:border-color 0.2s;height:100%;display:flex;flex-direction:column;"
+                   onmouseover="this.style.borderColor='#F5C500'"
+                   onmouseout="this.style.borderColor='#2A2A2A'">
 
-              <%# IMAGE %>
-              <div style="position:relative;">
-                <div class="card-img-placeholder" style="height:180px;font-size:3rem;">🎨</div>
-                <%# Badge date %>
-                <div style="position:absolute;top:0.75rem;left:0.75rem;background:#F5C500;color:#000;font-family:'Bebas Neue',sans-serif;padding:0.3rem 0.75rem;font-size:0.95rem;letter-spacing:0.05em;">
-                  <%= event.start_date&.strftime("%d %b").upcase %>
+                <%# IMAGE %>
+                <div style="position:relative;overflow:hidden;flex-shrink:0;">
+                  <% if event.banner.attached? %>
+                    <%= image_tag event.banner,
+                        style: "width:100%;height:200px;object-fit:cover;display:block;
+                                transition:transform 0.3s;",
+                        onmouseover: "this.style.transform='scale(1.04)'",
+                        onmouseout:  "this.style.transform='scale(1)'" %>
+                  <% else %>
+                    <div style="width:100%;height:200px;background:#111;
+                                display:flex;align-items:center;justify-content:center;font-size:3rem;">
+                      🎪
+                    </div>
+                  <% end %>
+
+                  <%# Badge date %>
+                  <div style="position:absolute;top:0.75rem;left:0.75rem;
+                              background:#F5C500;color:#000;font-family:'Bebas Neue',sans-serif;
+                              padding:0.25rem 0.65rem;font-size:0.9rem;letter-spacing:0.05em;">
+                    <%= event.start_date&.strftime("%d %b").upcase %>
+                  </div>
+
+                  <%# Badge public/privé %>
+                  <div style="position:absolute;top:0.75rem;right:0.75rem;
+                              background:rgba(0,0,0,0.75);
+                              color:<%= event.is_public ? '#27AE60' : '#C0392B' %>;
+                              font-size:0.7rem;padding:0.2rem 0.5rem;
+                              text-transform:uppercase;letter-spacing:0.05em;">
+                    <%= event.is_public ? "Public" : "Privé" %>
+                  </div>
+
+                  <%# Badge participants %>
+                  <div style="position:absolute;bottom:0.75rem;right:0.75rem;
+                              background:rgba(0,0,0,0.8);color:#fff;
+                              font-family:'Barlow Condensed',sans-serif;
+                              font-size:0.85rem;padding:0.2rem 0.6rem;
+                              display:flex;align-items:center;gap:0.3rem;">
+                    👥 <%= event.event_participations.count %>
+                  </div>
                 </div>
-                <%# Badge public/privé %>
-                <% if event.is_public %>
-                  <div style="position:absolute;top:0.75rem;right:0.75rem;background:rgba(0,0,0,0.7);color:#27AE60;font-size:0.75rem;padding:0.2rem 0.5rem;text-transform:uppercase;letter-spacing:0.05em;">
-                    Public
+
+                <%# CONTENU %>
+                <div style="padding:1.1rem;display:flex;flex-direction:column;flex-grow:1;">
+
+                  <%# Nom %>
+                  <div style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;
+                              color:#fff;letter-spacing:0.04em;margin-bottom:0.4rem;">
+                    <%= event.name %>
                   </div>
-                <% else %>
-                  <div style="position:absolute;top:0.75rem;right:0.75rem;background:rgba(0,0,0,0.7);color:#C0392B;font-size:0.75rem;padding:0.2rem 0.5rem;text-transform:uppercase;letter-spacing:0.05em;">
-                    Privé
-                  </div>
-                <% end %>
-              </div>
 
-              <%# CONTENU %>
-              <div class="card-body d-flex flex-column flex-grow-1">
-
-                <%# Nom %>
-                <div class="card-name mb-2"><%= event.name %></div>
-
-                <%# Dates %>
-                <div class="d-flex align-items-center gap-2 mb-2">
-                  <span style="color:#F5C500;font-size:0.85rem;">📅</span>
-                  <span class="text-secondary" style="font-size:0.85rem;">
-                    <%= event.start_date&.strftime("%d/%m/%Y à %Hh%M") %>
+                  <%# Dates %>
+                  <div style="font-size:0.82rem;color:#888;margin-bottom:0.4rem;">
+                    📅 <%= event.start_date&.strftime("%d/%m/%Y à %Hh%M") %>
                     <% if event.end_date.present? %>
-                      → <%= event.end_date&.strftime("%d/%m/%Y") %>
+                      <span style="color:#555;">→ <%= event.end_date&.strftime("%d/%m/%Y") %></span>
                     <% end %>
-                  </span>
-                </div>
+                  </div>
 
-                <%# Localisation %>
-                <% if event.location.present? %>
-                  <p class="card-meta mb-2">📍 <%= event.location %></p>
-                <% end %>
-
-                <%# Description %>
-                <% if event.description.present? %>
-                  <p class="text-secondary mb-3" style="font-size:0.85rem;line-height:1.6;">
-                    <%= event.description.truncate(100) %>
-                  </p>
-                <% end %>
-
-                <%# Organisateur %>
-                <div class="mb-3">
-                  <% if event.tatoueur.present? %>
-                    <span class="card-badge">
-                      🖋️ <%= link_to event.tatoueur.nickname, tatoueur_path(event.tatoueur), style: "color:inherit;" %>
-                    </span>
+                  <%# Lieu %>
+                  <% if event.location.present? %>
+                    <div style="font-size:0.82rem;color:#888;margin-bottom:0.6rem;">
+                      📍 <%= event.location %>
+                    </div>
                   <% end %>
-                  <% if event.shop.present? %>
-                    <span class="card-badge">
-                      🏠 <%= link_to event.shop.name, shop_path(event.shop), style: "color:inherit;" %>
-                    </span>
+
+                  <%# Description %>
+                  <% if event.description.present? %>
+                    <p style="font-size:0.85rem;color:#666;line-height:1.5;
+                              margin-bottom:0.75rem;flex-grow:1;">
+                      <%= event.description.truncate(90) %>
+                    </p>
                   <% end %>
-                </div>
 
-                <%# Lien %>
-                <div class="mt-auto">
-                  <%= link_to "Voir l'événement →", event_path(event), class: "card-link mb-0" %>
-                </div>
+                  <%# Organisateur %>
+                  <div style="margin-top:auto;padding-top:0.75rem;
+                              border-top:1px solid #2A2A2A;display:flex;gap:0.5rem;flex-wrap:wrap;">
+                    <% if event.tatoueur.present? %>
+                      <span style="background:rgba(245,197,0,0.1);color:#F5C500;
+                                   font-size:0.75rem;padding:0.2rem 0.6rem;
+                                   border:1px solid rgba(245,197,0,0.2);">
+                        🖋️ <%= event.tatoueur.nickname %>
+                      </span>
+                    <% end %>
+                    <% if event.shop.present? %>
+                      <span style="background:rgba(245,197,0,0.1);color:#F5C500;
+                                   font-size:0.75rem;padding:0.2rem 0.6rem;
+                                   border:1px solid rgba(245,197,0,0.2);">
+                        🏠 <%= event.shop.name %>
+                      </span>
+                    <% end %>
+                  </div>
 
+                </div>
               </div>
-            </div>
+            <% end %>
           </div>
         <% end %>
       </div>
 
     <% else %>
-      <p class="text-secondary">Aucun événement trouvé.</p>
+      <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:5rem;text-align:center;">
+        <div style="font-size:3rem;margin-bottom:1rem;">🎪</div>
+        <p style="color:#888;margin-bottom:1.5rem;">Aucun événement trouvé.</p>
+        <% if params[:location].present? || params[:from].present? || params[:to].present? %>
+          <%= link_to "Réinitialiser les filtres", events_path,
+              style: "color:#F5C500;text-decoration:none;font-family:'Bebas Neue',sans-serif;
+                      font-size:1.1rem;letter-spacing:0.05em;" %>
+        <% end %>
+      </div>
     <% end %>
   </div>
 </section>

@@ -1,0 +1,167 @@
+<% content_for :title, "Admin — Dashboard" %>
+
+<%# ── KPIs ── %>
+<div class="row g-3 mb-4">
+  <% [
+    ["Utilisateurs",  @users_count,     admin_users_path,     "#F5C500"],
+    ["Tatoueurs",     @tatoueurs_count, admin_tatoueurs_path, "#F5C500"],
+    ["Shops",         @shops_count,     admin_shops_path,     "#F5C500"],
+    ["Événements",    @events_count,    admin_events_path,    "#F5C500"],
+    ["Signalements",  @pending_reports.to_i, admin_reports_path,   @pending_reports.to_i > 0 ? "#E74C3C" : "#F5C500"],
+    ["Vérifs en att.", @pending_verifs.count, admin_tatoueurs_path(status: "pending"), @pending_verifs.any? ? "#E67E22" : "#F5C500"],
+  ].each do |label, count, path, color| %>
+    <div class="col-6 col-md-4 col-lg-2">
+      <%= link_to path, style: "text-decoration:none;" do %>
+        <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid <%= color %>;
+                    padding:1.25rem;text-align:center;transition:border-color 0.2s;"
+             onmouseover="this.style.borderColor='#F5C500'"
+             onmouseout="this.style.borderColor='#2A2A2A'">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:<%= color %>;line-height:1;">
+            <%= count %>
+          </div>
+          <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-top:0.3rem;">
+            <%= label %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+
+<%# ── Stats 30j ── %>
+<div class="row g-3 mb-4">
+  <% [
+    ["+#{@new_users_30d} users", "30 derniers jours"],
+    ["+#{@new_tatoueurs_30d} tatoueurs", "30 derniers jours"],
+    ["+#{@new_bookings_30d} réservations", "30 derniers jours"],
+  ].each do |val, sub| %>
+    <div class="col-md-4">
+      <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1rem 1.5rem;
+                  display:flex;align-items:center;gap:1rem;">
+        <div>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:#F5C500;">
+            <%= val %>
+          </div>
+          <div style="font-size:0.75rem;color:#555;text-transform:uppercase;letter-spacing:0.05em;">
+            <%= sub %>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>
+
+<div class="row g-4">
+  <%# ── Vérifications en attente ── %>
+  <div class="col-lg-6">
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1.5rem;">
+      <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:#E67E22;
+                 border-left:4px solid #E67E22;padding-left:0.75rem;margin-bottom:1rem;">
+        Vérifications en attente
+        <span style="font-size:0.85rem;color:#666;font-family:'Barlow Condensed',sans-serif;">
+          (<%= @pending_verifs.count %>)
+        </span>
+      </h3>
+      <% if @pending_verifs.any? %>
+        <% @pending_verifs.limit(5).each do |t| %>
+          <div style="display:flex;justify-content:space-between;align-items:center;
+                      padding:0.6rem 0;border-bottom:1px solid #2A2A2A;">
+            <div>
+              <span style="font-family:'Bebas Neue',sans-serif;color:#fff;"><%= t.nickname %></span>
+              <span style="color:#555;font-size:0.8rem;margin-left:0.5rem;">
+                <%= t.verification_submitted_at&.strftime("%d/%m/%Y") %>
+              </span>
+            </div>
+            <%= link_to "Examiner →", admin_tatoueur_path(t),
+                style: "color:#F5C500;text-decoration:none;font-size:0.85rem;
+                        font-family:'Bebas Neue',sans-serif;" %>
+          </div>
+        <% end %>
+        <% if @pending_verifs.count > 5 %>
+          <%= link_to "Voir tout (#{@pending_verifs.count})",
+              admin_tatoueurs_path(status: "pending"),
+              style: "color:#888;font-size:0.8rem;text-decoration:none;
+                      display:block;margin-top:0.75rem;" %>
+        <% end %>
+      <% else %>
+        <p style="color:#555;font-size:0.9rem;">Aucune vérification en attente.</p>
+      <% end %>
+    </div>
+  </div>
+
+  <%# ── Derniers logs ── %>
+  <div class="col-lg-6">
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1.5rem;">
+      <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:#F5C500;
+                 border-left:4px solid #F5C500;padding-left:0.75rem;margin-bottom:1rem;">
+        Activité récente
+      </h3>
+      <% @recent_logs.each do |log| %>
+        <div style="display:flex;justify-content:space-between;align-items:center;
+                    padding:0.5rem 0;border-bottom:1px solid #2A2A2A;">
+          <div>
+            <span style="font-size:0.8rem;color:#F5C500;font-family:'Bebas Neue',sans-serif;">
+              <%= log.action.humanize %>
+            </span>
+            <span style="color:#555;font-size:0.75rem;margin-left:0.5rem;">
+              par <%= log.admin_user.nickname %>
+            </span>
+          </div>
+          <span style="color:#444;font-size:0.75rem;">
+            <%= time_ago_in_words(log.created_at) %>
+          </span>
+        </div>
+      <% end %>
+      <%= link_to "Voir tout →", admin_admin_logs_path,
+          style: "color:#888;font-size:0.8rem;text-decoration:none;
+                  display:block;margin-top:0.75rem;" %>
+    </div>
+  </div>
+
+  <%# ── Nouveaux utilisateurs ── %>
+  <div class="col-12">
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1.5rem;">
+      <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:#F5C500;
+                 border-left:4px solid #F5C500;padding-left:0.75rem;margin-bottom:1rem;">
+        Derniers inscrits
+      </h3>
+      <table style="width:100%;border-collapse:collapse;">
+        <thead>
+          <tr style="border-bottom:1px solid #2A2A2A;">
+            <% ["Nom", "Email", "Rôle", "Inscrit le", ""].each do |h| %>
+              <th style="padding:0.5rem 0.75rem;font-size:0.72rem;text-transform:uppercase;
+                         letter-spacing:0.08em;color:#555;text-align:left;font-weight:400;">
+                <%= h %>
+              </th>
+            <% end %>
+          </tr>
+        </thead>
+        <tbody>
+          <% @recent_users.each do |user| %>
+            <tr style="border-bottom:1px solid #1f1f1f;">
+              <td style="padding:0.6rem 0.75rem;color:#fff;font-size:0.9rem;">
+                <%= user.nickname || user.first_name %>
+                <% if user.banned? %>
+                  <span style="background:#E74C3C;color:#fff;font-size:0.65rem;
+                               padding:0.1rem 0.4rem;margin-left:0.4rem;">BANNI</span>
+                <% end %>
+              </td>
+              <td style="padding:0.6rem 0.75rem;color:#888;font-size:0.85rem;"><%= user.email %></td>
+              <td style="padding:0.6rem 0.75rem;">
+                <span style="font-size:0.75rem;color:#F5C500;text-transform:uppercase;
+                             letter-spacing:0.05em;"><%= user.role %></span>
+              </td>
+              <td style="padding:0.6rem 0.75rem;color:#555;font-size:0.8rem;">
+                <%= user.created_at.strftime("%d/%m/%Y") %>
+              </td>
+              <td style="padding:0.6rem 0.75rem;">
+                <%= link_to "→", admin_user_path(user),
+                    style: "color:#F5C500;text-decoration:none;font-family:'Bebas Neue',sans-serif;" %>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

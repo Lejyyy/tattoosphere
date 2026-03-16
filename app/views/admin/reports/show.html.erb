@@ -1,0 +1,75 @@
+<% content_for :title, "Admin — Signalement ##{@report.id}" %>
+
+<div style="margin-bottom:1.5rem;">
+  <%= link_to "← Retour", admin_reports_path,
+      style: "font-size:0.8rem;color:#888;text-decoration:none;" %>
+</div>
+
+<div class="row g-4">
+  <div class="col-lg-6">
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #E74C3C;padding:1.5rem;">
+      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:#E74C3C;
+                 border-left:4px solid #E74C3C;padding-left:0.75rem;margin-bottom:1.5rem;">
+        Signalement #<%= @report.id %>
+      </h2>
+
+      <% [
+        ["Raison",      @report.reason.humanize],
+        ["Cible",       "#{@report.reportable_type} ##{@report.reportable_id}"],
+        ["Signalé par", @report.reporter&.nickname],
+        ["Date",        @report.created_at.strftime("%d/%m/%Y à %Hh%M")],
+        ["Statut",      @report.status.humanize],
+      ].each do |label, val| %>
+        <div style="display:flex;justify-content:space-between;padding:0.6rem 0;
+                    border-bottom:1px solid #2A2A2A;">
+          <span style="font-size:0.78rem;color:#555;text-transform:uppercase;letter-spacing:0.05em;">
+            <%= label %>
+          </span>
+          <span style="font-size:0.85rem;color:#bbb;"><%= val %></span>
+        </div>
+      <% end %>
+
+      <% if @report.details.present? %>
+        <div style="margin-top:1rem;padding:1rem;background:#0D0D0D;border:1px solid #2A2A2A;">
+          <p style="color:#888;font-size:0.85rem;margin:0;line-height:1.6;">
+            <%= @report.details %>
+          </p>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <% if @report.status == "pending" %>
+    <div class="col-lg-6">
+      <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1.5rem;">
+        <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:#F5C500;
+                   border-left:4px solid #F5C500;padding-left:0.75rem;margin-bottom:1.25rem;">
+          Traiter le signalement
+        </h3>
+
+        <%= form_with url: admin_report_path(@report), method: :patch do |f| %>
+          <div style="margin-bottom:1rem;">
+            <%= f.label :admin_note, "Note interne (optionnel)",
+                style: "display:block;font-size:0.75rem;font-weight:700;text-transform:uppercase;
+                        letter-spacing:0.08em;color:#888;margin-bottom:0.4rem;" %>
+            <%= f.text_area :admin_note, rows: 3,
+                style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;
+                        padding:0.75rem;font-size:0.9rem;outline:none;resize:vertical;",
+                onfocus: "this.style.borderColor='#F5C500'",
+                onblur:  "this.style.borderColor='#2A2A2A'" %>
+          </div>
+          <div style="display:flex;gap:0.75rem;">
+            <%= f.submit "✅ Résoudre",
+                name: "resolution", value: "resolve",
+                style: "flex:1;background:#27AE60;color:#fff;border:none;font-family:'Bebas Neue',sans-serif;
+                        font-size:1rem;letter-spacing:0.08em;padding:0.75rem;cursor:pointer;" %>
+            <%= f.submit "🚫 Ignorer",
+                name: "resolution", value: "dismiss",
+                style: "flex:1;background:#555;color:#fff;border:none;font-family:'Bebas Neue',sans-serif;
+                        font-size:1rem;letter-spacing:0.08em;padding:0.75rem;cursor:pointer;" %>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>

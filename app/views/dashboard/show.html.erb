@@ -4,20 +4,25 @@
     <div class="d-flex align-items-center gap-4 flex-wrap">
 
       <%# Avatar %>
-<% if @tatoueur&.avatar&.attached? %>
-  <%= image_tag @tatoueur.avatar,
-      style: "width:90px;height:90px;object-fit:cover;border-radius:50%;border:3px solid #F5C500;flex-shrink:0;" %>
-<% elsif @shop&.cover&.attached? %>
-  <%= image_tag @shop.cover,
-      style: "width:90px;height:90px;object-fit:cover;border:3px solid #F5C500;flex-shrink:0;" %>
-<% elsif current_user.avatar.attached? %>
-  <%= image_tag current_user.avatar,
-      style: "width:90px;height:90px;object-fit:cover;border-radius:50%;border:3px solid #F5C500;flex-shrink:0;" %>
-<% else %>
-  <div style="width:90px;height:90px;background:#1A1A1A;border:3px solid #2A2A2A;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Bebas Neue',sans-serif;font-size:2.5rem;color:#F5C500;flex-shrink:0;">
-    <%= current_user.nickname.first.upcase %>
-  </div>
-<% end %>
+      <% if @tatoueur&.avatar&.attached? %>
+        <%= image_tag @tatoueur.avatar,
+            style: "width:90px;height:90px;object-fit:cover;border-radius:50%;
+                    border:3px solid #F5C500;flex-shrink:0;" %>
+      <% elsif @shop&.cover&.attached? %>
+        <%= image_tag @shop.cover,
+            style: "width:90px;height:90px;object-fit:cover;
+                    border:3px solid #F5C500;flex-shrink:0;" %>
+      <% elsif current_user.avatar.attached? %>
+        <%= image_tag current_user.avatar,
+            style: "width:90px;height:90px;object-fit:cover;border-radius:50%;
+                    border:3px solid #F5C500;flex-shrink:0;" %>
+      <% else %>
+        <div style="width:90px;height:90px;background:#1A1A1A;border:3px solid #2A2A2A;
+                    border-radius:50%;display:flex;align-items:center;justify-content:center;
+                    font-family:'Bebas Neue',sans-serif;font-size:2.5rem;color:#F5C500;flex-shrink:0;">
+          <%= current_user.nickname.first.upcase %>
+        </div>
+      <% end %>
 
       <%# Infos %>
       <div class="flex-grow-1">
@@ -33,14 +38,26 @@
         </p>
       </div>
 
-      <%# Bouton modifier — un seul endroit %>
-      <% if @tatoueur %>
-        <%= link_to "✏️ Modifier mon profil", edit_tatoueur_path(@tatoueur), class: "hero-cta-outline" %>
-      <% elsif @shop %>
-        <%= link_to "✏️ Modifier mon shop", edit_shop_path(@shop), class: "hero-cta-outline" %>
-      <% else %>
-        <%= link_to "✏️ Modifier mon profil", edit_user_registration_path, class: "hero-cta-outline" %>
-      <% end %>
+      <%# Actions %>
+      <div style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;">
+        <% if @tatoueur %>
+          <%= link_to "✏️ Modifier mon profil", edit_tatoueur_path(@tatoueur), class: "hero-cta-outline" %>
+        <% elsif @shop %>
+          <%= link_to "✏️ Modifier mon shop", edit_shop_path(@shop), class: "hero-cta-outline" %>
+        <% else %>
+          <%= link_to "✏️ Modifier mon profil", edit_user_registration_path, class: "hero-cta-outline" %>
+        <% end %>
+
+        <% if current_user.admin? %>
+          <%= link_to admin_root_path,
+              style: "display:inline-flex;align-items:center;gap:0.5rem;
+                      background:#F5C500;color:#000;font-family:'Bebas Neue',sans-serif;
+                      font-size:1rem;letter-spacing:0.08em;padding:0.6rem 1.25rem;
+                      text-decoration:none;" do %>
+            ⚙️ Panel Admin
+          <% end %>
+        <% end %>
+      </div>
 
     </div>
   </div>

@@ -1,0 +1,86 @@
+<% content_for :title, "Admin — Styles de tatouage" %>
+
+<h1 style="font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.05em;margin-bottom:1.5rem;">
+  Styles de <span style="color:#F5C500;">tatouage</span>
+</h1>
+
+<div class="row g-4">
+  <%# Formulaire ajout %>
+  <div class="col-lg-4">
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;padding:1.5rem;">
+      <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:#F5C500;
+                 border-left:4px solid #F5C500;padding-left:0.75rem;margin-bottom:1rem;">
+        Ajouter un style
+      </h3>
+      <%= form_with model: [:admin, @new_style], url: admin_tattoo_styles_path do |f| %>
+        <% if @new_style.errors.any? %>
+          <div style="color:#E74C3C;font-size:0.85rem;margin-bottom:0.75rem;">
+            <%= @new_style.errors.full_messages.first %>
+          </div>
+        <% end %>
+        <div style="display:flex;gap:0.5rem;">
+          <%= f.text_field :name, placeholder: "Ex : Old School, Réalisme...",
+              style: "flex:1;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;
+                      padding:0.7rem 1rem;font-size:0.95rem;outline:none;",
+              onfocus: "this.style.borderColor='#F5C500'",
+              onblur:  "this.style.borderColor='#2A2A2A'" %>
+          <%= f.submit "Ajouter",
+              style: "background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;
+                      font-size:1rem;letter-spacing:0.08em;padding:0.7rem 1rem;cursor:pointer;" %>
+        </div>
+      <% end %>
+    </div>
+  </div>
+
+  <%# Liste des styles %>
+  <div class="col-lg-8">
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;">
+      <table style="width:100%;border-collapse:collapse;">
+        <thead>
+          <tr style="border-bottom:1px solid #2A2A2A;">
+            <th style="padding:0.75rem 1rem;font-size:0.72rem;text-transform:uppercase;
+                       letter-spacing:0.08em;color:#555;text-align:left;font-weight:400;">Nom</th>
+            <th style="padding:0.75rem 1rem;font-size:0.72rem;text-transform:uppercase;
+                       letter-spacing:0.08em;color:#555;text-align:center;font-weight:400;">Tatoueurs</th>
+            <th style="padding:0.75rem 1rem;"></th>
+          </tr>
+        </thead>
+        <tbody>
+          <% @styles.each do |style| %>
+            <tr style="border-bottom:1px solid #1f1f1f;"
+                onmouseover="this.style.background='rgba(255,255,255,0.02)'"
+                onmouseout="this.style.background='transparent'">
+              <td style="padding:0.65rem 1rem;">
+                <span id="style-name-<%= style.id %>"
+                      style="font-family:'Bebas Neue',sans-serif;color:#fff;font-size:1rem;">
+                  <%= style.name %>
+                </span>
+              </td>
+              <td style="padding:0.65rem 1rem;text-align:center;color:#888;font-size:0.85rem;">
+                <%= style.tatoueurs.count rescue "—" %>
+              </td>
+              <td style="padding:0.65rem 1rem;text-align:right;">
+                <div style="display:flex;gap:0.5rem;justify-content:flex-end;">
+                  <%# Inline edit %>
+                  <%= form_with url: admin_tattoo_style_path(style), method: :patch,
+                                html: { style: "display:flex;gap:0.4rem;", id: "edit-form-#{style.id}" } do |f| %>
+                    <%= f.text_field :name, value: style.name,
+                        style: "background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;
+                                padding:0.3rem 0.6rem;font-size:0.85rem;outline:none;width:120px;" %>
+                    <%= f.submit "✓",
+                        style: "background:#27AE60;color:#fff;border:none;
+                                font-size:0.85rem;padding:0.3rem 0.6rem;cursor:pointer;" %>
+                  <% end %>
+                  <%= button_to "🗑️", admin_tattoo_style_path(style), method: :delete,
+                      data: { turbo_confirm: "Supprimer le style '#{style.name}' ?" },
+                      style: "background:transparent;border:none;color:#E74C3C;
+                              cursor:pointer;font-size:0.9rem;" %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,111 @@
+<%# Paramètres attendus :
+#   record       — @tatoueur ou @shop
+#   update_path  — ex: tatoueur_path(@tatoueur), shop_path(@shop)
+#   param_name   — :tatoueur ou :shop
+%>
+
+<%# Bouton flottant — ouvre le panneau %>
+<button onclick="document.getElementById('cover-editor').style.display = document.getElementById('cover-editor').style.display === 'none' ? 'flex' : 'none'"
+        style="position:fixed;bottom:1.5rem;right:1.5rem;z-index:1000;
+               background:#F5C500;color:#000;border:none;
+               font-family:'Bebas Neue',sans-serif;font-size:0.95rem;
+               letter-spacing:0.08em;padding:0.6rem 1.25rem;cursor:pointer;
+               box-shadow:0 4px 20px rgba(0,0,0,0.5);">
+  🎨 Personnaliser le fond
+</button>
+
+<%# Panneau éditeur %>
+<div id="cover-editor"
+     style="display:none;position:fixed;bottom:5rem;right:1.5rem;z-index:1000;
+            background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;
+            padding:1.5rem;width:300px;flex-direction:column;gap:1rem;
+            box-shadow:0 8px 40px rgba(0,0,0,0.7);">
+
+  <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:#F5C500;
+              letter-spacing:0.08em;border-left:3px solid #F5C500;padding-left:0.75rem;">
+    Fond de profil
+  </div>
+
+  <%= form_with model: record, url: update_path, method: :patch,
+                html: { enctype: "multipart/form-data",
+                        style: "display:flex;flex-direction:column;gap:1rem;" } do |f| %>
+
+    <%# Image de fond %>
+    <div>
+      <label style="display:block;font-size:0.75rem;font-weight:700;text-transform:uppercase;
+                    letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;">
+        Image de fond
+      </label>
+      <% if record.cover.attached? %>
+        <div style="position:relative;margin-bottom:0.5rem;">
+          <%= image_tag record.cover,
+              style: "width:100%;height:80px;object-fit:cover;border:1px solid #2A2A2A;" %>
+          <%= button_to "✕",
+              update_path,
+              method: :patch,
+              params: { "#{param_name}[remove_cover]" => "1" },
+              data: { turbo_confirm: "Supprimer l'image de fond ?" },
+              style: "position:absolute;top:0.3rem;right:0.3rem;background:rgba(0,0,0,0.8);
+                      color:#fff;font-size:0.7rem;padding:0.2rem 0.5rem;
+                      border:none;cursor:pointer;" %>
+        </div>
+      <% end %>
+      <%= f.file_field :"cover",
+          accept: "image/*",
+          style: "color:#fff;font-family:'Barlow Condensed',sans-serif;
+                  font-size:0.9rem;width:100%;" %>
+      <p style="color:#555;font-size:0.75rem;margin-top:0.25rem;">
+        JPG, PNG, WEBP — max 5 Mo
+      </p>
+    </div>
+
+    <%# Couleur de fond (utilisée si pas d'image) %>
+    <div>
+      <label style="display:block;font-size:0.75rem;font-weight:700;text-transform:uppercase;
+                    letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;">
+        Couleur de fond
+        <span style="color:#555;font-weight:400;">(si pas d'image)</span>
+      </label>
+      <div style="display:flex;align-items:center;gap:0.75rem;">
+        <%= f.color_field :"#{param_name}_color".to_sym,
+            value: record.cover_color || "#1A1A1A",
+            style: "width:48px;height:36px;border:1px solid #2A2A2A;
+                    background:transparent;cursor:pointer;padding:0;" %>
+        <span style="color:#888;font-size:0.85rem;font-family:'Barlow Condensed',sans-serif;">
+          <%= record.cover_color || "#1A1A1A" %>
+        </span>
+      </div>
+
+      <%# Palettes prédéfinies %>
+      <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-top:0.75rem;">
+        <% [
+          ["#0D0D0D", "Noir"],
+          ["#1A1A1A", "Gris foncé"],
+          ["#1a0a00", "Brun nuit"],
+          ["#0a0a1a", "Bleu nuit"],
+          ["#0d1a0d", "Vert forêt"],
+          ["#1a000d", "Rouge sang"],
+          ["#1a1500", "Or sombre"],
+        ].each do |hex, label| %>
+          <button type="button"
+                  title="<%= label %>"
+                  onclick="document.querySelector('[name=\'<%= "#{param_name}[cover_color]" %>\']').value = '<%= hex %>'"
+                  style="width:24px;height:24px;background:<%= hex %>;border:1px solid #444;
+                         cursor:pointer;transition:transform 0.15s;"
+                  onmouseover="this.style.transform='scale(1.2)'"
+                  onmouseout="this.style.transform='scale(1)'">
+          </button>
+        <% end %>
+      </div>
+    </div>
+
+    <%# Bouton enregistrer %>
+    <%= f.submit "Enregistrer",
+        style: "background:#F5C500;color:#000;border:none;
+                font-family:'Bebas Neue',sans-serif;font-size:1.1rem;
+                letter-spacing:0.08em;padding:0.65rem;cursor:pointer;width:100%;",
+        onmouseover: "this.style.background='#d4a800'",
+        onmouseout:  "this.style.background='#F5C500'" %>
+
+  <% end %>
+</div>

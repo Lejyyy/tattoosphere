@@ -1,0 +1,213 @@
+<% content_for :title, "Admin — #{@tatoueur.nickname}" %>
+
+<div style="margin-bottom:1.5rem;">
+  <%= link_to "← Retour", admin_tatoueurs_path,
+      style: "font-size:0.8rem;color:#888;text-decoration:none;" %>
+</div>
+
+<div class="row g-4">
+  <%# ── Colonne gauche : infos + actions ── %>
+  <div class="col-lg-4">
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;padding:1.5rem;">
+
+      <div style="text-align:center;margin-bottom:1.5rem;">
+        <% if @tatoueur.avatar.attached? %>
+          <%= image_tag @tatoueur.avatar,
+              style: "width:90px;height:90px;object-fit:cover;border:3px solid #F5C500;
+                      display:block;margin:0 auto 0.75rem;" %>
+        <% else %>
+          <div style="width:90px;height:90px;background:#2A2A2A;border:3px solid #2A2A2A;
+                      display:flex;align-items:center;justify-content:center;
+                      font-size:2.5rem;margin:0 auto 0.75rem;">🖋️</div>
+        <% end %>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:#fff;">
+          <%= @tatoueur.nickname %>
+          <% if @tatoueur.verified? %>
+            <span style="color:#27AE60;font-size:0.9rem;">✅</span>
+          <% end %>
+          <% if @tatoueur.featured? %>
+            <span style="color:#F5C500;font-size:0.9rem;">⭐</span>
+          <% end %>
+        </div>
+        <div style="font-size:0.8rem;color:#888;"><%= @tatoueur.email %></div>
+
+        <%# Badges statut %>
+        <div style="display:flex;gap:0.4rem;justify-content:center;margin-top:0.5rem;flex-wrap:wrap;">
+          <% color = { "pending" => "#E67E22", "approved" => "#27AE60",
+                       "rejected" => "#E74C3C", "unsubmitted" => "#555" } %>
+          <span style="font-size:0.7rem;color:<%= color[@tatoueur.verification_status] %>;
+                       border:1px solid <%= color[@tatoueur.verification_status] %>30;
+                       padding:0.15rem 0.5rem;text-transform:uppercase;">
+            <%= @tatoueur.verification_status %>
+          </span>
+          <% if @tatoueur.banned? %>
+            <span style="font-size:0.7rem;color:#E74C3C;border:1px solid #E74C3C30;
+                         padding:0.15rem 0.5rem;text-transform:uppercase;">Banni</span>
+          <% end %>
+        </div>
+      </div>
+
+      <%# Infos %>
+      <% [
+        ["Prénom",    @tatoueur.first_name],
+        ["Nom",       @tatoueur.last_name],
+        ["Adresse",   @tatoueur.address],
+        ["SIREN",     @tatoueur.siren],
+        ["IBAN",      @tatoueur.masked_iban],
+        ["Résa",      @tatoueur.bookings.count],
+        ["Avis",      @tatoueur.reviews.count],
+        ["Créé le",   @tatoueur.created_at.strftime("%d/%m/%Y")],
+      ].each do |label, val| %>
+        <% next unless val.present? %>
+        <div style="display:flex;justify-content:space-between;padding:0.5rem 0;
+                    border-bottom:1px solid #2A2A2A;">
+          <span style="font-size:0.75rem;color:#555;text-transform:uppercase;letter-spacing:0.05em;">
+            <%= label %>
+          </span>
+          <span style="font-size:0.85rem;color:#bbb;"><%= val %></span>
+        </div>
+      <% end %>
+
+      <%# Actions ── %>
+      <div style="margin-top:1.25rem;display:flex;flex-direction:column;gap:0.5rem;">
+
+        <%# Vérification %>
+        <% if @tatoueur.verification_status == "pending" %>
+          <%= button_to "✅ Approuver la vérification",
+              approve_admin_tatoueur_path(@tatoueur), method: :patch,
+              style: "background:#27AE60;color:#fff;border:none;font-family:'Bebas Neue',sans-serif;
+                      font-size:1rem;letter-spacing:0.08em;padding:0.6rem;cursor:pointer;width:100%;" %>
+          <%= form_with url: reject_admin_tatoueur_path(@tatoueur), method: :patch,
+                        html: { style: "display:flex;gap:0.4rem;" } do |f| %>
+            <%= f.text_field :reason, placeholder: "Motif du refus",
+                style: "flex:1;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;
+                        padding:0.5rem;font-size:0.85rem;outline:none;" %>
+            <%= f.submit "Refuser",
+                style: "background:#E74C3C;color:#fff;border:none;font-family:'Bebas Neue',sans-serif;
+                        font-size:0.9rem;padding:0.5rem 0.75rem;cursor:pointer;" %>
+          <% end %>
+        <% end %>
+
+        <%# Featured %>
+        <% if @tatoueur.featured? %>
+          <%= button_to "✕ Retirer la mise en avant",
+              unfeature_admin_tatoueur_path(@tatoueur), method: :patch,
+              style: "background:transparent;border:1px solid #555;color:#555;
+                      font-family:'Bebas Neue',sans-serif;font-size:0.9rem;
+                      padding:0.6rem;cursor:pointer;width:100%;" %>
+        <% else %>
+          <%= button_to "⭐ Mettre en avant",
+              feature_admin_tatoueur_path(@tatoueur), method: :patch,
+              style: "background:transparent;border:1px solid #F5C500;color:#F5C500;
+                      font-family:'Bebas Neue',sans-serif;font-size:0.9rem;
+                      padding:0.6rem;cursor:pointer;width:100%;" %>
+        <% end %>
+
+        <%# Ban %>
+        <% if @tatoueur.banned? %>
+          <%= button_to "✅ Lever le bannissement",
+              unban_admin_tatoueur_path(@tatoueur), method: :patch,
+              style: "background:#27AE60;color:#fff;border:none;font-family:'Bebas Neue',sans-serif;
+                      font-size:1rem;padding:0.6rem;cursor:pointer;width:100%;" %>
+        <% else %>
+          <%= button_to "🚫 Bannir",
+              ban_admin_tatoueur_path(@tatoueur), method: :patch,
+              data: { turbo_confirm: "Bannir #{@tatoueur.nickname} ?" },
+              style: "background:#E74C3C;color:#fff;border:none;font-family:'Bebas Neue',sans-serif;
+                      font-size:1rem;padding:0.6rem;cursor:pointer;width:100%;" %>
+        <% end %>
+
+        <%= link_to "Voir le profil public →", tatoueur_path(@tatoueur), target: "_blank",
+            style: "display:block;text-align:center;color:#888;font-size:0.8rem;
+                    text-decoration:none;padding:0.5rem;border:1px solid #2A2A2A;" %>
+      </div>
+    </div>
+  </div>
+
+  <%# ── Colonne droite : documents + signalements + logs ── %>
+  <div class="col-lg-8">
+
+    <%# Documents de vérification %>
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1.5rem;margin-bottom:1rem;">
+      <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:#F5C500;
+                 border-left:4px solid #F5C500;padding-left:0.75rem;margin-bottom:1rem;">
+        Documents de vérification
+      </h3>
+      <div class="row g-3">
+        <% [
+          ["Pièce d'identité",   @tatoueur.identity_document],
+          ["Certificat hygiène", @tatoueur.hygiene_certificate],
+        ].each do |label, doc| %>
+          <div class="col-md-6">
+            <div style="background:#0D0D0D;border:1px solid #2A2A2A;padding:1rem;text-align:center;">
+              <p style="color:#888;font-size:0.78rem;text-transform:uppercase;
+                        letter-spacing:0.05em;margin-bottom:0.5rem;"><%= label %></p>
+              <% if doc.attached? %>
+                <%= link_to "📄 Voir le document", rails_blob_url(doc, disposition: "inline"),
+                    target: "_blank",
+                    style: "color:#F5C500;text-decoration:none;font-size:0.85rem;" %>
+              <% else %>
+                <span style="color:#555;font-size:0.85rem;">Non fourni</span>
+              <% end %>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <%# Signalements %>
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1.5rem;margin-bottom:1rem;">
+      <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:#E74C3C;
+                 border-left:4px solid #E74C3C;padding-left:0.75rem;margin-bottom:1rem;">
+        Signalements (<%= @reports.count %>)
+      </h3>
+      <% if @reports.any? %>
+        <% @reports.each do |r| %>
+          <div style="display:flex;justify-content:space-between;align-items:center;
+                      padding:0.5rem 0;border-bottom:1px solid #2A2A2A;font-size:0.85rem;">
+            <div>
+              <span style="color:#E74C3C;">⚠️ <%= r.reason.humanize %></span>
+              <span style="color:#555;margin-left:0.5rem;">
+                · par <%= r.reporter&.nickname %> · <%= r.created_at.strftime("%d/%m/%Y") %>
+              </span>
+            </div>
+            <%= link_to "→", admin_report_path(r),
+                style: "color:#F5C500;text-decoration:none;font-size:0.8rem;" %>
+          </div>
+        <% end %>
+      <% else %>
+        <p style="color:#555;font-size:0.85rem;">Aucun signalement.</p>
+      <% end %>
+    </div>
+
+    <%# Logs admin %>
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1.5rem;">
+      <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:#F5C500;
+                 border-left:4px solid #F5C500;padding-left:0.75rem;margin-bottom:1rem;">
+        Historique admin
+      </h3>
+      <% if @logs.any? %>
+        <% @logs.each do |log| %>
+          <div style="display:flex;justify-content:space-between;padding:0.5rem 0;
+                      border-bottom:1px solid #2A2A2A;font-size:0.82rem;">
+            <div>
+              <span style="color:#F5C500;font-family:'Bebas Neue',sans-serif;">
+                <%= log.action.humanize %>
+              </span>
+              <span style="color:#555;margin-left:0.5rem;">par <%= log.admin_user&.nickname %></span>
+              <% if log.note.present? %>
+                <span style="color:#444;margin-left:0.5rem;">· <%= log.note %></span>
+              <% end %>
+            </div>
+            <span style="color:#444;white-space:nowrap;">
+              <%= log.created_at.strftime("%d/%m %Hh%M") %>
+            </span>
+          </div>
+        <% end %>
+      <% else %>
+        <p style="color:#555;font-size:0.85rem;">Aucune action.</p>
+      <% end %>
+    </div>
+
+  </div>
+</div>

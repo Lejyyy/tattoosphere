@@ -1,0 +1,76 @@
+<% content_for :title, "Admin — Utilisateurs" %>
+
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+  <h1 style="font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.05em;margin:0;">
+    Utilisateurs <span style="color:#F5C500;">(<%= @users.total_count rescue @users.count %>)</span>
+  </h1>
+</div>
+
+<%# Filtres %>
+<%= form_with url: admin_users_path, method: :get,
+              html: { style: "display:flex;gap:0.75rem;flex-wrap:wrap;margin-bottom:1.5rem;" } do |f| %>
+  <%= f.text_field :q, value: params[:q], placeholder: "Rechercher...",
+      style: "background:#1A1A1A;border:1px solid #2A2A2A;color:#fff;
+              padding:0.6rem 1rem;font-size:0.9rem;outline:none;flex:1;min-width:200px;" %>
+  <%= f.select :role,
+      options_for_select([["Tous les rôles",""],["user","user"],["tatoueur","tatoueur"],
+                          ["shop_owner","shop_owner"],["admin","admin"]], params[:role]),
+      {},
+      style: "background:#1A1A1A;border:1px solid #2A2A2A;color:#fff;
+              padding:0.6rem 1rem;font-size:0.9rem;outline:none;cursor:pointer;" %>
+  <%= f.select :filter,
+      options_for_select([["Tous",""],["Actifs","active"],["Bannis","banned"]], params[:filter]),
+      {},
+      style: "background:#1A1A1A;border:1px solid #2A2A2A;color:#fff;
+              padding:0.6rem 1rem;font-size:0.9rem;outline:none;cursor:pointer;" %>
+  <%= f.submit "Filtrer",
+      style: "background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;
+              font-size:1rem;letter-spacing:0.08em;padding:0.6rem 1.25rem;cursor:pointer;" %>
+<% end %>
+
+<div style="background:#1A1A1A;border:1px solid #2A2A2A;">
+  <table style="width:100%;border-collapse:collapse;">
+    <thead>
+      <tr style="border-bottom:1px solid #2A2A2A;">
+        <% ["Nom", "Email", "Rôle", "Inscrit le", "Statut", ""].each do |h| %>
+          <th style="padding:0.75rem 1rem;font-size:0.72rem;text-transform:uppercase;
+                     letter-spacing:0.08em;color:#555;text-align:left;font-weight:400;">
+            <%= h %>
+          </th>
+        <% end %>
+      </tr>
+    </thead>
+    <tbody>
+      <% @users.each do |user| %>
+        <tr style="border-bottom:1px solid #1f1f1f;"
+            onmouseover="this.style.background='rgba(255,255,255,0.02)'"
+            onmouseout="this.style.background='transparent'">
+          <td style="padding:0.65rem 1rem;color:#fff;font-size:0.9rem;">
+            <%= user.nickname || user.first_name %>
+          </td>
+          <td style="padding:0.65rem 1rem;color:#888;font-size:0.85rem;"><%= user.email %></td>
+          <td style="padding:0.65rem 1rem;">
+            <span style="font-size:0.75rem;color:#F5C500;text-transform:uppercase;
+                         letter-spacing:0.05em;"><%= user.role %></span>
+          </td>
+          <td style="padding:0.65rem 1rem;color:#555;font-size:0.8rem;">
+            <%= user.created_at.strftime("%d/%m/%Y") %>
+          </td>
+          <td style="padding:0.65rem 1rem;">
+            <% if user.banned? %>
+              <span style="background:#E74C3C;color:#fff;font-size:0.7rem;
+                           padding:0.15rem 0.5rem;text-transform:uppercase;">Banni</span>
+            <% else %>
+              <span style="background:#27AE60;color:#fff;font-size:0.7rem;
+                           padding:0.15rem 0.5rem;text-transform:uppercase;">Actif</span>
+            <% end %>
+          </td>
+          <td style="padding:0.65rem 1rem;">
+            <%= link_to "→", admin_user_path(user),
+                style: "color:#F5C500;text-decoration:none;font-family:'Bebas Neue',sans-serif;" %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

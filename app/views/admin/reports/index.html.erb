@@ -1,0 +1,60 @@
+<% content_for :title, "Admin — Signalements" %>
+
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+  <h1 style="font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.05em;margin:0;">
+    Signalements
+    <% if @reports.any? %>
+      <span style="color:#E74C3C;">(<%= @reports.total_count rescue @reports.count %>)</span>
+    <% end %>
+  </h1>
+</div>
+
+<%# Onglets statut %>
+<div style="display:flex;gap:0;border-bottom:1px solid #2A2A2A;margin-bottom:1.5rem;">
+  <% [["pending","En attente","#E74C3C"],["resolved","Résolus","#27AE60"],["dismissed","Ignorés","#555"]].each do |status, label, color| %>
+    <% active = (params[:status].presence || "pending") == status %>
+    <%= link_to admin_reports_path(status: status),
+        style: "padding:0.75rem 1.25rem;text-decoration:none;font-family:'Bebas Neue',sans-serif;
+                font-size:1rem;letter-spacing:0.05em;
+                color:#{active ? color : '#555'};
+                border-bottom:#{active ? "2px solid #{color}" : '2px solid transparent'};
+                margin-bottom:-1px;" do %>
+      <%= label %>
+    <% end %>
+  <% end %>
+</div>
+
+<% if @reports.any? %>
+  <div style="display:flex;flex-direction:column;gap:0.75rem;">
+    <% @reports.each do |report| %>
+      <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1.25rem;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:0.5rem;">
+          <div>
+            <span style="font-family:'Bebas Neue',sans-serif;font-size:1rem;color:#E74C3C;">
+              ⚠️ <%= report.reason.humanize %>
+            </span>
+            <span style="color:#555;font-size:0.8rem;margin-left:0.75rem;">
+              <%= report.reportable_type %> #<%= report.reportable_id %>
+            </span>
+            <span style="color:#555;font-size:0.8rem;margin-left:0.75rem;">
+              · signalé par <span style="color:#888;"><%= report.reporter&.nickname %></span>
+            </span>
+            <span style="color:#444;font-size:0.75rem;margin-left:0.75rem;">
+              · <%= time_ago_in_words(report.created_at) %>
+            </span>
+          </div>
+          <%= link_to "Examiner →", admin_report_path(report),
+              style: "color:#F5C500;text-decoration:none;font-family:'Bebas Neue',sans-serif;
+                      font-size:0.9rem;border:1px solid rgba(245,197,0,0.3);padding:0.2rem 0.6rem;" %>
+        </div>
+        <% if report.details.present? %>
+          <p style="color:#888;font-size:0.85rem;margin:0.5rem 0 0;"><%= report.details.truncate(150) %></p>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+<% else %>
+  <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:3rem;text-align:center;">
+    <p style="color:#555;">Aucun signalement <%= params[:status].presence || 'en attente' %>.</p>
+  </div>
+<% end %>

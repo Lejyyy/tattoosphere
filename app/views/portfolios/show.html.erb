@@ -3,6 +3,47 @@
   (current_user.shop.present? && current_user.shop.tatoueurs.include?(@tatoueur))
 ) %>
 
+<%# ================================ %>
+<%# LIGHTBOX %>
+<%# ================================ %>
+<div id="lightbox"
+     onclick="if(event.target===this) closeLightbox()"
+     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);
+            z-index:9999;align-items:center;justify-content:center;">
+
+  <button onclick="shiftLightbox(-1)"
+          style="position:fixed;left:1.5rem;top:50%;transform:translateY(-50%);
+                 background:none;border:none;color:#fff;font-size:2.5rem;cursor:pointer;
+                 opacity:0.7;transition:opacity 0.15s;"
+          onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
+    &#8249;
+  </button>
+
+  <button onclick="shiftLightbox(1)"
+          style="position:fixed;right:1.5rem;top:50%;transform:translateY(-50%);
+                 background:none;border:none;color:#fff;font-size:2.5rem;cursor:pointer;
+                 opacity:0.7;transition:opacity 0.15s;"
+          onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
+    &#8250;
+  </button>
+
+  <button onclick="closeLightbox()"
+          style="position:fixed;top:1.25rem;right:1.5rem;background:none;border:none;
+                 color:#fff;font-size:1.75rem;cursor:pointer;opacity:0.7;transition:opacity 0.15s;"
+          onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
+    ✕
+  </button>
+
+  <img id="lightbox-img"
+       style="max-width:90vw;max-height:90vh;object-fit:contain;
+              box-shadow:0 0 60px rgba(0,0,0,0.8);" src="" alt="">
+
+  <div id="lightbox-caption"
+       style="position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);
+              color:#aaa;font-family:'Barlow Condensed',sans-serif;font-size:0.95rem;
+              letter-spacing:0.05em;white-space:nowrap;"></div>
+</div>
+
 <div class="container py-5">
 
   <%# Header %>
@@ -18,7 +59,6 @@
         </p>
       </div>
 
-      <%# Actions propriétaire %>
       <div class="d-flex gap-2 align-items-center">
         <% unless can_manage %>
           <%= render "favorites/button", favoritable: @portfolio %>
@@ -56,7 +96,14 @@
                   <div class="carousel-inner">
                     <% item.images.each_with_index do |img, i| %>
                       <div class="carousel-item <%= 'active' if i == 0 %>">
-                        <%= image_tag img, style: "width:100%;height:220px;object-fit:cover;" %>
+                        <%= image_tag img,
+                            style: "width:100%;height:220px;object-fit:cover;cursor:zoom-in;",
+                            data: {
+                              lightbox: true,
+                              src: url_for(img),
+                              caption: "#{item.description&.truncate(80)} — #{i + 1}/#{item.images.count}"
+                            },
+                            onclick: "openLightbox(this)" %>
                       </div>
                     <% end %>
                   </div>
@@ -71,7 +118,13 @@
                 </div>
               <% else %>
                 <%= image_tag item.images.first,
-                    style: "width:100%;height:220px;object-fit:cover;" %>
+                    style: "width:100%;height:220px;object-fit:cover;cursor:zoom-in;",
+                    data: {
+                      lightbox: true,
+                      src: url_for(item.images.first),
+                      caption: item.description&.truncate(80)
+                    },
+                    onclick: "openLightbox(this)" %>
               <% end %>
             <% else %>
               <div class="card-img-placeholder" style="height:220px;">🎨</div>
@@ -79,14 +132,12 @@
 
             <div class="card-body d-flex flex-column flex-grow-1">
 
-              <%# Description %>
               <% if item.description.present? %>
                 <p class="text-secondary mb-3" style="font-size:0.9rem;line-height:1.6;">
                   <%= item.description.truncate(120) %>
                 </p>
               <% end %>
 
-              <%# Styles %>
               <% if item.tattoo_styles.any? %>
                 <div class="d-flex flex-wrap gap-1 mb-3">
                   <% item.tattoo_styles.each do |style| %>
@@ -95,25 +146,21 @@
                 </div>
               <% end %>
 
-              <%# Prix %>
               <% if item.price.present? %>
                 <div style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:#F5C500;margin-bottom:0.75rem;">
                   <%= number_to_currency(item.price, unit: "€", format: "%n %u") %>
                 </div>
               <% end %>
 
-              <%# Actions %>
               <div class="d-flex gap-2 mt-auto pt-2" style="border-top:1px solid #2A2A2A;">
                 <% if can_manage %>
                   <%= link_to "✏️",
                       edit_tatoueur_portfolio_portfolio_item_path(@tatoueur, @portfolio, item),
-                      class: "btn btn-outline-primary btn-sm",
-                      title: "Modifier" %>
+                      class: "btn btn-outline-primary btn-sm", title: "Modifier" %>
                   <%= link_to "🗑️",
                       tatoueur_portfolio_portfolio_item_path(@tatoueur, @portfolio, item),
                       data: { turbo_method: :delete, turbo_confirm: "Supprimer cette réalisation ?" },
-                      class: "btn btn-outline-danger btn-sm",
-                      title: "Supprimer" %>
+                      class: "btn btn-outline-danger btn-sm", title: "Supprimer" %>
                 <% end %>
                 <% unless can_manage %>
                   <%= render "favorites/button", favoritable: item %>
@@ -139,3 +186,50 @@
   <% end %>
 
 </div>
+
+<%# ================================ %>
+<%# LIGHTBOX JS %>
+<%# ================================ %>
+<script>
+  const lb       = document.getElementById('lightbox');
+  const lbImg    = document.getElementById('lightbox-img');
+  const lbCap    = document.getElementById('lightbox-caption');
+  let allImgs    = [];
+  let currentIdx = 0;
+
+  function buildIndex() {
+    allImgs = Array.from(document.querySelectorAll('[data-lightbox]'));
+  }
+
+  function openLightbox(el) {
+    buildIndex();
+    currentIdx = allImgs.indexOf(el);
+    showAt(currentIdx);
+    lb.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+  }
+
+  function showAt(idx) {
+    const el = allImgs[idx];
+    lbImg.src = el.dataset.src;
+    lbCap.textContent = el.dataset.caption || '';
+  }
+
+  function shiftLightbox(dir) {
+    currentIdx = (currentIdx + dir + allImgs.length) % allImgs.length;
+    showAt(currentIdx);
+  }
+
+  function closeLightbox() {
+    lb.style.display = 'none';
+    lbImg.src = '';
+    document.body.style.overflow = '';
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if (lb.style.display === 'none') return;
+    if (e.key === 'Escape')     closeLightbox();
+    if (e.key === 'ArrowRight') shiftLightbox(1);
+    if (e.key === 'ArrowLeft')  shiftLightbox(-1);
+  });
+</script>

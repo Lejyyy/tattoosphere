@@ -3,16 +3,12 @@
 <%# ================================ %>
 <div style="background:#0D0D0D;border-bottom:1px solid #1A1A1A;padding:1rem 1.5rem;">
   <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
-
-    <%# Titre + tagline %>
     <div>
       <h1 style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:#fff;letter-spacing:0.05em;margin:0;">
         Tatoueurs
       </h1>
       <p style="font-size:0.85rem;color:#666;margin:0;">Trouvez votre artiste tatoueur</p>
     </div>
-
-    <%# Toggle grille / carte %>
     <div style="display:flex;gap:0.5rem;align-items:center;">
       <button id="btn-grille" onclick="switchView('grille')"
               style="background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;font-size:0.95rem;letter-spacing:0.08em;padding:0.5rem 1.25rem;cursor:pointer;">
@@ -78,9 +74,11 @@
       <% @tatoueurs.each do |tatoueur| %>
         <div class="col">
           <%= link_to tatoueur_path(tatoueur), style: "text-decoration:none;display:block;" do %>
-            <div style="position:relative;overflow:hidden;background:#1A1A1A;border:1px solid #2A2A2A;transition:border-color 0.2s;"
+            <div style="position:relative;overflow:hidden;background:#1A1A1A;
+                        border:1px solid <%= tatoueur.featured? ? '#8B5CF6' : '#2A2A2A' %>;
+                        transition:border-color 0.2s;"
                  onmouseover="this.style.borderColor='#F5C500'"
-                 onmouseout="this.style.borderColor='#2A2A2A'">
+                 onmouseout="this.style.borderColor='<%= tatoueur.featured? ? '#8B5CF6' : '#2A2A2A' %>'">
 
               <%# Photo principale %>
               <% photo = tatoueur.photos.first || (tatoueur.avatar.attached? ? tatoueur.avatar : nil) %>
@@ -93,14 +91,24 @@
                 <div style="width:100%;height:320px;background:#1A1A1A;display:flex;align-items:center;justify-content:center;font-size:4rem;">🖋️</div>
               <% end %>
 
+              <%# Badge featured ⭐ %>
+              <% if tatoueur.featured? %>
+                <div style="position:absolute;top:0.6rem;right:0.6rem;
+                            width:28px;height:28px;background:#8B5CF6;border-radius:50%;
+                            display:flex;align-items:center;justify-content:center;
+                            font-size:0.85rem;box-shadow:0 2px 8px rgba(139,92,246,0.6);">
+                  ⭐
+                </div>
+              <% end %>
+
               <%# Badge vérifié %>
               <% if tatoueur.verified? %>
-                <span style="position:absolute;top:0.75rem;right:0.75rem;background:rgba(39,174,96,0.9);color:#fff;font-size:0.7rem;font-weight:700;padding:0.2rem 0.5rem;text-transform:uppercase;letter-spacing:0.05em;">
+                <span style="position:absolute;top:0.75rem;<%= tatoueur.featured? ? 'right:2.5rem' : 'right:0.75rem' %>;background:rgba(39,174,96,0.9);color:#fff;font-size:0.7rem;font-weight:700;padding:0.2rem 0.5rem;text-transform:uppercase;letter-spacing:0.05em;">
                   ✅ Vérifié
                 </span>
               <% end %>
 
-              <%# Infos en bas de la card %>
+              <%# Infos en bas %>
               <div style="padding:1rem;background:linear-gradient(to top, #0D0D0D 0%, rgba(13,13,13,0.95) 100%);">
                 <div class="d-flex align-items-center gap-2 mb-1">
                   <% if tatoueur.avatar.attached? %>
@@ -116,16 +124,12 @@
                     <% end %>
                   </div>
                 </div>
-
-                <%# Note %>
                 <% if tatoueur.reviews.any? %>
                   <% avg = tatoueur.reviews.average(:rating).to_f.round(1) %>
                   <div style="font-size:0.8rem;color:#F5C500;">
                     ⭐ <%= avg %> <span style="color:#666;">(<%= tatoueur.reviews.count %> avis)</span>
                   </div>
                 <% end %>
-
-                <%# Styles %>
                 <% if tatoueur.tattoo_styles.any? %>
                   <div class="d-flex flex-wrap gap-1 mt-2">
                     <% tatoueur.tattoo_styles.first(3).each do |style| %>
@@ -145,7 +149,6 @@
         </div>
       <% end %>
     </div>
-
   <% else %>
     <div style="text-align:center;padding:4rem 2rem;color:#555;">
       <div style="font-size:3rem;margin-bottom:1rem;">🖋️</div>
@@ -172,25 +175,14 @@
     const carte  = document.getElementById("view-carte")
     const btnG   = document.getElementById("btn-grille")
     const btnC   = document.getElementById("btn-carte")
-
     if (view === "grille") {
-      grille.style.display = "block"
-      carte.style.display  = "none"
-      btnG.style.background   = "#F5C500"
-      btnG.style.color        = "#000"
-      btnG.style.border       = "none"
-      btnC.style.background   = "transparent"
-      btnC.style.color        = "#888"
-      btnC.style.border       = "1px solid #2A2A2A"
+      grille.style.display = "block"; carte.style.display = "none"
+      btnG.style.background = "#F5C500"; btnG.style.color = "#000"; btnG.style.border = "none"
+      btnC.style.background = "transparent"; btnC.style.color = "#888"; btnC.style.border = "1px solid #2A2A2A"
     } else {
-      grille.style.display = "none"
-      carte.style.display  = "block"
-      btnC.style.background   = "#F5C500"
-      btnC.style.color        = "#000"
-      btnC.style.border       = "none"
-      btnG.style.background   = "transparent"
-      btnG.style.color        = "#888"
-      btnG.style.border       = "1px solid #2A2A2A"
+      grille.style.display = "none"; carte.style.display = "block"
+      btnC.style.background = "#F5C500"; btnC.style.color = "#000"; btnC.style.border = "none"
+      btnG.style.background = "transparent"; btnG.style.color = "#888"; btnG.style.border = "1px solid #2A2A2A"
     }
   }
 </script>

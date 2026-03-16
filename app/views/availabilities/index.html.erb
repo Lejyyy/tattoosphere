@@ -1,30 +1,431 @@
-<h1>Disponibilités de <%= @tatoueur.nickname %></h1>
+<% content_for :title, "Disponibilités" %>
 
-<% days = %w[Dimanche Lundi Mardi Mercredi Jeudi Vendredi Samedi] %>
-<% @availabilities.each do |a| %>
-  <div>
-    <strong><%= days[a.day_of_week] %></strong>
-    <%= a.start_time.strftime("%H:%M") %> - <%= a.end_time.strftime("%H:%M") %>
-    <%= link_to "Supprimer", tatoueur_availability_path(@tatoueur, a), method: :delete, data: { confirm: "Supprimer ?" } %>
-  </div>
-<% end %>
+<div class="container py-5">
 
-<h2>Ajouter une disponibilité</h2>
-<%= render "form" %>
+  <%# En-tête %>
+  <div class="mb-5">
+    <%= link_to "← Retour", tatoueur_path(@tatoueur),
+        style: "font-size:0.8rem;font-weight:700;text-transform:uppercase;
+                letter-spacing:0.08em;color:#888;text-decoration:none;" %>
+    <h1 style="font-family:'Bebas Neue',sans-serif;font-size:3rem;
+               letter-spacing:0.05em;margin-top:1rem;margin-bottom:0.25rem;">
+      Mes <span style="color:#F5C500;">disponibilités</span>
+    </h1>
+    <p style="color:#888;font-family:'Barlow Condensed',sans-serif;">
+      Clique sur les créneaux pour les activer. En mode <strong style="color:#E74C3C;">Bloquer</strong>,
+      choisis une date et clique pour marquer des indisponibilités ponctuelles.
+    </p>
+  </div>
 
-# app/views/availabilities/_form.html.erb
-<%= form_with model: [@tatoueur, @availability] do |f| %>
-  <div>
-    <%= f.label :day_of_week, "Jour" %>
-    <%= f.select :day_of_week, [["Dimanche", 0], ["Lundi", 1], ["Mardi", 2], ["Mercredi", 3], ["Jeudi", 4], ["Vendredi", 5], ["Samedi", 6]] %>
+  <%# Données JS %>
+  <% days_map = { 1 => "lun", 2 => "mar", 3 => "mer", 4 => "jeu", 5 => "ven", 6 => "sam", 0 => "dim" } %>
+  <% existing = {} %>
+  <% @availabilities.each do |a| %>
+    <% existing[days_map[a.day_of_week]] ||= [] %>
+    <% existing[days_map[a.day_of_week]] << a.start_time.strftime("%H:%M") %>
+  <% end %>
+
+  <%# Bookings confirmés : { "2026-03-20" => ["09:00", "09:30"] } %>
+  <% confirmed_map = {} %>
+  <% @confirmed_bookings.each do |b| %>
+    <% next unless b.start_time %>
+    <% key = b.date.to_s %>
+    <% confirmed_map[key] ||= [] %>
+    <% confirmed_map[key] << b.start_time.strftime("%H:%M") %>
+  <% end %>
+
+  <%# Blocked slots : { "2026-03-20" => ["10:00", "10:30"] } %>
+  <% blocked_map = {} %>
+  <% @blocked_slots.each do |bs| %>
+    <% key = bs.date.to_s %>
+    <% slot = bs.start_time.strftime("%H:%M") %>
+    <% while slot <= bs.end_time.strftime("%H:%M") %>
+      <% blocked_map[key] ||= [] %>
+      <% blocked_map[key] << slot unless blocked_map[key].include?(slot) %>
+      <% h, m = slot.split(":").map(&:to_i); m += 30; h += m / 60; m %= 60; slot = "%02d:%02d" % [h, m] %>
+    <% end %>
+  <% end %>
+
+  <%# ══════════════════════════════════ %>
+  <%# MODE TOGGLE %>
+  <%# ══════════════════════════════════ %>
+  <div style="display:flex;gap:0.75rem;margin-bottom:1.5rem;align-items:center;flex-wrap:wrap;">
+    <button id="mode-avail" onclick="setMode('avail')"
+            style="font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:0.05em;
+                   padding:0.5rem 1.25rem;cursor:pointer;border:2px solid #F5C500;
+                   background:#F5C500;color:#000;transition:all 0.15s;">
+      🟡 Disponibilités
+    </button>
+    <button id="mode-block" onclick="setMode('block')"
+            style="font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:0.05em;
+                   padding:0.5rem 1.25rem;cursor:pointer;border:2px solid #2A2A2A;
+                   background:transparent;color:#888;transition:all 0.15s;">
+      🔴 Bloquer un créneau
+    </button>
+
+    <%# Sélecteur de date (visible en mode block) %>
+    <div id="block-date-wrap" style="display:none;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+      <input type="date" id="block-date"
+             min="<%= Date.today %>"
+             style="background:#1A1A1A;border:1px solid #E74C3C;color:#fff;
+                    padding:0.5rem 0.75rem;font-size:0.95rem;outline:none;color-scheme:dark;">
+      <input type="text" id="block-reason" placeholder="Motif (optionnel)"
+             style="background:#1A1A1A;border:1px solid #2A2A2A;color:#fff;
+                    padding:0.5rem 0.75rem;font-size:0.95rem;outline:none;width:180px;">
+    </div>
   </div>
-  <div>
-    <%= f.label :start_time, "Heure de début" %>
-    <%= f.time_field :start_time %>
-  </div>
-  <div>
-    <%= f.label :end_time, "Heure de fin" %>
-    <%= f.time_field :end_time %>
-  </div>
-  <%= f.submit "Ajouter" %>
-<% end %>
+
+  <%# ══════════════════════════════════ %>
+  <%# TABLEAU %>
+  <%# ══════════════════════════════════ %>
+  <%= form_with url: tatoueur_availabilities_path(@tatoueur),
+                method: :post, id: "avail-form" do %>
+    <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+    <input type="hidden" name="availabilities_data" id="availabilities-data">
+
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;
+                padding:1.5rem;margin-bottom:1rem;overflow-x:auto;">
+
+      <%# Légende %>
+      <div style="display:flex;gap:1.25rem;margin-bottom:1.25rem;flex-wrap:wrap;align-items:center;">
+        <span style="display:flex;align-items:center;gap:0.4rem;font-size:0.78rem;color:#888;">
+          <span style="display:inline-block;width:14px;height:14px;background:#F5C500;border-radius:2px;"></span> Disponible
+        </span>
+        <span style="display:flex;align-items:center;gap:0.4rem;font-size:0.78rem;color:#888;">
+          <span style="display:inline-block;width:14px;height:14px;background:#E74C3C;border-radius:2px;"></span> Bloqué manuellement
+        </span>
+        <span style="display:flex;align-items:center;gap:0.4rem;font-size:0.78rem;color:#888;">
+          <span style="display:inline-block;width:14px;height:14px;background:#E67E22;border-radius:2px;"></span> RDV confirmé
+        </span>
+        <span style="display:flex;align-items:center;gap:0.4rem;font-size:0.78rem;color:#888;">
+          <span style="display:inline-block;width:14px;height:14px;background:#111;border:1px solid #2A2A2A;border-radius:2px;"></span> Libre
+        </span>
+        <div style="margin-left:auto;display:flex;gap:0.5rem;">
+          <button type="button" onclick="selectAll()"
+                  style="background:transparent;border:1px solid #444;color:#888;
+                         font-family:'Bebas Neue',sans-serif;font-size:0.85rem;
+                         letter-spacing:0.05em;padding:0.25rem 0.75rem;cursor:pointer;">
+            Tout sélectionner
+          </button>
+          <button type="button" onclick="clearAll()"
+                  style="background:transparent;border:1px solid #444;color:#888;
+                         font-family:'Bebas Neue',sans-serif;font-size:0.85rem;
+                         letter-spacing:0.05em;padding:0.25rem 0.75rem;cursor:pointer;">
+            Tout effacer
+          </button>
+        </div>
+      </div>
+
+      <%# Tableau -%>
+      <% days     = [["Lun",1],["Mar",2],["Mer",3],["Jeu",4],["Ven",5],["Sam",6],["Dim",0]] %>
+      <% day_keys = ["lun","mar","mer","jeu","ven","sam","dim"] %>
+      <% slots = (0..30).map { |i| h = 8 + (i * 30) / 60; m = (i * 30) % 60; "%02d:%02d" % [h, m] } %>
+
+      <table style="width:100%;border-collapse:collapse;min-width:520px;">
+        <thead>
+          <tr>
+            <th style="width:50px;padding:0.3rem;font-size:0.7rem;color:#555;
+                       text-align:left;font-weight:400;text-transform:uppercase;"></th>
+            <% days.each do |label, _| %>
+              <th style="padding:0.3rem;font-family:'Bebas Neue',sans-serif;font-size:1rem;
+                         color:#888;text-align:center;letter-spacing:0.05em;font-weight:400;">
+                <%= label %>
+              </th>
+            <% end %>
+          </tr>
+        </thead>
+        <tbody>
+          <% slots.each do |slot| %>
+            <tr>
+              <td style="padding:0.15rem 0.3rem;font-size:0.72rem;color:#555;white-space:nowrap;">
+                <%= slot %>
+              </td>
+              <% days.each_with_index do |(label, day_num), di| %>
+                <% dk = day_keys[di] %>
+                <% avail = existing[dk]&.include?(slot) %>
+                <td style="padding:0.1rem;text-align:center;">
+                  <div id="cell-<%= dk %>-<%= slot.gsub(':','') %>"
+                       data-day="<%= dk %>"
+                       data-day-num="<%= day_num %>"
+                       data-slot="<%= slot %>"
+                       data-active="<%= avail ? '1' : '0' %>"
+                       data-state="<%= avail ? 'avail' : 'free' %>"
+                       onclick="handleCellClick(this)"
+                       style="width:100%;height:20px;cursor:pointer;transition:background 0.1s;
+                              border-radius:2px;border:1px solid #222;
+                              background:<%= avail ? '#F5C500' : '#111' %>;">
+                  </div>
+                </td>
+              <% end %>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="display:flex;justify-content:flex-end;gap:0.75rem;margin-bottom:2rem;">
+      <button type="submit" id="save-avail-btn" onclick="prepareSubmit()"
+              style="background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;
+                     font-size:1.1rem;letter-spacing:0.1em;padding:0.75rem 2rem;cursor:pointer;"
+              onmouseover="this.style.background='#d4a800'"
+              onmouseout="this.style.background='#F5C500'">
+        Enregistrer les disponibilités
+      </button>
+    </div>
+  <% end %>
+
+  <%# Formulaire bloc (hidden, soumis par JS) %>
+  <%= form_with url: tatoueur_blocked_slots_path(@tatoueur),
+                method: :post, id: "block-form" do %>
+    <%= hidden_field_tag :authenticity_token, form_authenticity_token %>
+    <input type="hidden" name="blocked_data" id="blocked-data">
+  <% end %>
+
+  <%# ══════════════════════════════════ %>
+  <%# LISTE DES BLOCAGES EXISTANTS %>
+  <%# ══════════════════════════════════ %>
+  <% if @blocked_slots.any? %>
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1.5rem;margin-bottom:2rem;">
+      <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:#E74C3C;
+                 border-left:4px solid #E74C3C;padding-left:0.75rem;margin-bottom:1rem;">
+        Indisponibilités programmées
+      </h3>
+      <% @blocked_slots.group_by(&:date).each do |date, slots_for_day| %>
+        <div style="margin-bottom:0.75rem;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:0.95rem;color:#F5C500;
+                      margin-bottom:0.4rem;">
+            <%= date.strftime("%A %d %B %Y").capitalize %>
+          </div>
+          <% slots_for_day.each do |bs| %>
+            <div style="display:flex;align-items:center;justify-content:space-between;
+                        padding:0.4rem 0.75rem;background:#0D0D0D;margin-bottom:0.25rem;">
+              <span style="color:#bbb;font-size:0.9rem;">
+                <%= bs.start_time.strftime("%Hh%M") %> — <%= bs.end_time.strftime("%Hh%M") %>
+                <% if bs.reason.present? %>
+                  <span style="color:#555;margin-left:0.5rem;">· <%= bs.reason %></span>
+                <% end %>
+              </span>
+              <%= link_to "✕",
+                  tatoueur_blocked_slot_path(@tatoueur, bs),
+                  data: { turbo_method: :delete, turbo_confirm: "Supprimer ce blocage ?" },
+                  style: "color:#555;text-decoration:none;font-size:0.9rem;",
+                  onmouseover: "this.style.color='#E74C3C'",
+                  onmouseout:  "this.style.color='#555'" %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# RDV confirmés %>
+  <% if @confirmed_bookings.any? %>
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1.5rem;">
+      <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:#E67E22;
+                 border-left:4px solid #E67E22;padding-left:0.75rem;margin-bottom:1rem;">
+        Rendez-vous confirmés
+      </h3>
+      <% @confirmed_bookings.order(:date, :start_time).each do |b| %>
+        <div style="display:flex;align-items:center;justify-content:space-between;
+                    padding:0.5rem 0.75rem;background:#0D0D0D;margin-bottom:0.25rem;">
+          <span style="color:#bbb;font-size:0.9rem;">
+            <%= b.date.strftime("%A %d %B").capitalize %>
+            <% if b.start_time %>
+              · <%= b.start_time.strftime("%Hh%M") %>
+            <% end %>
+          </span>
+          <span style="color:#E67E22;font-size:0.75rem;text-transform:uppercase;
+                       letter-spacing:0.05em;">Confirmé</span>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+
+</div>
+
+<script>
+  let currentMode = 'avail'
+  const pendingBlocks = [] // { date, start_time, end_time, reason }
+
+  // ── Mode toggle ──────────────────────────────────
+  function setMode(mode) {
+    currentMode = mode
+    const btnAvail = document.getElementById('mode-avail')
+    const btnBlock = document.getElementById('mode-block')
+    const dateWrap = document.getElementById('block-date-wrap')
+    const saveBtn  = document.getElementById('save-avail-btn')
+
+    if (mode === 'avail') {
+      btnAvail.style.background   = '#F5C500'
+      btnAvail.style.color        = '#000'
+      btnAvail.style.borderColor  = '#F5C500'
+      btnBlock.style.background   = 'transparent'
+      btnBlock.style.color        = '#888'
+      btnBlock.style.borderColor  = '#2A2A2A'
+      dateWrap.style.display      = 'none'
+      saveBtn.style.display       = 'inline-block'
+    } else {
+      btnBlock.style.background   = '#E74C3C'
+      btnBlock.style.color        = '#fff'
+      btnBlock.style.borderColor  = '#E74C3C'
+      btnAvail.style.background   = 'transparent'
+      btnAvail.style.color        = '#888'
+      btnAvail.style.borderColor  = '#2A2A2A'
+      dateWrap.style.display      = 'flex'
+      saveBtn.style.display       = 'none'
+    }
+  }
+
+  // ── Clic sur une cellule ─────────────────────────
+  function handleCellClick(el) {
+    const state = el.dataset.state
+
+    // Cellules RDV confirmé → non cliquables
+    if (state === 'confirmed') return
+
+    if (currentMode === 'avail') {
+      // Toggle disponibilité
+      if (state === 'avail') {
+        el.dataset.state  = 'free'
+        el.dataset.active = '0'
+        el.style.background = '#111'
+      } else {
+        el.dataset.state  = 'avail'
+        el.dataset.active = '1'
+        el.style.background = '#F5C500'
+      }
+    } else {
+      // Mode block : ajoute un blocage ponctuel
+      const date = document.getElementById('block-date').value
+      if (!date) { alert("Choisis d'abord une date."); return }
+
+      const slot   = el.dataset.slot
+      const reason = document.getElementById('block-reason').value
+      const h      = parseInt(slot.split(':')[0])
+      const m      = parseInt(slot.split(':')[1])
+      const endM   = m + 30
+      const endH   = endM >= 60 ? h + 1 : h
+      const endMin = endM >= 60 ? endM - 60 : endM
+      const endStr = `${String(endH).padStart(2,'0')}:${String(endMin).padStart(2,'0')}`
+
+      pendingBlocks.push({ date, start_time: slot, end_time: endStr, reason })
+
+      el.dataset.state    = 'blocked'
+      el.style.background = '#E74C3C'
+
+      // Sauvegarde immédiate
+      document.getElementById('blocked-data').value = JSON.stringify(pendingBlocks)
+      document.getElementById('block-form').requestSubmit()
+    }
+  }
+
+  // ── Disponibilités ───────────────────────────────
+  function selectAll() {
+    document.querySelectorAll('[id^="cell-"]').forEach(el => {
+      if (el.dataset.state === 'confirmed' || el.dataset.state === 'blocked') return
+      el.dataset.state  = 'avail'
+      el.dataset.active = '1'
+      el.style.background = '#F5C500'
+    })
+  }
+
+  function clearAll() {
+    document.querySelectorAll('[id^="cell-"]').forEach(el => {
+      if (el.dataset.state === 'confirmed' || el.dataset.state === 'blocked') return
+      el.dataset.state  = 'free'
+      el.dataset.active = '0'
+      el.style.background = '#111'
+    })
+  }
+
+  function prepareSubmit() {
+    const data = {}
+    document.querySelectorAll('[id^="cell-"]').forEach(el => {
+      if (el.dataset.active !== '1') return
+      const day  = el.dataset.day
+      const slot = el.dataset.slot
+      if (!data[day]) data[day] = []
+      data[day].push(slot)
+    })
+    document.getElementById('availabilities-data').value = JSON.stringify(data)
+  }
+
+  // ── Drag pour sélection multiple ───────────────
+  let isDragging = false
+  let dragAction = null // 'activate' ou 'deactivate'
+
+  document.addEventListener('mousedown', (e) => {
+    const cell = e.target.closest('[id^="cell-"]')
+    if (!cell) return
+    isDragging = true
+    dragAction = cell.dataset.active === '1' ? 'deactivate' : 'activate'
+    handleCellClick(cell)
+    e.preventDefault()
+  })
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isDragging) return
+    const cell = document.elementFromPoint(e.clientX, e.clientY)?.closest('[id^="cell-"]')
+    if (!cell) return
+    if (dragAction === 'activate' && cell.dataset.active !== '1' && cell.dataset.state !== 'confirmed') {
+      if (currentMode === 'avail') {
+        cell.dataset.state  = 'avail'
+        cell.dataset.active = '1'
+        cell.style.background = '#F5C500'
+      }
+    } else if (dragAction === 'deactivate' && cell.dataset.active === '1') {
+      if (currentMode === 'avail') {
+        cell.dataset.state  = 'free'
+        cell.dataset.active = '0'
+        cell.style.background = '#111'
+      }
+    }
+  })
+
+  document.addEventListener('mouseup', () => {
+    isDragging = false
+    dragAction = null
+  })
+  document.querySelectorAll('[id^="cell-"]').forEach(el => {
+    if (el.dataset.active === '1') {
+      el.dataset.state    = 'avail'
+      el.style.background = '#F5C500'
+    }
+  })
+
+  // Overlay RDV confirmés et blocages (depuis le serveur)
+  const confirmedMap = <%= raw confirmed_map.to_json %>
+  const blockedMap   = <%= raw blocked_map.to_json %>
+  const dayNumToKey  = { 1:"lun", 2:"mar", 3:"mer", 4:"jeu", 5:"ven", 6:"sam", 0:"dim" }
+
+  function getDateDayKey(dateStr) {
+    const d = new Date(dateStr + 'T00:00:00')
+    return dayNumToKey[d.getDay()]
+  }
+
+  Object.entries(confirmedMap).forEach(([date, slots]) => {
+    slots.forEach(slot => {
+      const dk  = getDateDayKey(date)
+      const id  = `cell-${dk}-${slot.replace(':','')}`
+      const el  = document.getElementById(id)
+      if (!el) return
+      el.dataset.state    = 'confirmed'
+      el.style.background = '#E67E22'
+      el.style.cursor     = 'not-allowed'
+      el.title            = `RDV confirmé le ${date}`
+    })
+  })
+
+  Object.entries(blockedMap).forEach(([date, slots]) => {
+    slots.forEach(slot => {
+      const dk  = getDateDayKey(date)
+      const id  = `cell-${dk}-${slot.replace(':','')}`
+      const el  = document.getElementById(id)
+      if (!el) return
+      if (el.dataset.state === 'confirmed') return
+      el.dataset.state    = 'blocked'
+      el.style.background = '#E74C3C'
+      el.title            = `Bloqué le ${date}`
+    })
+  })
+</script>

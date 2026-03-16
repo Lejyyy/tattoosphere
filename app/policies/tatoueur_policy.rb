@@ -14,6 +14,14 @@ class TatoueurPolicy < ApplicationPolicy
     (user.tatoueur? && record.user == user) || user.admin?
   end
 
+  def update_photos?
+  update?
+end
+
+def delete_photo?
+  update?
+end
+
   def edit?    = update?
   def destroy? = update?
 

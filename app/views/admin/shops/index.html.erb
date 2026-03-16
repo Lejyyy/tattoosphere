@@ -1,0 +1,91 @@
+<% content_for :title, "Admin — Shops" %>
+
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+  <h1 style="font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.05em;margin:0;">
+    Shops <span style="color:#F5C500;">(<%= @shops.total_count rescue @shops.count %>)</span>
+  </h1>
+</div>
+
+<%= form_with url: admin_shops_path, method: :get,
+              html: { style: "display:flex;gap:0.75rem;flex-wrap:wrap;margin-bottom:1.5rem;" } do |f| %>
+  <%= f.text_field :q, value: params[:q], placeholder: "Rechercher par nom...",
+      style: "background:#1A1A1A;border:1px solid #2A2A2A;color:#fff;
+              padding:0.6rem 1rem;font-size:0.9rem;outline:none;flex:1;min-width:200px;" %>
+  <%= f.select :filter,
+      options_for_select([["Tous",""],["En avant","featured"],["Bannis","banned"]], params[:filter]),
+      {},
+      style: "background:#1A1A1A;border:1px solid #2A2A2A;color:#fff;
+              padding:0.6rem 1rem;font-size:0.9rem;outline:none;cursor:pointer;" %>
+  <%= f.submit "Filtrer",
+      style: "background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;
+              font-size:1rem;letter-spacing:0.08em;padding:0.6rem 1.25rem;cursor:pointer;" %>
+<% end %>
+
+<div style="background:#1A1A1A;border:1px solid #2A2A2A;">
+  <table style="width:100%;border-collapse:collapse;">
+    <thead>
+      <tr style="border-bottom:1px solid #2A2A2A;">
+        <% ["Shop", "Adresse", "Tatoueurs", "Featured", "Statut", ""].each do |h| %>
+          <th style="padding:0.75rem 1rem;font-size:0.72rem;text-transform:uppercase;
+                     letter-spacing:0.08em;color:#555;text-align:left;font-weight:400;"><%= h %></th>
+        <% end %>
+      </tr>
+    </thead>
+    <tbody>
+      <% @shops.each do |shop| %>
+        <tr style="border-bottom:1px solid #1f1f1f;"
+            onmouseover="this.style.background='rgba(255,255,255,0.02)'"
+            onmouseout="this.style.background='transparent'">
+          <td style="padding:0.65rem 1rem;">
+            <div style="display:flex;align-items:center;gap:0.75rem;">
+              <% if shop.photos.attached? && shop.photos.first %>
+                <%= image_tag shop.photos.first,
+                    style: "width:32px;height:32px;object-fit:cover;border:2px solid #2A2A2A;" %>
+              <% else %>
+                <div style="width:32px;height:32px;background:#2A2A2A;display:flex;
+                            align-items:center;justify-content:center;">🏠</div>
+              <% end %>
+              <span style="font-family:'Bebas Neue',sans-serif;color:#fff;font-size:1rem;">
+                <%= shop.name %>
+                <% if shop.featured? %><span style="color:#F5C500;font-size:0.8rem;">⭐</span><% end %>
+              </span>
+            </div>
+          </td>
+          <td style="padding:0.65rem 1rem;color:#888;font-size:0.85rem;">
+            <%= shop.address&.truncate(30) %>
+          </td>
+          <td style="padding:0.65rem 1rem;color:#888;font-size:0.85rem;text-align:center;">
+            <%= shop.tatoueurs.count %>
+          </td>
+          <td style="padding:0.65rem 1rem;">
+            <% if shop.featured? %>
+              <%= button_to "✕", unfeature_admin_shop_path(shop), method: :patch,
+                  style: "background:transparent;border:1px solid #555;color:#555;
+                          font-size:0.75rem;padding:0.2rem 0.5rem;cursor:pointer;" %>
+            <% else %>
+              <%= button_to "⭐", feature_admin_shop_path(shop), method: :patch,
+                  style: "background:transparent;border:1px solid #F5C500;color:#F5C500;
+                          font-size:0.75rem;padding:0.2rem 0.5rem;cursor:pointer;" %>
+            <% end %>
+          </td>
+          <td style="padding:0.65rem 1rem;">
+            <% if shop.banned? %>
+              <span style="background:#E74C3C;color:#fff;font-size:0.7rem;
+                           padding:0.15rem 0.5rem;text-transform:uppercase;">Banni</span>
+            <% elsif shop.is_active? %>
+              <span style="background:#27AE60;color:#fff;font-size:0.7rem;
+                           padding:0.15rem 0.5rem;text-transform:uppercase;">Actif</span>
+            <% else %>
+              <span style="background:#555;color:#fff;font-size:0.7rem;
+                           padding:0.15rem 0.5rem;text-transform:uppercase;">Inactif</span>
+            <% end %>
+          </td>
+          <td style="padding:0.65rem 1rem;">
+            <%= link_to "→", admin_shop_path(shop),
+                style: "color:#F5C500;text-decoration:none;font-family:'Bebas Neue',sans-serif;" %>
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

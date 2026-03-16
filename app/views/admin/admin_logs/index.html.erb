@@ -1,0 +1,76 @@
+<% content_for :title, "Admin — Logs" %>
+
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+  <h1 style="font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.05em;margin:0;">
+    Historique des <span style="color:#F5C500;">actions</span>
+  </h1>
+</div>
+
+<%# Filtre %>
+<%= form_with url: admin_admin_logs_path, method: :get,
+              html: { style: "display:flex;gap:0.75rem;margin-bottom:1.5rem;" } do |f| %>
+  <%= f.select :action_filter,
+      options_for_select([
+        ["Toutes les actions", ""],
+        ["Ban user",           "ban_user"],
+        ["Unban user",         "unban_user"],
+        ["Approve tatoueur",   "approve_tatoueur"],
+        ["Reject tatoueur",    "reject_tatoueur"],
+        ["Ban tatoueur",       "ban_tatoueur"],
+        ["Feature",            "feature_tatoueur"],
+        ["Résoudre signalement","resolve_report"],
+      ], params[:action_filter]),
+      {},
+      style: "background:#1A1A1A;border:1px solid #2A2A2A;color:#fff;
+              padding:0.6rem 1rem;font-size:0.9rem;outline:none;cursor:pointer;" %>
+  <%= f.submit "Filtrer",
+      style: "background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;
+              font-size:1rem;letter-spacing:0.08em;padding:0.6rem 1.25rem;cursor:pointer;" %>
+<% end %>
+
+<div style="background:#1A1A1A;border:1px solid #2A2A2A;">
+  <table style="width:100%;border-collapse:collapse;">
+    <thead>
+      <tr style="border-bottom:1px solid #2A2A2A;">
+        <% ["Date", "Admin", "Action", "Cible", "Note"].each do |h| %>
+          <th style="padding:0.75rem 1rem;font-size:0.72rem;text-transform:uppercase;
+                     letter-spacing:0.08em;color:#555;text-align:left;font-weight:400;">
+            <%= h %>
+          </th>
+        <% end %>
+      </tr>
+    </thead>
+    <tbody>
+      <% if @logs.any? %>
+        <% @logs.each do |log| %>
+          <tr style="border-bottom:1px solid #1f1f1f;">
+            <td style="padding:0.65rem 1rem;color:#555;font-size:0.8rem;white-space:nowrap;">
+              <%= log.created_at.strftime("%d/%m/%Y %Hh%M") %>
+            </td>
+            <td style="padding:0.65rem 1rem;color:#888;font-size:0.85rem;">
+              <%= log.admin_user&.nickname %>
+            </td>
+            <td style="padding:0.65rem 1rem;">
+              <span style="font-family:'Bebas Neue',sans-serif;font-size:0.9rem;
+                           color:#F5C500;letter-spacing:0.04em;">
+                <%= log.action.humanize %>
+              </span>
+            </td>
+            <td style="padding:0.65rem 1rem;color:#888;font-size:0.85rem;">
+              <%= log.target_type %> #<%= log.target_id %>
+            </td>
+            <td style="padding:0.65rem 1rem;color:#555;font-size:0.8rem;">
+              <%= log.note&.truncate(60) %>
+            </td>
+          </tr>
+        <% end %>
+      <% else %>
+        <tr>
+          <td colspan="5" style="padding:3rem;text-align:center;color:#555;">
+            Aucune action enregistrée.
+          </td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+</div>

@@ -20,6 +20,14 @@ class User < ApplicationRecord
   has_one_attached :avatar
   has_many :event_participations, dependent: :destroy
   has_many :participated_events, through: :event_participations, source: :event
+  has_many :reports, foreign_key: :reporter_id, dependent: :destroy
+  has_many :admin_logs, foreign_key: :admin_user_id
+
+  # ================================
+  # SCOPES
+  # ================================
+  scope :banned,  -> { where(banned: true) }
+  scope :active,  -> { where(banned: false) }
 
   # ================================
   # VALIDATIONS
@@ -33,21 +41,12 @@ class User < ApplicationRecord
   # ================================
   # HELPERS
   # ================================
-  def tatoueur?
-    role == "tatoueur"
-  end
-
-  def shop_owner?
-    role == "shop_owner"
-  end
-
-  def user?
-    role == "user"
-  end
-
-  def admin?
-    role == "admin"
-  end
+  def tatoueur?   = role == "tatoueur"
+  def shop_owner? = role == "shop_owner"
+  def user?       = role == "user"
+  def admin?      = role == "admin"
+  def banned?     = banned == true
+  def active?     = !banned?
 
   def favorited?(resource)
     favorites.exists?(favoritable: resource)

@@ -2,11 +2,10 @@ class Tatoueur < ApplicationRecord
   belongs_to :user
   has_one_attached :avatar
   has_many_attached :photos
-
-  # Documents de vérification
-  has_one_attached :identity_document      # pièce d'identité
-  has_one_attached :hygiene_certificate    # certification hygiène & sécurité
-
+  has_one_attached :cover
+  has_one_attached :identity_document
+  has_one_attached :hygiene_certificate
+  has_one_attached :identity_selfie
   has_many :conversation_participants, as: :participant, dependent: :destroy
   has_many :conversations, through: :conversation_participants
   has_many :tatoueur_styles
@@ -22,15 +21,23 @@ class Tatoueur < ApplicationRecord
   has_many :socials
   has_many :events
   has_many :favorites, as: :favoritable, dependent: :destroy
+  has_many :blocked_slots, dependent: :destroy
+  has_many :reports, as: :reportable, dependent: :destroy
+
 
   # ================================
-  # VÉRIFICATION
+  # SCOPES
+  # ================================
+  scope :featured, -> { where(featured: true) }
+  scope :banned,   -> { where(banned: true) }
+  scope :active,   -> { where(is_active: true, banned: false) }
+
+  # ================================
+  # VALIDATIONS
   # ================================
   VERIFICATION_STATUSES = %w[unsubmitted pending approved rejected].freeze
-
   validates :verification_status, inclusion: { in: VERIFICATION_STATUSES }
   validates :siren, format: { with: /\A\d{9}\z/, message: "doit contenir exactement 9 chiffres" }, allow_blank: true
-
   validates :nickname, :first_name, :last_name, :email, presence: true
   validates :email, uniqueness: true
   validates :deposit_amount, numericality: { greater_than: 0 }, allow_nil: true
@@ -48,11 +55,14 @@ class Tatoueur < ApplicationRecord
   # VÉRIFICATION — HELPERS
   # ================================
   def verification_documents_complete?
-    identity_document.attached? &&
-      hygiene_certificate.attached? &&
-      siren.present? &&
-      bank_details_complete?
-  end
+  identity_document.attached? &&
+    identity_selfie.attached? &&
+    hygiene_certificate.attached? &&
+    siren.present? &&
+    first_name.present? &&
+    last_name.present? &&
+    bank_details_complete?
+end
 
   def submit_for_verification!
     return false unless verification_documents_complete?
@@ -80,13 +90,10 @@ class Tatoueur < ApplicationRecord
     )
   end
 
-  def verified?
-    verified == true
-  end
-
-  def pending_verification?
-    verification_status == "pending"
-  end
+  def verified?       = verified == true
+  def pending_verification? = verification_status == "pending"
+  def banned?         = banned == true
+  def featured?       = featured == true
 
   # ================================
   # AUTRES HELPERS

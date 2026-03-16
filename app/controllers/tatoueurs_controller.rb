@@ -1,49 +1,55 @@
 class TatoueursController < ApplicationController
   before_action :authenticate_user!, except: [ :index, :show ]
-  before_action :set_tatoueur, only: [ :show, :edit, :update, :destroy, :verification, :submit_verification, :connect_paypal, :paypal_callback ]
+  before_action :set_tatoueur, only: [
+    :show, :edit, :update, :destroy,
+    :verification, :submit_verification,
+    :connect_paypal, :paypal_callback,
+    :update_photos, :delete_photo
+  ]
 
   # GET /tatoueurs
   def index
-  @tatoueurs = Tatoueur.where(is_active: true)
-                       .includes(:tattoo_styles, :reviews, :shops,
-                                 avatar_attachment: :blob,
-                                 photos_attachments: :blob)
+    @tatoueurs = Tatoueur.where(is_active: true, banned: false)
+                     .order(featured: :desc, created_at: :desc)
+                     .includes(:tattoo_styles, :reviews, :shops,
+                               avatar_attachment: :blob,
+                               photos_attachments: :blob)
 
-  if params[:q].present?
-    q = "%#{params[:q]}%"
-    @tatoueurs = @tatoueurs.where("nickname ILIKE ? OR email ILIKE ?", q, q)
-  end
+    if params[:q].present?
+      q = "%#{params[:q]}%"
+      @tatoueurs = @tatoueurs.where("nickname ILIKE ? OR email ILIKE ?", q, q)
+    end
 
-  if params[:style_id].present?
-    @tatoueurs = @tatoueurs.joins(:tattoo_styles)
-                           .where(tattoo_styles: { id: params[:style_id] })
-  end
+    if params[:style_id].present?
+      @tatoueurs = @tatoueurs.joins(:tattoo_styles)
+                             .where(tattoo_styles: { id: params[:style_id] })
+    end
 
-  @tatoueurs = @tatoueurs.near(params[:location], 50) if params[:location].present?
+    @tatoueurs = @tatoueurs.near(params[:location], 50) if params[:location].present?
 
-  @tatoueurs_json = @tatoueurs.where.not(latitude: nil).map do |t|
-    {
-      id:     t.id,
-      name:   t.nickname,
-      lat:    t.latitude,
-      lng:    t.longitude,
-      styles: t.tattoo_styles.map(&:name).join(", "),
-      url:    tatoueur_path(t),
-      type:   "tatoueur"
-    }
+    @tatoueurs_json = @tatoueurs.where.not(latitude: nil).map do |t|
+      {
+        id:     t.id,
+        name:   t.nickname,
+        lat:    t.latitude,
+        lng:    t.longitude,
+        styles: t.tattoo_styles.map(&:name).join(", "),
+        url:    tatoueur_path(t),
+        type:   "tatoueur"
+      }
     end.to_json
   end
+
   # GET /tatoueurs/:id
   def show
-  authorize @tatoueur
-  @portfolios      = @tatoueur.portfolios.includes(:portfolio_items)
-  @reviews         = @tatoueur.reviews.includes(:user).order(created_at: :desc)
-  @events          = @tatoueur.events.where("start_date >= ?", Time.current).order(start_date: :asc)
-  @availabilities  = @tatoueur.availabilities.order(:day_of_week)
-  @items_sans_portfolio = @tatoueur.portfolio_items
-                                   .includes(:images_attachments, :tattoo_styles)
-                                   .where(portfolio: nil)
-end
+    authorize @tatoueur
+    @portfolios     = @tatoueur.portfolios.includes(:portfolio_items)
+    @reviews        = @tatoueur.reviews.includes(:user).order(created_at: :desc)
+    @events         = @tatoueur.events.where("start_date >= ?", Time.current).order(start_date: :asc)
+    @availabilities = @tatoueur.availabilities.order(:day_of_week)
+    @photos         = @tatoueur.photos
+  end
+
   # GET /tatoueurs/new
   def new
     if current_user.tatoueur.present?
@@ -74,13 +80,14 @@ end
 
   # PATCH /tatoueurs/:id
   def update
-    authorize @tatoueur
-    if @tatoueur.update(tatoueur_params)
-      redirect_to @tatoueur, notice: "Profil mis à jour."
-    else
-      render :edit, status: :unprocessable_entity
-    end
+  authorize @tatoueur
+  @tatoueur.cover.purge if params[:tatoueur][:remove_cover] == "1"
+  if @tatoueur.update(tatoueur_params)
+    redirect_to @tatoueur, notice: "Profil mis à jour."
+  else
+    render :edit, status: :unprocessable_entity
   end
+end
 
   # DELETE /tatoueurs/:id
   def destroy
@@ -114,8 +121,21 @@ end
     end
   end
 
-  def change
-  change_column_null :portfolio_items, :portfolio_id, true
+  # PATCH /tatoueurs/:id/update_photos
+  def update_photos
+    authorize @tatoueur
+    if params[:photos].present?
+      @tatoueur.photos.attach(params[:photos])
+    end
+    redirect_to tatoueur_path(@tatoueur), notice: "Photos ajoutées."
+  end
+
+  # DELETE /tatoueurs/:id/delete_photo
+  def delete_photo
+    authorize @tatoueur
+    photo = @tatoueur.photos.find(params[:photo_id])
+    photo.purge
+    redirect_to tatoueur_path(@tatoueur), notice: "Photo supprimée."
   end
 
   # GET /tatoueurs/:id/connect_paypal
@@ -160,26 +180,26 @@ end
     "&merchantId=#{tatoueur.id}"
   end
 
-  def tatoueur_params
-    params.require(:tatoueur).permit(
-      :nickname, :first_name, :last_name,
-      :email, :phone, :description,
-      :address, :deposit_amount,
-      :iban, :bic, :bank_name,
-      :avatar,
-      :identity_document,
-      :hygiene_certificate,
-      :siren,
-      tattoo_style_ids: []
-    )
-  end
+ def tatoueur_params
+  params.require(:tatoueur).permit(
+    :nickname, :first_name, :last_name,
+    :email, :phone, :description,
+    :address, :deposit_amount,
+    :iban, :bic, :bank_name,
+    :avatar, :cover, :cover_color, :remove_cover,
+    :identity_document, :hygiene_certificate, :siren,
+    tattoo_style_ids: []
+  )
+end
 
   def verification_params
-    params.require(:tatoueur).permit(
-      :identity_document,
-      :hygiene_certificate,
-      :siren,
-      :iban, :bic, :bank_name
-    )
-  end
+  params.require(:tatoueur).permit(
+    :first_name, :last_name,
+    :identity_document,
+    :identity_selfie,
+    :hygiene_certificate,
+    :siren,
+    :iban, :bic, :bank_name
+  )
+end
 end

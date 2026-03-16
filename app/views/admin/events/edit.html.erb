@@ -1,0 +1,111 @@
+<% content_for :title, "Admin — Modifier #{@event.name}" %>
+
+<div style="margin-bottom:1.5rem;">
+  <%= link_to "← Retour", admin_event_path(@event),
+      style: "font-size:0.8rem;color:#888;text-decoration:none;" %>
+</div>
+
+<div style="max-width:680px;">
+  <h1 style="font-family:'Bebas Neue',sans-serif;font-size:2.5rem;letter-spacing:0.05em;
+             margin-bottom:1.5rem;">
+    Modifier <span style="color:#F5C500;"><%= @event.name %></span>
+  </h1>
+
+  <% if @event.errors.any? %>
+    <div style="background:#1a0000;border:1px solid #ff4444;padding:1rem;margin-bottom:1.5rem;">
+      <% @event.errors.full_messages.each do |msg| %>
+        <p style="color:#ff6666;margin:0;font-size:0.9rem;">⚠️ <%= msg %></p>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%= form_with model: [:admin, @event] do |f| %>
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;
+                padding:2rem;margin-bottom:1.5rem;">
+
+      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:#F5C500;
+                 border-left:4px solid #F5C500;padding-left:0.75rem;margin-bottom:1.5rem;">
+        Informations
+      </h2>
+
+      <div class="mb-4">
+        <%= f.label :name, "Nom de l'événement",
+            style: "display:block;font-size:0.75rem;font-weight:700;text-transform:uppercase;
+                    letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;" %>
+        <%= f.text_field :name,
+            style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;
+                    padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;
+                    font-size:1rem;outline:none;",
+            onfocus: "this.style.borderColor='#F5C500'",
+            onblur:  "this.style.borderColor='#2A2A2A'" %>
+      </div>
+
+      <div class="mb-4">
+        <%= f.label :description, "Description",
+            style: "display:block;font-size:0.75rem;font-weight:700;text-transform:uppercase;
+                    letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;" %>
+        <%= f.text_area :description, rows: 4,
+            style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;
+                    padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;
+                    font-size:1rem;outline:none;resize:vertical;",
+            onfocus: "this.style.borderColor='#F5C500'",
+            onblur:  "this.style.borderColor='#2A2A2A'" %>
+      </div>
+
+      <div class="mb-4">
+        <%= f.label :location, "Lieu",
+            style: "display:block;font-size:0.75rem;font-weight:700;text-transform:uppercase;
+                    letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;" %>
+        <%= f.text_field :location,
+            style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;
+                    padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;
+                    font-size:1rem;outline:none;",
+            onfocus: "this.style.borderColor='#F5C500'",
+            onblur:  "this.style.borderColor='#2A2A2A'" %>
+      </div>
+
+      <div class="row g-3 mb-4">
+        <div class="col-md-6">
+          <%= f.label :start_date, "Date de début",
+              style: "display:block;font-size:0.75rem;font-weight:700;text-transform:uppercase;
+                      letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;" %>
+          <%= f.datetime_local_field :start_date,
+              style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;
+                      padding:0.85rem 1rem;font-size:1rem;outline:none;color-scheme:dark;",
+              onfocus: "this.style.borderColor='#F5C500'",
+              onblur:  "this.style.borderColor='#2A2A2A'" %>
+        </div>
+        <div class="col-md-6">
+          <%= f.label :end_date, "Date de fin",
+              style: "display:block;font-size:0.75rem;font-weight:700;text-transform:uppercase;
+                      letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;" %>
+          <%= f.datetime_local_field :end_date,
+              style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;
+                      padding:0.85rem 1rem;font-size:1rem;outline:none;color-scheme:dark;",
+              onfocus: "this.style.borderColor='#F5C500'",
+              onblur:  "this.style.borderColor='#2A2A2A'" %>
+        </div>
+      </div>
+
+      <div>
+        <label style="display:flex;align-items:center;gap:0.75rem;cursor:pointer;">
+          <%= f.check_box :is_public,
+              style: "width:18px;height:18px;accent-color:#F5C500;cursor:pointer;" %>
+          <span style="font-size:0.9rem;color:#bbb;">Événement public</span>
+        </label>
+      </div>
+    </div>
+
+    <div style="display:flex;gap:0.75rem;">
+      <%= f.submit "Enregistrer",
+          style: "flex:1;background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;
+                  font-size:1.2rem;letter-spacing:0.1em;padding:0.85rem;cursor:pointer;",
+          onmouseover: "this.style.background='#d4a800'",
+          onmouseout:  "this.style.background='#F5C500'" %>
+      <%= link_to "Annuler", admin_event_path(@event),
+          style: "flex:1;display:block;text-align:center;background:transparent;color:#888;
+                  border:1px solid #444;font-family:'Bebas Neue',sans-serif;font-size:1.1rem;
+                  letter-spacing:0.08em;padding:0.85rem;text-decoration:none;" %>
+    </div>
+  <% end %>
+</div>

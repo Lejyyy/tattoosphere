@@ -1,33 +1,39 @@
 class ShopsController < ApplicationController
   before_action :authenticate_user!, except: [ :index, :show ]
-  before_action :set_shop, only: [ :show, :edit, :update, :destroy, :add_tatoueur, :remove_tatoueur ]
+  before_action :set_shop, only: [
+    :show, :edit, :update, :destroy,
+    :add_tatoueur, :remove_tatoueur,
+    :update_profile_photo
+  ]
 
   # GET /shops
   def index
-  @shops = Shop.where(is_active: true)
-               .includes(:tatoueurs,
-                         cover_attachment: :blob,
-                         photos_attachments: :blob)
-  @shops = @shops.near(params[:location], 50) if params[:location].present?
-  @shops_json = @shops.where.not(latitude: nil).map do |s|
-    {
-      id:   s.id,
-      name: s.name,
-      lat:  s.latitude,
-      lng:  s.longitude,
-      url:  shop_path(s),
-      type: "shop"
-    }
-  end.to_json
-end
+    @shops = Shop.where(is_active: true, banned: false)
+             .order(featured: :desc, created_at: :desc)
+             .includes(:tatoueurs,
+                       cover_attachment: :blob,
+                       photos_attachments: :blob)
 
-# GET /shops/:id
-def show
-  @shop      = Shop.find(params[:id])
-  authorize @shop
-  @tatoueurs = @shop.tatoueurs.includes(:tattoo_styles).where(is_active: true)
-  @events    = @shop.events.where("start_date >= ?", Time.current).order(start_date: :asc)
-end
+    @shops = @shops.near(params[:location], 50) if params[:location].present?
+
+    @shops_json = @shops.where.not(latitude: nil).map do |s|
+      {
+        id:   s.id,
+        name: s.name,
+        lat:  s.latitude,
+        lng:  s.longitude,
+        url:  shop_path(s),
+        type: "shop"
+      }
+    end.to_json
+  end
+
+  # GET /shops/:id
+  def show
+    authorize @shop
+    @tatoueurs = @shop.tatoueurs.includes(:tattoo_styles).where(is_active: true)
+    @events    = @shop.events.where("start_date >= ?", Time.current).order(start_date: :asc)
+  end
 
   # GET /shops/new
   def new
@@ -53,15 +59,21 @@ end
 
   # GET /shops/:id/edit
   def edit
-  @shop = Shop.find(params[:id])
-  authorize @shop
-end
-
+    authorize @shop
+  end
 
   # PATCH /shops/:id
   def update
-    @shop = Shop.find(params[:id])
     authorize @shop
+
+    # Suppression de la cover
+    @shop.cover.purge if params[:shop][:remove_cover] == "1"
+
+    # Upload photo de profil — attach sans écraser les existantes
+    if params[:shop][:photos].present?
+      @shop.photos.attach(params[:shop][:photos])
+    end
+
     if @shop.update(shop_params)
       redirect_to @shop, notice: "Shop mis à jour."
     else
@@ -71,17 +83,24 @@ end
 
   # DELETE /shops/:id
   def destroy
-    @shop = Shop.find(params[:id])
     authorize @shop
     @shop.update(is_active: false)
     redirect_to shops_path, notice: "Shop désactivé."
+  end
+
+  # PATCH /shops/:id/update_profile_photo
+  def update_profile_photo
+    authorize @shop
+    if params[:remove_profile_photo] == "1" && @shop.photos.first
+      @shop.photos.first.purge
+    end
+    redirect_to edit_shop_path(@shop), notice: "Photo de profil supprimée."
   end
 
   # POST /shops/:id/add_tatoueur
   def add_tatoueur
     authorize @shop
     tatoueur = Tatoueur.find(params[:tatoueur_id])
-
     if @shop.tatoueurs.include?(tatoueur)
       redirect_to @shop, alert: "Ce tatoueur est déjà associé à ce shop."
     else
@@ -92,25 +111,24 @@ end
 
   # DELETE /shops/:id/remove_tatoueur
   def remove_tatoueur
-  authorize @shop
-  tatoueur    = Tatoueur.find(params[:tatoueur_id])
-  association = ShopTatoueur.find_by(shop: @shop, tatoueur: tatoueur)
-
-  if association
-    association.update!(end_date: Date.today + 1.day)
-    respond_to do |format|
-      format.html { redirect_to @shop, notice: "#{tatoueur.nickname} retiré du shop." }
-      format.json { head :ok }
-      format.any  { head :ok }
-    end
-  else
-    respond_to do |format|
-      format.html { redirect_to @shop, alert: "Ce tatoueur n'est pas associé à ce shop." }
-      format.json { head :unprocessable_entity }
-      format.any  { head :unprocessable_entity }
+    authorize @shop
+    tatoueur    = Tatoueur.find(params[:tatoueur_id])
+    association = ShopTatoueur.find_by(shop: @shop, tatoueur: tatoueur)
+    if association
+      association.update!(end_date: Date.today + 1.day)
+      respond_to do |format|
+        format.html { redirect_to @shop, notice: "#{tatoueur.nickname} retiré du shop." }
+        format.json { head :ok }
+        format.any  { head :ok }
+      end
+    else
+      respond_to do |format|
+        format.html { redirect_to @shop, alert: "Ce tatoueur n'est pas associé à ce shop." }
+        format.json { head :unprocessable_entity }
+        format.any  { head :unprocessable_entity }
+      end
     end
   end
-end
 
   private
 
@@ -120,9 +138,10 @@ end
 
   def shop_params
     params.require(:shop).permit(
-      :name, :email, :address, :phone,
-      :description, :open_hours, :is_active,
-      :cover, photos: []
+      :name, :address, :description,
+      :email, :phone, :open_hours,
+      :cover, :cover_color, :remove_cover
+      # :photos géré manuellement dans update via attach
     )
   end
 end

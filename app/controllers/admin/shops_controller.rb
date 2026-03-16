@@ -1,114 +1,43 @@
-class ShopsController < ApplicationController
-  before_action :authenticate_user!, except: [ :index, :show ]
-  before_action :set_shop, only: [ :show, :edit, :update, :destroy, :add_tatoueur, :remove_tatoueur ]
 
-  # GET /shops
+class Admin::ShopsController < Admin::BaseController
+  before_action :set_shop, only: [ :show, :ban, :unban, :feature, :unfeature ]
+
   def index
-    @shops = Shop.where(is_active: true)
-    @shops = @shops.near(params[:location], 50) if params[:location].present?
-
-    @shops_json = @shops.where.not(latitude: nil).map do |s|
-      {
-        id:      s.id,
-        name:    s.name,
-        lat:     s.latitude,
-        lng:     s.longitude,
-        address: s.address,
-        url:     shop_path(s),
-        type:    "shop"
-      }
-    end.to_json
+    @shops = Shop.includes(:user, cover_attachment: :blob).order(created_at: :desc)
+    @shops = @shops.where("name ILIKE ?", "%#{params[:q]}%") if params[:q].present?
+    @shops = @shops.where(featured: true) if params[:filter] == "featured"
+    @shops = @shops.where(banned: true)   if params[:filter] == "banned"
+    @shops = @shops.page(params[:page]).per(30)
   end
 
-  # GET /shops/:id
   def show
-    authorize @shop
-    @tatoueurs = @shop.tatoueurs.includes(:tattoo_styles).where(is_active: true)
-    @events    = @shop.events.order(start_date: :asc)
+    @reports = Report.where(reportable: @shop)
+    @logs    = AdminLog.where(target_type: "Shop", target_id: @shop.id).recent
   end
 
-  # GET /shops/new
-  def new
-    if current_user.shop.present?
-      redirect_to shop_path(current_user.shop), alert: "Vous avez déjà un shop."
-      return
-    end
-    @shop = Shop.new
-    authorize @shop
+  def ban
+    @shop.update(banned: true, is_active: false)
+    log_action("ban_shop", @shop, params[:note])
+    redirect_to admin_shop_path(@shop), notice: "Shop banni."
   end
 
-  # POST /shops
-  def create
-    @shop = Shop.new(shop_params)
-    @shop.user = current_user
-    authorize @shop
-    if @shop.save
-      redirect_to @shop, notice: "Shop créé avec succès."
-    else
-      render :new, status: :unprocessable_entity
-    end
+  def unban
+    @shop.update(banned: false, is_active: true)
+    log_action("unban_shop", @shop)
+    redirect_to admin_shop_path(@shop), notice: "Bannissement levé."
   end
 
-  # GET /shops/:id/edit
-  def edit
-    authorize @shop
+  def feature
+    @shop.update(featured: true)
+    log_action("feature_shop", @shop)
+    redirect_back fallback_location: admin_shops_path, notice: "Shop mis en avant ⭐"
   end
 
-  # PATCH /shops/:id
-  def update
-    authorize @shop
-    if @shop.update(shop_params)
-      redirect_to @shop, notice: "Shop mis à jour."
-    else
-      render :edit, status: :unprocessable_entity
-    end
-  end
-
-  # DELETE /shops/:id
-  def destroy
-    authorize @shop
-    @shop.update(is_active: false)
-    redirect_to shops_path, notice: "Shop désactivé."
-  end
-
-  # POST /shops/:id/add_tatoueur
-  def add_tatoueur
-    authorize @shop
-    tatoueur = Tatoueur.find(params[:tatoueur_id])
-
-    if @shop.tatoueurs.include?(tatoueur)
-      redirect_to @shop, alert: "Ce tatoueur est déjà associé à ce shop."
-    else
-      ShopTatoueur.create!(shop: @shop, tatoueur: tatoueur, start_date: Date.today)
-      redirect_to @shop, notice: "#{tatoueur.nickname} ajouté au shop."
-    end
-  end
-
-  # DELETE /shops/:id/remove_tatoueur
-  def remove_tatoueur
-    authorize @shop
-    tatoueur     = Tatoueur.find(params[:tatoueur_id])
-    association  = ShopTatoueur.find_by(shop: @shop, tatoueur: tatoueur)
-
-    if association
-      association.update!(end_date: Date.today)
-      redirect_to @shop, notice: "#{tatoueur.nickname} retiré du shop."
-    else
-      redirect_to @shop, alert: "Ce tatoueur n'est pas associé à ce shop."
-    end
+  def unfeature
+    @shop.update(featured: false)
+    redirect_back fallback_location: admin_shops_path, notice: "Retiré de la mise en avant."
   end
 
   private
-
-  def set_shop
-    @shop = Shop.find(params[:id])
-  end
-
-  def shop_params
-    params.require(:shop).permit(
-      :name, :email, :address, :phone,
-      :description, :open_hours, :is_active,
-      :cover, photos: []
-    )
-  end
+  def set_shop = @shop = Shop.find(params[:id])
 end

@@ -4,8 +4,9 @@ Rails.application.routes.draw do
   # ================================
   root "pages#home"
   get "/dashboard", to: "dashboard#show", as: :dashboard
-  get "/map",    to: "pages#map",    as: :map
-  get "/search", to: "searches#index", as: :search
+  get "/map",       to: "pages#map",      as: :map
+  get "/search",    to: "searches#index", as: :search
+  get "/explorer",  to: "explore#index",  as: :explore
 
   # ================================
   # AUTHENTIFICATION
@@ -25,6 +26,7 @@ Rails.application.routes.draw do
     member do
       post   :add_tatoueur
       delete :remove_tatoueur
+      patch  :update_profile_photo
     end
   end
 
@@ -32,23 +34,26 @@ Rails.application.routes.draw do
   # TATOUEURS
   # ================================
   resources :tatoueurs do
-  resource  :favorite, only: [ :create, :destroy ]
-  resources :portfolios do
     resource  :favorite, only: [ :create, :destroy ]
-    resources :portfolio_items do
-      resource :favorite, only: [ :create, :destroy ]
+    resources :portfolios do
+      resource  :favorite, only: [ :create, :destroy ]
+      resources :portfolio_items do
+        resource :favorite, only: [ :create, :destroy ]
+      end
     end
-  end
+    resources :blocked_slots,  only: [ :create, :destroy ]
     resources :availabilities, only: [ :index, :create, :destroy ]
     resources :reviews,        only: [ :index ]
     resources :events,         only: [ :index, :show ]
     resources :medias,         only: [ :index ]
     resources :socials,        only: [ :index ]
     member do
-      get  :verification
-      post :submit_verification
-      get  :connect_paypal
-      get  :paypal_callback
+      get    :verification
+      post   :submit_verification
+      get    :connect_paypal
+      get    :paypal_callback
+      patch  :update_photos
+      delete :delete_photo
     end
   end
 
@@ -57,7 +62,7 @@ Rails.application.routes.draw do
   # ================================
   resources :bookings, only: [ :index, :show, :edit, :update, :destroy ] do
     member do
-    get :pdf, to: "bookings#show", defaults: { format: :pdf }
+      get :pdf, to: "bookings#show", defaults: { format: :pdf }
     end
     resource :review,  only: [ :new, :create ]
     resource :payment, only: [ :new ], controller: "payments" do
@@ -69,9 +74,14 @@ Rails.application.routes.draw do
   end
 
   # ================================
-  # EVENTS (standalone)
+  # EVENTS
   # ================================
-  resources :events, only: [ :index, :show, :new, :create, :edit, :update, :destroy ]
+  resources :events, only: [ :index, :show, :new, :create, :edit, :update, :destroy ] do
+    member do
+      post   :participate
+      delete :withdraw
+    end
+  end
 
   # ================================
   # TATTOO STYLES
@@ -79,41 +89,69 @@ Rails.application.routes.draw do
   resources :tattoo_styles, only: [ :index ]
 
   # ================================
-  # FAVORITES (index global)
+  # FAVORITES
   # ================================
   resources :favorites, only: [ :index ]
 
-# ================================
-# CONVERSATIONS & MESSAGES
-# ================================
-# Dans config/routes.rb, remplace le bloc conversations :
-resources :conversations, only: [ :index, :show, :create ] do
-  resources :messages, only: [ :create ]
-  member do
-    patch :mark_read
+  # ================================
+  # CONVERSATIONS & MESSAGES
+  # ================================
+  resources :conversations, only: [ :index, :show, :create ] do
+    resources :messages, only: [ :create ]
+    member do
+      patch :mark_read
+    end
   end
-end
 
   # ================================
   # ACTION CABLE
   # ================================
   mount ActionCable.server => "/cable"
 
+  # ================================
+  # ADMIN
+  # ================================
   namespace :admin do
-  root "dashboard#index"
-  resources :users,     only: [ :index, :show, :edit, :update, :destroy ]
-  resources :tatoueurs, only: [ :index, :show, :update ]
-  resources :shops,     only: [ :index, :show, :update ]
-  end
+    root "dashboard#index"
 
-  # ================================
-  # Events (participation)
-  # ================================
+    resources :users, only: [ :index, :show, :edit, :update, :destroy ] do
+      member do
+        patch :ban
+        patch :unban
+      end
+    end
 
-  resources :events, only: [ :index, :show, :new, :create, :edit, :update, :destroy ] do
-  member do
-    post :participate
-    delete :withdraw
+    resources :tatoueurs, only: [ :index, :show, :update ] do
+      member do
+        patch :approve
+        patch :reject
+        patch :ban
+        patch :unban
+        patch :feature
+        patch :unfeature
+      end
+    end
+
+    resources :shops, only: [ :index, :show, :update ] do
+      member do
+        patch :ban
+        patch :unban
+        patch :feature
+        patch :unfeature
+      end
+    end
+
+    resources :events, only: [ :index, :show, :edit, :update, :destroy ] do
+      member do
+        patch :feature
+        patch :unfeature
+      end
+    end
+
+    resources :reports,       only: [ :index, :show, :update ]
+    resources :tattoo_styles, only: [ :index, :create, :update, :destroy ]
+    resources :admin_logs,    only: [ :index ]
+
+    get :stats, to: "dashboard#stats"
   end
-end
 end
