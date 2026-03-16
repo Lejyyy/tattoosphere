@@ -1,0 +1,60 @@
+<% content_for :title, "Mon portfolio" %>
+
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+  <h1 style="font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.05em;margin:0;">
+    Portfolio
+  </h1>
+  <%= link_to "➕ Nouveau portfolio", new_tatoueur_portfolio_path(current_tatoueur),
+      style: "background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;
+              font-size:1rem;letter-spacing:0.08em;padding:0.6rem 1.25rem;text-decoration:none;" %>
+</div>
+
+<% if @portfolios.any? %>
+  <div class="row g-3">
+    <% @portfolios.each do |p| %>
+      <div class="col-md-4">
+        <div style="background:#1A1A1A;border:1px solid #2A2A2A;overflow:hidden;
+                    transition:border-color 0.2s;"
+             onmouseover="this.style.borderColor='#F5C500'"
+             onmouseout="this.style.borderColor='#2A2A2A'">
+          <% first = p.portfolio_items.first %>
+          <% if first&.images&.attached? %>
+            <%= image_tag first.images.first,
+                style: "width:100%;height:160px;object-fit:cover;display:block;" %>
+          <% else %>
+            <div style="width:100%;height:160px;background:#111;display:flex;
+                        align-items:center;justify-content:center;font-size:2.5rem;">🖼️</div>
+          <% end %>
+          <div style="padding:1rem;">
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:#fff;">
+              <%= p.name %>
+            </div>
+            <div style="color:#555;font-size:0.82rem;margin-top:0.2rem;">
+              <%= p.portfolio_items.count %> réalisation(s)
+            </div>
+            <div style="display:flex;gap:0.5rem;margin-top:0.75rem;">
+              <%= link_to "Voir",
+                  tatoueur_portfolio_path(current_tatoueur, p),
+                  style: "font-size:0.82rem;color:#F5C500;text-decoration:none;
+                          border:1px solid #F5C500;padding:0.25rem 0.6rem;
+                          font-family:'Bebas Neue',sans-serif;letter-spacing:0.05em;" %>
+              <%= link_to "Modifier",
+                  edit_tatoueur_portfolio_path(current_tatoueur, p),
+                  style: "font-size:0.82rem;color:#888;text-decoration:none;
+                          border:1px solid #444;padding:0.25rem 0.6rem;
+                          font-family:'Bebas Neue',sans-serif;letter-spacing:0.05em;" %>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% else %>
+  <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:3rem;text-align:center;">
+    <div style="font-size:3rem;margin-bottom:1rem;">🖼️</div>
+    <p style="color:#555;margin-bottom:1.25rem;">Aucun portfolio créé.</p>
+    <%= link_to "Créer mon premier portfolio", new_tatoueur_portfolio_path(current_tatoueur),
+        style: "color:#F5C500;text-decoration:none;font-family:'Bebas Neue',sans-serif;
+                font-size:1rem;letter-spacing:0.05em;border:1px solid #F5C500;padding:0.5rem 1.25rem;" %>
+  </div>
+<% end %>

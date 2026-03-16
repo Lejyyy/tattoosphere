@@ -1,0 +1,63 @@
+<% content_for :title, "Portfolios de l'équipe" %>
+
+<h1 style="font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.05em;margin-bottom:1.5rem;">
+  Portfolios de l'équipe
+</h1>
+
+<% if @portfolios.any? %>
+  <%# Grouper par tatoueur %>
+  <% by_tatoueur = @portfolios.group_by(&:tatoueur) %>
+  <% by_tatoueur.each do |tatoueur, portfolios| %>
+    <div style="margin-bottom:2rem;">
+      <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem;
+                  padding-bottom:0.5rem;border-bottom:1px solid #2A2A2A;">
+        <% if tatoueur.avatar.attached? %>
+          <%= image_tag tatoueur.avatar,
+              style: "width:32px;height:32px;object-fit:cover;border:2px solid #F5C500;border-radius:50%;" %>
+        <% end %>
+        <span style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:#F5C500;">
+          <%= tatoueur.nickname %>
+        </span>
+        <span style="font-size:0.8rem;color:#555;">· <%= portfolios.count %> portfolio(s)</span>
+        <%= link_to "Voir le profil →", tatoueur_path(tatoueur),
+            style: "margin-left:auto;font-size:0.78rem;color:#888;text-decoration:none;" %>
+      </div>
+
+      <div class="row g-3">
+        <% portfolios.each do |p| %>
+          <div class="col-md-4">
+            <div style="background:#1A1A1A;border:1px solid #2A2A2A;overflow:hidden;">
+              <% first = p.portfolio_items.first %>
+              <% if first&.images&.attached? %>
+                <%= image_tag first.images.first,
+                    style: "width:100%;height:140px;object-fit:cover;display:block;" %>
+              <% else %>
+                <div style="width:100%;height:140px;background:#111;display:flex;
+                            align-items:center;justify-content:center;font-size:2rem;">🖼️</div>
+              <% end %>
+              <div style="padding:0.85rem;">
+                <div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;color:#fff;">
+                  <%= p.name %>
+                </div>
+                <div style="font-size:0.78rem;color:#555;margin-top:0.15rem;">
+                  <%= p.portfolio_items.count %> réalisation(s)
+                </div>
+                <%= link_to "Voir →",
+                    tatoueur_portfolio_path(tatoueur, p),
+                    style: "display:inline-block;margin-top:0.5rem;font-size:0.8rem;color:#F5C500;
+                            text-decoration:none;border:1px solid #F5C500;padding:0.2rem 0.6rem;
+                            font-family:'Bebas Neue',sans-serif;letter-spacing:0.05em;" %>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+<% else %>
+  <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:3rem;text-align:center;">
+    <div style="font-size:3rem;margin-bottom:1rem;">🖼️</div>
+    <p style="color:#555;">Aucun portfolio dans ton équipe.</p>
+    <p style="color:#444;font-size:0.85rem;">Ajoute des tatoueurs à ton shop pour voir leurs portfolios ici.</p>
+  </div>
+<% end %>

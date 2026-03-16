@@ -28,14 +28,31 @@ class Conversation < ApplicationRecord
     conversation
   end
 
-  def other_participant(current_user)
+  # Accepte maintenant un participant polymorphique (Tatoueur, Shop, ou User)
+  def other_participant(current_participant)
     conversation_participants
-      .where.not(participant_type: current_user.class.name, participant_id: current_user.id)
+      .where.not(
+        participant_type: current_participant.class.name,
+        participant_id:   current_participant.id
+      )
       .first
       &.participant
   end
 
   def unread_count_for(user)
     messages.where.not(user: user).where(read_at: nil).count
+  end
+
+  def last_message
+    messages.order(:created_at).last
+  end
+
+  # Nom d'affichage d'un participant quel que soit son type
+  def self.participant_name(participant)
+    return "Inconnu" unless participant
+    participant.try(:nickname) ||
+      participant.try(:name) ||
+      "#{participant.try(:first_name)} #{participant.try(:last_name)}".strip.presence ||
+      "Inconnu"
   end
 end

@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title><%= content_for?(:title) ? yield(:title) : "Mon espace shop — Tattoosphere" %></title>
+  <%= csrf_meta_tags %>
+  <%= csp_meta_tag %>
+  <%= stylesheet_link_tag "application", media: "all" %>
+  <%= javascript_importmap_tags %>
+</head>
+<body style="background:#0D0D0D;color:#fff;min-height:100vh;margin:0;">
+
+  <div style="display:flex;min-height:100vh;">
+
+    <%# ── Sidebar ── %>
+    <aside style="width:230px;background:#111;border-right:1px solid #2A2A2A;
+                  display:flex;flex-direction:column;flex-shrink:0;
+                  position:fixed;top:0;bottom:0;left:0;overflow-y:auto;">
+
+      <div style="padding:1.5rem 1.25rem;border-bottom:1px solid #2A2A2A;">
+        <%= link_to shop_panel_root_path, style: "text-decoration:none;" do %>
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;letter-spacing:0.05em;">
+            <span style="color:#fff;">Tattoo</span><span style="color:#F5C500;">sphere</span>
+          </div>
+        <% end %>
+        <div style="display:flex;align-items:center;gap:0.75rem;margin-top:1rem;">
+          <% if current_shop.cover.attached? %>
+            <%= image_tag current_shop.cover,
+                style: "width:36px;height:36px;object-fit:cover;border:2px solid #F5C500;" %>
+          <% else %>
+            <div style="width:36px;height:36px;background:#2A2A2A;
+                        display:flex;align-items:center;justify-content:center;font-size:1.1rem;">🏠</div>
+          <% end %>
+          <div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:0.95rem;color:#fff;
+                        white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:130px;">
+              <%= current_shop.name %>
+            </div>
+            <div style="font-size:0.7rem;color:#555;"><%= current_shop.tatoueurs.count %> tatoueur(s)</div>
+          </div>
+        </div>
+      </div>
+
+      <nav style="padding:1rem 0;flex:1;">
+        <% nav = [
+          ["🏠", "Dashboard",   shop_panel_root_path],
+          ["📅", "Rendez-vous", shop_panel_bookings_path],
+          ["💬", "Messages",    shop_panel_messages_path],
+          ["🖼️", "Photos",     shop_panel_photos_path],
+          ["👥", "Équipe",      shop_panel_equipe_path],
+          ["🎪", "Événements",  shop_panel_evenements_path],
+          ["📁", "Portfolios",  shop_panel_portfolios_path],
+        ] %>
+        <% nav.each do |icon, label, path| %>
+          <% active = request.path == path %>
+          <%= link_to path,
+              style: "display:flex;align-items:center;gap:0.75rem;padding:0.65rem 1.25rem;
+                      text-decoration:none;font-family:'Barlow Condensed',sans-serif;
+                      font-size:1rem;letter-spacing:0.03em;transition:all 0.15s;
+                      color:#{active ? '#F5C500' : '#888'};
+                      background:#{active ? 'rgba(245,197,0,0.08)' : 'transparent'};
+                      border-left:#{active ? '3px solid #F5C500' : '3px solid transparent'};" do %>
+            <span style="width:18px;text-align:center;"><%= icon %></span>
+            <span><%= label %></span>
+          <% end %>
+        <% end %>
+      </nav>
+
+      <div style="padding:1rem 1.25rem;border-top:1px solid #2A2A2A;">
+        <%= link_to shop_path(current_shop),
+            style: "display:block;font-size:0.8rem;color:#555;text-decoration:none;margin-bottom:0.4rem;" do %>
+          👁️ Voir mon shop public
+        <% end %>
+        <%= link_to dashboard_path,
+            style: "display:block;font-size:0.8rem;color:#555;text-decoration:none;margin-bottom:0.4rem;" do %>
+          ← Dashboard général
+        <% end %>
+        <div style="font-size:0.72rem;color:#333;margin-top:0.5rem;"><%= current_user.email %></div>
+      </div>
+    </aside>
+
+    <main style="margin-left:230px;flex:1;padding:2rem;">
+      <% flash.each do |type, msg| %>
+        <% color = type == "notice" ? "#27AE60" : "#E74C3C" %>
+        <div style="background:rgba(<%= type == 'notice' ? '39,174,96' : '231,76,60' %>,0.1);
+                    border:1px solid <%= color %>;color:<%= color %>;
+                    padding:0.75rem 1.25rem;margin-bottom:1.5rem;font-size:0.9rem;">
+          <%= msg %>
+        </div>
+      <% end %>
+      <%= yield %>
+    </main>
+
+  </div>
+</body>
+</html>

@@ -7,9 +7,7 @@ class MessagesController < ApplicationController
   def create
     @message      = @conversation.messages.new(message_params)
     @message.user = current_user
-
     if @message.save
-      # Le broadcast est géré dans le modèle via after_create_commit
       respond_to do |format|
         format.turbo_stream
         format.html { redirect_to conversation_path(@conversation) }
@@ -26,8 +24,12 @@ class MessagesController < ApplicationController
   end
 
   def ensure_participant!
-    unless @conversation.conversation_participants
-                        .exists?(participant: current_user)
+    candidates = [ current_user, current_user.tatoueur, current_user.shop ].compact
+    authorized = candidates.any? do |p|
+      @conversation.conversation_participants
+                   .exists?(participant_type: p.class.name, participant_id: p.id)
+    end
+    unless authorized
       redirect_to conversations_path, alert: "Vous n'avez pas accès à cette conversation."
     end
   end

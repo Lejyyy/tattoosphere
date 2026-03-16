@@ -1,0 +1,92 @@
+<% content_for :title, "Mon espace shop" %>
+
+<%# ── KPIs ── %>
+<div class="row g-3 mb-4">
+  <% [
+    ["Réservations",  @bookings_count,           shop_panel_bookings_path,             "#F5C500"],
+    ["En attente",    @pending_bookings.count,    shop_panel_bookings_path(status: "pending"), @pending_bookings.any? ? "#E67E22" : "#F5C500"],
+    ["Tatoueurs",     @tatoueurs_count,           shop_panel_equipe_path,               "#F5C500"],
+    ["Messages",      @unread_count,              shop_panel_messages_path,             @unread_count > 0 ? "#E74C3C" : "#F5C500"],
+    ["Événements",    @events_count,              shop_panel_evenements_path,           "#F5C500"],
+  ].each do |label, val, path, color| %>
+    <div class="col-6 col-md">
+      <%= link_to path, style: "text-decoration:none;" do %>
+        <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid <%= color %>;
+                    padding:1.25rem;text-align:center;transition:border-color 0.2s;"
+             onmouseover="this.style.borderColor='#F5C500'"
+             onmouseout="this.style.borderColor='#2A2A2A'">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:<%= color %>;line-height:1;">
+            <%= val %>
+          </div>
+          <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-top:0.3rem;">
+            <%= label %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+
+<div class="row g-4">
+
+  <%# ── Prochains RDV ── %>
+  <div class="col-lg-8">
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1.5rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+        <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:#F5C500;
+                   border-left:4px solid #F5C500;padding-left:0.75rem;margin:0;">
+          Prochains rendez-vous
+        </h3>
+        <%= link_to "Tous →", shop_panel_bookings_path,
+            style: "font-size:0.8rem;color:#888;text-decoration:none;" %>
+      </div>
+      <% if @upcoming_bookings.any? %>
+        <% @upcoming_bookings.each do |b| %>
+          <div style="display:flex;justify-content:space-between;align-items:center;
+                      padding:0.75rem 0;border-bottom:1px solid #2A2A2A;">
+            <div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;color:#fff;">
+                <%= b.date.strftime("%d %B %Y") %>
+              </div>
+              <div style="font-size:0.82rem;color:#888;margin-top:0.15rem;">
+                <%= b.user.nickname %> · <%= b.tatoueur.nickname %>
+              </div>
+            </div>
+            <%= link_to "→", shop_panel_booking_path(b),
+                style: "color:#F5C500;text-decoration:none;font-family:'Bebas Neue',sans-serif;" %>
+          </div>
+        <% end %>
+      <% else %>
+        <p style="color:#555;font-size:0.9rem;">Aucun rendez-vous à venir.</p>
+      <% end %>
+    </div>
+  </div>
+
+  <%# ── Accès rapides ── %>
+  <div class="col-lg-4">
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1.5rem;">
+      <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:#F5C500;
+                 border-left:4px solid #F5C500;padding-left:0.75rem;margin-bottom:1rem;">
+        Accès rapides
+      </h3>
+      <div style="display:flex;flex-direction:column;gap:0.5rem;">
+        <% [
+          ["👁️ Voir mon shop",   shop_path(current_shop)],
+          ["✏️ Modifier",        edit_shop_path(current_shop)],
+          ["👥 Gérer l'équipe",  shop_panel_equipe_path],
+          ["🖼️ Photos",         shop_panel_photos_path],
+          ["🎪 Événements",      shop_panel_evenements_path],
+        ].each do |label, path| %>
+          <%= link_to label, path,
+              style: "display:block;padding:0.6rem 0.75rem;background:#0D0D0D;
+                      border:1px solid #2A2A2A;color:#888;text-decoration:none;
+                      font-family:'Barlow Condensed',sans-serif;font-size:0.95rem;
+                      transition:all 0.15s;",
+              onmouseover: "this.style.borderColor='#F5C500';this.style.color='#F5C500'",
+              onmouseout:  "this.style.borderColor='#2A2A2A';this.style.color='#888'" %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+</div>

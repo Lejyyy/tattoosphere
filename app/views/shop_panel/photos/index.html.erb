@@ -1,0 +1,128 @@
+<% content_for :title, "Photos" %>
+
+<h1 style="font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.05em;margin-bottom:1.5rem;">
+  Photos & Couverture
+</h1>
+
+<% label_s = "display:block;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.4rem;" %>
+
+<div class="row g-4">
+
+  <%# ── Photo de profil ── %>
+  <div class="col-lg-6">
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;padding:1.5rem;">
+      <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:#F5C500;
+                 border-left:4px solid #F5C500;padding-left:0.75rem;margin-bottom:1.25rem;">
+        Photo de profil
+      </h3>
+      <% profile_photo = current_shop.photos.first %>
+      <% if profile_photo %>
+        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem;">
+          <%= image_tag profile_photo,
+              style: "width:80px;height:80px;object-fit:cover;border:2px solid #F5C500;" %>
+          <%= link_to "✕ Supprimer",
+              update_profile_photo_shop_path(current_shop, remove_profile_photo: "1"),
+              data: { turbo_method: :patch, turbo_confirm: "Supprimer la photo de profil ?" },
+              style: "font-size:0.8rem;color:#E74C3C;text-decoration:none;
+                      border:1px solid #E74C3C44;padding:0.25rem 0.6rem;" %>
+        </div>
+      <% end %>
+      <%= form_with url: shop_panel_photos_path, method: :patch,
+                    html: { enctype: "multipart/form-data" } do |f| %>
+        <label style="<%= label_s %>">Nouvelle photo de profil</label>
+        <input type="file" name="shop[photos]" accept="image/*"
+               style="color:#888;font-size:0.9rem;width:100%;margin-bottom:1rem;">
+        <button type="submit"
+                style="background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;
+                       font-size:1rem;letter-spacing:0.08em;padding:0.6rem 1.5rem;cursor:pointer;">
+          Enregistrer
+        </button>
+      <% end %>
+    </div>
+  </div>
+
+  <%# ── Cover ── %>
+  <div class="col-lg-6">
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;padding:1.5rem;">
+      <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:#F5C500;
+                 border-left:4px solid #F5C500;padding-left:0.75rem;margin-bottom:1.25rem;">
+        Photo de couverture
+      </h3>
+      <% if current_shop.cover.attached? %>
+        <div style="position:relative;margin-bottom:1rem;">
+          <%= image_tag current_shop.cover,
+              style: "width:100%;height:100px;object-fit:cover;display:block;border:1px solid #2A2A2A;" %>
+        </div>
+      <% end %>
+      <%= form_with url: shop_panel_photos_path, method: :patch,
+                    html: { enctype: "multipart/form-data" } do |f| %>
+        <label style="<%= label_s %>">Nouvelle cover</label>
+        <input type="file" name="shop[cover]" accept="image/*"
+               style="color:#888;font-size:0.9rem;width:100%;margin-bottom:0.75rem;">
+        <label style="<%= label_s %>">
+          Couleur de fond <span style="color:#555;font-weight:400;">(si pas d'image)</span>
+        </label>
+        <div style="display:flex;gap:0.75rem;align-items:center;margin-bottom:1rem;">
+          <input type="color" name="shop[cover_color]"
+                 value="<%= current_shop.cover_color || '#1A1A1A' %>"
+                 style="width:48px;height:36px;border:1px solid #2A2A2A;background:transparent;
+                        cursor:pointer;padding:0;">
+          <% [["#0D0D0D","Noir"],["#1A1A1A","Gris"],["#1a0a00","Brun"],
+              ["#0a0a1a","Bleu"],["#1a000d","Rouge"],["#1a1500","Or"]].each do |hex, lbl| %>
+            <button type="button" title="<%= lbl %>"
+                    onclick="document.querySelector('input[name=\'shop[cover_color]\']').value='<%= hex %>'"
+                    style="width:24px;height:24px;background:<%= hex %>;border:1px solid #444;cursor:pointer;">
+            </button>
+          <% end %>
+        </div>
+        <% if current_shop.cover.attached? %>
+          <input type="hidden" name="shop[remove_cover]" id="remove-cover-input" value="0">
+          <button type="button"
+                  onclick="document.getElementById('remove-cover-input').value='1';this.closest('form').requestSubmit()"
+                  style="background:transparent;border:1px solid #E74C3C;color:#E74C3C;
+                         font-size:0.8rem;padding:0.3rem 0.75rem;cursor:pointer;margin-bottom:0.75rem;">
+            ✕ Supprimer la cover
+          </button><br>
+        <% end %>
+        <button type="submit"
+                style="background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;
+                       font-size:1rem;letter-spacing:0.08em;padding:0.6rem 1.5rem;cursor:pointer;">
+          Enregistrer
+        </button>
+      <% end %>
+    </div>
+  </div>
+
+  <%# ── Galerie ── %>
+  <div class="col-12">
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1.5rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">
+        <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:#F5C500;
+                   border-left:4px solid #F5C500;padding-left:0.75rem;margin:0;">
+          Galerie (<%= current_shop.photos.count %> photos)
+        </h3>
+      </div>
+      <% if current_shop.photos.count > 1 %>
+        <div class="row row-cols-2 row-cols-md-4 row-cols-lg-6 g-2 mb-3">
+          <% current_shop.photos.drop(1).each do |photo| %>
+            <div class="col">
+              <%= image_tag photo,
+                  style: "width:100%;height:90px;object-fit:cover;border:1px solid #2A2A2A;display:block;" %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+      <%= form_with url: shop_path(current_shop), method: :patch,
+                    html: { enctype: "multipart/form-data",
+                            style: "display:flex;gap:0.75rem;align-items:flex-end;" } do |f| %>
+        <%= f.file_field :photos, multiple: true, accept: "image/*",
+            style: "flex:1;color:#888;font-size:0.9rem;" %>
+        <%= f.submit "Ajouter",
+            style: "background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;
+                    font-size:1rem;letter-spacing:0.08em;padding:0.6rem 1.25rem;
+                    cursor:pointer;white-space:nowrap;" %>
+      <% end %>
+    </div>
+  </div>
+
+</div>

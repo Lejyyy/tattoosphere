@@ -1,0 +1,73 @@
+<% content_for :title, "Rendez-vous" %>
+
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+  <h1 style="font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.05em;margin:0;">
+    Rendez-vous
+  </h1>
+</div>
+
+<%# Filtres %>
+<div style="display:flex;gap:0;border-bottom:1px solid #2A2A2A;margin-bottom:1.5rem;">
+  <% [["all","Tous",nil],["pending","En attente","#E67E22"],["confirmed","Confirmés","#27AE60"],["done","Terminés","#888"],["cancelled","Annulés","#E74C3C"]].each do |val, label, color| %>
+    <% active = @filter == val %>
+    <%= link_to shop_panel_bookings_path(status: val == "all" ? nil : val),
+        style: "padding:0.65rem 1rem;text-decoration:none;font-family:'Bebas Neue',sans-serif;
+                font-size:0.9rem;letter-spacing:0.05em;white-space:nowrap;
+                color:#{active ? (color || '#F5C500') : '#555'};
+                border-bottom:#{active ? "2px solid #{color || '#F5C500'}" : '2px solid transparent'};
+                margin-bottom:-1px;" do %>
+      <%= label %>
+      <span style="font-size:0.75rem;color:#444;margin-left:0.2rem;">(<%= @counts[val] || @bookings.count %>)</span>
+    <% end %>
+  <% end %>
+</div>
+
+<% if @bookings.any? %>
+  <div style="background:#1A1A1A;border:1px solid #2A2A2A;">
+    <table style="width:100%;border-collapse:collapse;">
+      <thead>
+        <tr style="border-bottom:1px solid #2A2A2A;">
+          <% ["Client", "Tatoueur", "Date", "Budget", "Statut", ""].each do |h| %>
+            <th style="padding:0.75rem 1rem;font-size:0.72rem;text-transform:uppercase;
+                       letter-spacing:0.08em;color:#555;text-align:left;font-weight:400;"><%= h %></th>
+          <% end %>
+        </tr>
+      </thead>
+      <tbody>
+        <% @bookings.each do |b| %>
+          <tr style="border-bottom:1px solid #1f1f1f;"
+              onmouseover="this.style.background='rgba(255,255,255,0.02)'"
+              onmouseout="this.style.background='transparent'">
+            <td style="padding:0.65rem 1rem;color:#fff;font-size:0.9rem;"><%= b.user.nickname %></td>
+            <td style="padding:0.65rem 1rem;color:#888;font-size:0.85rem;"><%= b.tatoueur.nickname %></td>
+            <td style="padding:0.65rem 1rem;color:#888;font-size:0.85rem;white-space:nowrap;">
+              <%= b.date.strftime("%d/%m/%Y") %>
+              <% if b.start_time %>
+                <span style="color:#555;"> <%= b.start_time.strftime("%Hh%M") %></span>
+              <% end %>
+            </td>
+            <td style="padding:0.65rem 1rem;color:#F5C500;font-family:'Bebas Neue',sans-serif;">
+              <%= b.price_estimated ? "#{b.price_estimated} €" : "—" %>
+            </td>
+            <td style="padding:0.65rem 1rem;">
+              <% colors = { "pending"=>"#E67E22","confirmed"=>"#27AE60","done"=>"#888","cancelled"=>"#E74C3C" } %>
+              <span style="font-size:0.72rem;color:<%= colors[b.status] %>;text-transform:uppercase;
+                           letter-spacing:0.05em;border:1px solid <%= colors[b.status] %>44;
+                           padding:0.15rem 0.5rem;">
+                <%= b.status %>
+              </span>
+            </td>
+            <td style="padding:0.65rem 1rem;">
+              <%= link_to "→", shop_panel_booking_path(b),
+                  style: "color:#F5C500;text-decoration:none;font-family:'Bebas Neue',sans-serif;" %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+<% else %>
+  <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:3rem;text-align:center;">
+    <p style="color:#555;">Aucun rendez-vous.</p>
+  </div>
+<% end %>

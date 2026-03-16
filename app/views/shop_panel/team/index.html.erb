@@ -1,0 +1,117 @@
+<% content_for :title, "Mon équipe" %>
+
+<h1 style="font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.05em;margin-bottom:1.5rem;">
+  Mon équipe
+</h1>
+
+<div class="row g-4">
+
+  <%# ── Tatoueurs actuels ── %>
+  <div class="col-lg-7">
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1.5rem;">
+      <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:#F5C500;
+                 border-left:4px solid #F5C500;padding-left:0.75rem;margin-bottom:1rem;">
+        Tatoueurs rattachés (<%= @tatoueurs.count %>)
+      </h3>
+      <% if @tatoueurs.any? %>
+        <div style="display:flex;flex-direction:column;gap:0.5rem;">
+          <% @tatoueurs.each do |t| %>
+            <div style="display:flex;align-items:center;justify-content:space-between;
+                        padding:0.75rem;background:#0D0D0D;border:1px solid #2A2A2A;">
+              <div style="display:flex;align-items:center;gap:0.75rem;">
+                <% if t.avatar.attached? %>
+                  <%= image_tag t.avatar,
+                      style: "width:40px;height:40px;object-fit:cover;
+                              border:2px solid #F5C500;border-radius:50%;" %>
+                <% else %>
+                  <div style="width:40px;height:40px;background:#2A2A2A;border-radius:50%;
+                              display:flex;align-items:center;justify-content:center;">🖋️</div>
+                <% end %>
+                <div>
+                  <div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;color:#fff;">
+                    <%= t.nickname %>
+                    <% if t.verified? %>
+                      <span style="color:#27AE60;font-size:0.8rem;">✅</span>
+                    <% end %>
+                  </div>
+                  <div style="font-size:0.78rem;color:#666;">
+                    <%= t.tattoo_styles.map(&:name).first(2).join(", ").presence || "Style non renseigné" %>
+                  </div>
+                </div>
+              </div>
+              <div style="display:flex;gap:0.5rem;align-items:center;">
+                <%= link_to "Voir →", tatoueur_path(t),
+                    style: "font-size:0.8rem;color:#F5C500;text-decoration:none;
+                            border:1px solid #F5C500;padding:0.2rem 0.6rem;
+                            font-family:'Bebas Neue',sans-serif;letter-spacing:0.05em;" %>
+                <%= link_to "✕",
+                    remove_tatoueur_shop_path(current_shop, tatoueur_id: t.id),
+                    data: { turbo_method: :delete, turbo_confirm: "Retirer #{t.nickname} du shop ?" },
+                    style: "font-size:0.8rem;color:#E74C3C;text-decoration:none;
+                            border:1px solid #E74C3C44;padding:0.2rem 0.5rem;" %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <p style="color:#555;font-size:0.85rem;">Aucun tatoueur rattaché.</p>
+      <% end %>
+    </div>
+  </div>
+
+  <%# ── Ajouter un tatoueur ── %>
+  <div class="col-lg-5">
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;padding:1.5rem;">
+      <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:#F5C500;
+                 border-left:4px solid #F5C500;padding-left:0.75rem;margin-bottom:1rem;">
+        Ajouter un tatoueur
+      </h3>
+      <% if @available_tatoueurs.any? %>
+        <input type="text" id="search-tatoueur" placeholder="Rechercher..."
+               oninput="filterTatoueurs(this.value)"
+               style="width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;
+                      padding:0.65rem 1rem;font-size:0.9rem;outline:none;margin-bottom:0.75rem;"
+               onfocus="this.style.borderColor='#F5C500'"
+               onblur="this.style.borderColor='#2A2A2A'">
+        <div style="display:flex;flex-direction:column;gap:0.4rem;max-height:300px;overflow-y:auto;">
+          <% @available_tatoueurs.each do |t| %>
+            <div class="avail-tatoueur"
+                 data-name="<%= t.nickname.downcase %>"
+                 style="display:flex;align-items:center;justify-content:space-between;
+                        padding:0.6rem 0.75rem;background:#0D0D0D;border:1px solid #2A2A2A;">
+              <div style="display:flex;align-items:center;gap:0.5rem;">
+                <% if t.avatar.attached? %>
+                  <%= image_tag t.avatar,
+                      style: "width:28px;height:28px;object-fit:cover;border-radius:50%;
+                              border:1px solid #2A2A2A;" %>
+                <% end %>
+                <span style="font-family:'Bebas Neue',sans-serif;font-size:0.95rem;color:#fff;">
+                  <%= t.nickname %>
+                </span>
+              </div>
+              <%= button_to "Ajouter",
+                  add_tatoueur_shop_path(current_shop),
+                  method: :post,
+                  params: { tatoueur_id: t.id },
+                  style: "background:#F5C500;color:#000;border:none;
+                          font-family:'Bebas Neue',sans-serif;font-size:0.85rem;
+                          letter-spacing:0.05em;padding:0.25rem 0.75rem;cursor:pointer;" %>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <p style="color:#555;font-size:0.85rem;">Aucun tatoueur disponible à ajouter.</p>
+      <% end %>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function filterTatoueurs(query) {
+    const q = query.toLowerCase()
+    document.querySelectorAll('.avail-tatoueur').forEach(el => {
+      el.style.display = el.dataset.name.includes(q) ? 'flex' : 'none'
+    })
+  }
+</script>

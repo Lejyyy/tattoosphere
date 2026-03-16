@@ -1,0 +1,112 @@
+<% content_for :title, "Moyens de paiement" %>
+
+<h1 style="font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.05em;margin-bottom:1.5rem;">
+  Moyens de paiement
+</h1>
+
+<div class="row g-4">
+  <%# PayPal %>
+  <div class="col-lg-6">
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;padding:1.5rem;">
+      <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:#F5C500;
+                 border-left:4px solid #F5C500;padding-left:0.75rem;margin-bottom:1.25rem;">
+        PayPal
+      </h3>
+      <% if current_tatoueur.paypal_onboarded? %>
+        <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1rem;">
+          <span style="background:rgba(39,174,96,0.15);color:#27AE60;border:1px solid #27AE6044;
+                       padding:0.3rem 0.75rem;font-size:0.85rem;">✅ Connecté</span>
+          <span style="color:#555;font-size:0.8rem;">ID: <%= current_tatoueur.paypal_merchant_id %></span>
+        </div>
+        <p style="color:#888;font-size:0.85rem;line-height:1.6;">
+          Ton compte PayPal est connecté. Les clients peuvent te payer leur acompte via PayPal.
+        </p>
+      <% else %>
+        <p style="color:#888;font-size:0.85rem;margin-bottom:1.25rem;line-height:1.6;">
+          Connecte ton compte PayPal pour recevoir les acomptes de réservation directement.
+        </p>
+        <%= link_to "Connecter PayPal", connect_paypal_tatoueur_path(current_tatoueur),
+            style: "display:inline-block;background:#0070BA;color:#fff;border:none;
+                    font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:0.08em;
+                    padding:0.65rem 1.5rem;text-decoration:none;" %>
+      <% end %>
+    </div>
+  </div>
+
+  <%# IBAN %>
+  <div class="col-lg-6">
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;padding:1.5rem;">
+      <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:#F5C500;
+                 border-left:4px solid #F5C500;padding-left:0.75rem;margin-bottom:1.25rem;">
+        Virement bancaire
+      </h3>
+      <% if current_tatoueur.bank_details_complete? %>
+        <% [
+          ["Banque", current_tatoueur.bank_name],
+          ["IBAN",   current_tatoueur.masked_iban],
+          ["BIC",    current_tatoueur.bic],
+        ].each do |label, val| %>
+          <% next unless val.present? %>
+          <div style="display:flex;justify-content:space-between;padding:0.5rem 0;
+                      border-bottom:1px solid #2A2A2A;">
+            <span style="font-size:0.78rem;color:#555;text-transform:uppercase;letter-spacing:0.05em;">
+              <%= label %>
+            </span>
+            <span style="font-size:0.85rem;color:#bbb;font-family:'Barlow Condensed',sans-serif;">
+              <%= val %>
+            </span>
+          </div>
+        <% end %>
+        <p style="color:#555;font-size:0.78rem;margin-top:0.75rem;">
+          Pour modifier tes coordonnées bancaires, passe par la vérification de profil.
+        </p>
+      <% else %>
+        <p style="color:#888;font-size:0.85rem;margin-bottom:1.25rem;">
+          Ajoute tes coordonnées bancaires pour recevoir les virements.
+        </p>
+        <%= link_to "Ajouter via la vérification", tatoueur_panel_verification_path,
+            style: "color:#F5C500;text-decoration:none;font-size:0.9rem;border:1px solid #F5C500;
+                    padding:0.5rem 1rem;font-family:'Bebas Neue',sans-serif;letter-spacing:0.05em;" %>
+      <% end %>
+    </div>
+  </div>
+
+  <%# Acomptes reçus %>
+  <div class="col-12">
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1.5rem;">
+      <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:#F5C500;
+                 border-left:4px solid #F5C500;padding-left:0.75rem;margin-bottom:1rem;">
+        Acomptes reçus
+      </h3>
+      <% paid = current_tatoueur.bookings.where(deposit_paid: true).includes(:user) %>
+      <% if paid.any? %>
+        <table style="width:100%;border-collapse:collapse;">
+          <thead>
+            <tr style="border-bottom:1px solid #2A2A2A;">
+              <% ["Client","Date RDV","Montant","Méthode"].each do |h| %>
+                <th style="padding:0.6rem 0.75rem;font-size:0.72rem;text-transform:uppercase;
+                           letter-spacing:0.08em;color:#555;text-align:left;font-weight:400;"><%= h %></th>
+              <% end %>
+            </tr>
+          </thead>
+          <tbody>
+            <% paid.each do |b| %>
+              <tr style="border-bottom:1px solid #1f1f1f;">
+                <td style="padding:0.6rem 0.75rem;color:#fff;font-size:0.88rem;"><%= b.user.nickname %></td>
+                <td style="padding:0.6rem 0.75rem;color:#888;font-size:0.85rem;"><%= b.date.strftime("%d/%m/%Y") %></td>
+                <td style="padding:0.6rem 0.75rem;color:#F5C500;font-family:'Bebas Neue',sans-serif;">
+                  <%= b.deposit_amount %> €
+                </td>
+                <td style="padding:0.6rem 0.75rem;color:#888;font-size:0.82rem;">
+                  <%= b.payment_method&.humanize || "—" %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      <% else %>
+        <p style="color:#555;font-size:0.85rem;">Aucun acompte reçu.</p>
+      <% end %>
+    </div>
+  </div>
+</div>

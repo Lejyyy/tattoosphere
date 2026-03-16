@@ -8,20 +8,130 @@
     <% if message.attachment.attached? %>
       <div class="mt-2">
         <% if message.attachment.image? %>
-          <%= image_tag rails_blob_path(message.attachment, only_path: true),
-              style: "max-width:250px;max-height:250px;object-fit:cover;border:1px solid #2A2A2A;",
-              class: "d-block" %>
+          <img src="<%= rails_blob_path(message.attachment, only_path: true) %>"
+               class="message__img ts-lightbox-trigger"
+               alt="image" />
         <% else %>
           <a href="<%= rails_blob_path(message.attachment, only_path: true) %>"
              target="_blank"
-             style="color:#F5C500;font-size:0.85rem;display:flex;align-items:center;gap:0.5rem;">
+             class="message__file">
             📎 <%= message.attachment.filename %>
           </a>
         <% end %>
       </div>
     <% end %>
   </div>
-  <span class="message__meta text-secondary">
+
+  <span class="message__meta">
     <%= message.user.nickname || message.user.first_name %> · <%= message.created_at.strftime("%H:%M") %>
   </span>
 </div>
+
+<%# ── Lightbox (injecté une seule fois) ── %>
+<% unless @lightbox_rendered %>
+  <% @lightbox_rendered = true %>
+
+  <div id="ts-lightbox">
+    <button id="ts-lightbox-close">✕</button>
+    <img id="ts-lightbox-img" src="" alt="" />
+  </div>
+
+  <style>
+    .message__img {
+      max-width: 250px;
+      max-height: 250px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid #2a2a2a;
+      cursor: zoom-in;
+      display: block;
+      transition: opacity .15s;
+    }
+    .message__img:hover { opacity: .85; }
+
+    .message__file {
+      color: #F5C500;
+      font-size: .85rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+      text-decoration: none;
+    }
+    .message__file:hover { text-decoration: underline; }
+
+    #ts-lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(0,0,0,.92);
+      align-items: center;
+      justify-content: center;
+      cursor: zoom-out;
+    }
+    #ts-lightbox.open { display: flex; }
+
+    #ts-lightbox-close {
+      position: absolute;
+      top: 1.25rem;
+      right: 1.5rem;
+      background: transparent;
+      border: none;
+      color: #fff;
+      font-size: 1.8rem;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    #ts-lightbox-img {
+      max-width: 92vw;
+      max-height: 92vh;
+      object-fit: contain;
+      border-radius: 6px;
+      box-shadow: 0 8px 48px rgba(0,0,0,.8);
+      cursor: default;
+    }
+  </style>
+
+  <script>
+    (function() {
+      const lb     = document.getElementById("ts-lightbox")
+      const lbImg  = document.getElementById("ts-lightbox-img")
+      const lbClose = document.getElementById("ts-lightbox-close")
+
+      function openLightbox(url) {
+        lbImg.src = url
+        lb.classList.add("open")
+      }
+
+      function closeLightbox() {
+        lb.classList.remove("open")
+        lbImg.src = ""
+      }
+
+      // Délégation sur document — fonctionne avec Turbo Streams
+      document.addEventListener("click", function(e) {
+        // Ouvrir
+        if (e.target.classList.contains("ts-lightbox-trigger")) {
+          openLightbox(e.target.src)
+          return
+        }
+        // Fermer via bouton ✕
+        if (e.target === lbClose) {
+          closeLightbox()
+          return
+        }
+        // Fermer via fond
+        if (e.target === lb) {
+          closeLightbox()
+          return
+        }
+      })
+
+      // Fermer via Escape
+      document.addEventListener("keydown", function(e) {
+        if (e.key === "Escape" && lb.classList.contains("open")) closeLightbox()
+      })
+    })()
+  </script>
+<% end %>

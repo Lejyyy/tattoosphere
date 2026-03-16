@@ -7,6 +7,7 @@ Rails.application.routes.draw do
   get "/map",       to: "pages#map",      as: :map
   get "/search",    to: "searches#index", as: :search
   get "/explorer",  to: "explore#index",  as: :explore
+  get "conversations/search_recipients", to: "conversations#search_recipients", as: :search_recipients
 
   # ================================
   # AUTHENTIFICATION
@@ -54,6 +55,7 @@ Rails.application.routes.draw do
       get    :paypal_callback
       patch  :update_photos
       delete :delete_photo
+      get "disponibilites", to: "tatoueurs/availabilities#index"
     end
   end
 
@@ -96,9 +98,12 @@ Rails.application.routes.draw do
   # ================================
   # CONVERSATIONS & MESSAGES
   # ================================
-  resources :conversations, only: [ :index, :show, :create ] do
+
+
+  resources :conversations, only: [ :index, :show, :create, :destroy ] do
     resources :messages, only: [ :create ]
     member do
+      get   :bubble
       patch :mark_read
     end
   end
@@ -153,5 +158,42 @@ Rails.application.routes.draw do
     resources :admin_logs,    only: [ :index ]
 
     get :stats, to: "dashboard#stats"
+  end
+
+  # ================================
+  # PANEL TATOUEUR
+  # ================================
+  namespace :tatoueur_panel do
+    root "dashboard#index"
+    get   "stats",          to: "dashboard#stats"
+    get   "bookings",       to: "bookings#index"
+    get   "bookings/:id",   to: "bookings#show",  as: :booking
+    patch "bookings/:id",   to: "bookings#update"
+    get   "messages",       to: "messages#index"
+    get   "photos",         to: "photos#index"
+    patch "photos",         to: "photos#update"
+    get   "disponibilites", to: "availabilities#index"
+    get   "paiements",      to: "payments#index"
+    get   "portfolio",      to: "portfolio#index"
+    get   "verification",   to: "verification#index"
+    get   "evenements",     to: "events#index"
+    get   "avis",           to: "reviews#index"
+  end
+
+  # ================================
+  # PANEL SHOP
+  # ================================
+  namespace :shop_panel do
+    root "dashboard#index"
+    get   "stats",      to: "dashboard#stats"
+    get   "bookings",   to: "bookings#index"
+    get   "bookings/:id", to: "bookings#show",  as: :booking
+    patch "bookings/:id", to: "bookings#update"
+    get   "messages",   to: "messages#index"
+    get   "photos",     to: "photos#index"
+    patch "photos",     to: "photos#update"
+    get   "equipe",     to: "team#index"
+    get   "evenements", to: "events#index"
+    get   "portfolios", to: "portfolios#index"
   end
 end

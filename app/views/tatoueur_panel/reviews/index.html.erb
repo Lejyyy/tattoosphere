@@ -1,0 +1,45 @@
+<% content_for :title, "Avis reçus" %>
+
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+  <h1 style="font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.05em;margin:0;">
+    Avis reçus
+  </h1>
+  <% if @avg %>
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:#F5C500;">
+      ⭐ <%= @avg %> <span style="font-size:1rem;color:#888;">/ 5</span>
+    </div>
+  <% end %>
+</div>
+
+<% if @reviews.any? %>
+  <div class="row g-3">
+    <% @reviews.each do |r| %>
+      <div class="col-md-6">
+        <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1.25rem;">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.75rem;">
+            <div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;color:#fff;">
+                <%= r.user.nickname %>
+              </div>
+              <div style="color:#F5C500;font-size:0.9rem;margin-top:0.1rem;">
+                <%= "⭐" * r.rating %><span style="color:#2A2A2A;"><%= "⭐" * (5 - r.rating) %></span>
+              </div>
+            </div>
+            <span style="color:#444;font-size:0.75rem;">
+              <%= r.created_at.strftime("%d/%m/%Y") %>
+            </span>
+          </div>
+          <% if r.comment.present? %>
+            <p style="color:#888;font-size:0.85rem;line-height:1.6;margin:0;">
+              "<%= r.comment %>"
+            </p>
+          <% end %>
+        </div>
+      </div>
+    <% end %>
+  </div>
+<% else %>
+  <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:3rem;text-align:center;">
+    <p style="color:#555;">Aucun avis pour le moment.</p>
+  </div>
+<% end %>

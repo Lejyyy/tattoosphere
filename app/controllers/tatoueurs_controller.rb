@@ -185,6 +185,7 @@ end
     :nickname, :first_name, :last_name,
     :email, :phone, :description,
     :address, :deposit_amount,
+    :cover,  :remove_cover,
     :iban, :bic, :bank_name,
     :avatar, :cover, :cover_color, :remove_cover,
     :identity_document, :hygiene_certificate, :siren,

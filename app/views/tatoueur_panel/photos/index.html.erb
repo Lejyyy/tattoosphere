@@ -1,0 +1,126 @@
+<% content_for :title, "Mes photos" %>
+
+<h1 style="font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.05em;margin-bottom:1.5rem;">
+  Photos & Couverture
+</h1>
+
+<% input_s = "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;padding:0.75rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:0.95rem;outline:none;" %>
+<% label_s = "display:block;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.4rem;" %>
+
+<div class="row g-4">
+
+  <%# ── Avatar ── %>
+  <div class="col-lg-6">
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;padding:1.5rem;">
+      <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:#F5C500;
+                 border-left:4px solid #F5C500;padding-left:0.75rem;margin-bottom:1.25rem;">
+        Photo de profil
+      </h3>
+      <% if current_tatoueur.avatar.attached? %>
+        <%= image_tag current_tatoueur.avatar,
+            style: "width:100px;height:100px;object-fit:cover;border:3px solid #F5C500;
+                    border-radius:50%;display:block;margin-bottom:1rem;" %>
+      <% end %>
+      <%= form_with url: tatoueur_path(current_tatoueur), method: :patch,
+                    html: { enctype: "multipart/form-data" } do |f| %>
+        <label style="<%= label_s %>">Nouvelle photo de profil</label>
+        <%= f.file_field :avatar, accept: "image/*",
+            style: "color:#888;font-size:0.9rem;width:100%;margin-bottom:1rem;" %>
+        <%= f.submit "Mettre à jour",
+            style: "background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;
+                    font-size:1rem;letter-spacing:0.08em;padding:0.6rem 1.5rem;cursor:pointer;" %>
+      <% end %>
+    </div>
+  </div>
+
+  <%# ── Cover ── %>
+  <div class="col-lg-6">
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;padding:1.5rem;">
+      <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:#F5C500;
+                 border-left:4px solid #F5C500;padding-left:0.75rem;margin-bottom:1.25rem;">
+        Photo de couverture
+      </h3>
+      <% if current_tatoueur.cover.attached? %>
+        <%= image_tag current_tatoueur.cover,
+            style: "width:100%;height:100px;object-fit:cover;border:1px solid #2A2A2A;
+                    display:block;margin-bottom:1rem;" %>
+      <% end %>
+      <%= form_with url: tatoueur_panel_photos_path, method: :patch,
+                    html: { enctype: "multipart/form-data" } do |f| %>
+        <label style="<%= label_s %>">Nouvelle cover</label>
+        <input type="file" name="tatoueur[cover]" accept="image/*"
+               style="color:#888;font-size:0.9rem;width:100%;margin-bottom:0.75rem;">
+        <label style="<%= label_s %>">Couleur de fond <span style="color:#555;font-weight:400;">(si pas d'image)</span></label>
+        <div style="display:flex;gap:0.75rem;align-items:center;margin-bottom:1rem;">
+          <input type="color" name="tatoueur[cover_color]"
+                 value="<%= current_tatoueur.cover_color || '#1A1A1A' %>"
+                 style="width:48px;height:36px;border:1px solid #2A2A2A;
+                        background:transparent;cursor:pointer;padding:0;">
+          <% [["#0D0D0D","Noir"],["#1A1A1A","Gris"],["#1a0a00","Brun"],["#0a0a1a","Bleu"],["#1a000d","Rouge"],["#1a1500","Or"]].each do |hex, label| %>
+            <button type="button" title="<%= label %>"
+                    onclick="document.querySelector('input[name=\'tatoueur[cover_color]\']').value='<%= hex %>'"
+                    style="width:24px;height:24px;background:<%= hex %>;border:1px solid #444;cursor:pointer;"></button>
+          <% end %>
+        </div>
+        <button type="submit"
+                style="background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;
+                       font-size:1rem;letter-spacing:0.08em;padding:0.6rem 1.5rem;cursor:pointer;">
+          Enregistrer
+        </button>
+      <% end %>
+    </div>
+  </div>
+
+  <%# ── Réalisations libres ── %>
+  <div class="col-12">
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1.5rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">
+        <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:#F5C500;
+                   border-left:4px solid #F5C500;padding-left:0.75rem;margin:0;">
+          Réalisations (<%= current_tatoueur.photos.count %>)
+        </h3>
+        <%= link_to "Voir sur mon profil →", tatoueur_path(current_tatoueur),
+            style: "font-size:0.8rem;color:#888;text-decoration:none;" %>
+      </div>
+
+      <%# Upload %>
+      <%= form_with url: update_photos_tatoueur_path(current_tatoueur), method: :patch,
+                    html: { enctype: "multipart/form-data", style: "margin-bottom:1.5rem;" } do |f| %>
+        <div style="display:flex;gap:0.75rem;align-items:flex-end;">
+          <%= f.file_field :photos, multiple: true, accept: "image/*",
+              style: "flex:1;color:#888;font-size:0.9rem;" %>
+          <%= f.submit "Ajouter",
+              style: "background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;
+                      font-size:1rem;letter-spacing:0.08em;padding:0.6rem 1.25rem;cursor:pointer;white-space:nowrap;" %>
+        </div>
+      <% end %>
+
+      <%# Grille %>
+      <% if current_tatoueur.photos.attached? %>
+        <div class="row row-cols-2 row-cols-md-4 row-cols-lg-6 g-2">
+          <% current_tatoueur.photos.each do |photo| %>
+            <div class="col">
+              <div style="position:relative;overflow:hidden;"
+                   onmouseover="this.querySelector('.del-p')?.style && (this.querySelector('.del-p').style.opacity='1')"
+                   onmouseout="this.querySelector('.del-p')?.style && (this.querySelector('.del-p').style.opacity='0')">
+                <%= image_tag photo,
+                    style: "width:100%;height:100px;object-fit:cover;display:block;
+                            border:1px solid #2A2A2A;" %>
+                <%= link_to "✕",
+                    delete_photo_tatoueur_path(current_tatoueur, photo_id: photo.id),
+                    data: { turbo_method: :delete, turbo_confirm: "Supprimer ?" },
+                    class: "del-p",
+                    style: "position:absolute;top:0.25rem;right:0.25rem;background:rgba(0,0,0,0.8);
+                            color:#fff;width:22px;height:22px;display:flex;align-items:center;
+                            justify-content:center;font-size:0.7rem;text-decoration:none;
+                            opacity:0;transition:opacity 0.2s;" %>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <p style="color:#555;font-size:0.85rem;">Aucune réalisation ajoutée.</p>
+      <% end %>
+    </div>
+  </div>
+</div>

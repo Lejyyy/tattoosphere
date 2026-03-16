@@ -317,26 +317,7 @@
   <%# ======= TAB DISPONIBILITÉS ======= %>
   <div id="tab-disponibilites" class="tab-content" style="display:none;">
     <h2 class="section-title mb-4">Disponibilités</h2>
-    <% availabilities = @tatoueur.availabilities %>
-    <% if availabilities.any? %>
-      <div class="row g-3">
-        <% days = %w[Dimanche Lundi Mardi Mercredi Jeudi Vendredi Samedi] %>
-        <% availabilities.order(:day_of_week).each do |a| %>
-          <div class="col-6 col-md-3">
-            <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1rem;">
-              <div style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:#F5C500;">
-                <%= days[a.day_of_week] %>
-              </div>
-              <div style="color:#888;font-size:0.9rem;">
-                <%= a.start_time&.strftime("%Hh%M") %> — <%= a.end_time&.strftime("%Hh%M") %>
-              </div>
-            </div>
-          </div>
-        <% end %>
-      </div>
-    <% else %>
-      <p style="color:#555;">Aucune disponibilité renseignée.</p>
-    <% end %>
+    <%= render "tatoueurs/calendar", tatoueur: @tatoueur %>
   </div>
 
   <%# ======= TAB ÉVÉNEMENTS ======= %>

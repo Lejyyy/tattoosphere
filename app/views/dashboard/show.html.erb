@@ -42,8 +42,22 @@
       <div style="display:flex;gap:0.75rem;flex-wrap:wrap;align-items:center;">
         <% if @tatoueur %>
           <%= link_to "✏️ Modifier mon profil", edit_tatoueur_path(@tatoueur), class: "hero-cta-outline" %>
+          <%= link_to tatoueur_panel_root_path,
+              style: "display:inline-flex;align-items:center;gap:0.5rem;
+                      background:#1A1A1A;color:#F5C500;border:1px solid #F5C500;
+                      font-family:'Bebas Neue',sans-serif;font-size:1rem;
+                      letter-spacing:0.08em;padding:0.6rem 1.25rem;text-decoration:none;" do %>
+            🖋️ Mon espace pro
+          <% end %>
         <% elsif @shop %>
           <%= link_to "✏️ Modifier mon shop", edit_shop_path(@shop), class: "hero-cta-outline" %>
+          <%= link_to shop_panel_root_path,
+              style: "display:inline-flex;align-items:center;gap:0.5rem;
+                      background:#1A1A1A;color:#F5C500;border:1px solid #F5C500;
+                      font-family:'Bebas Neue',sans-serif;font-size:1rem;
+                      letter-spacing:0.08em;padding:0.6rem 1.25rem;text-decoration:none;" do %>
+            🏠 Mon espace shop
+          <% end %>
         <% else %>
           <%= link_to "✏️ Modifier mon profil", edit_user_registration_path, class: "hero-cta-outline" %>
         <% end %>

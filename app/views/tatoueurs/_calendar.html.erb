@@ -1,0 +1,228 @@
+<%# Partial à inclure dans le tab "Disponibilités" de tatoueurs/show.html.erb
+    Utilisation : <%= render "calendar", tatoueur: @tatoueur %> %>
+
+<div id="availability-calendar" style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1.5rem;">
+
+  <%# Navigation semaine %>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;">
+    <button id="cal-prev"
+            style="background:transparent;border:1px solid #2A2A2A;color:#888;
+                   font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:0.05em;
+                   padding:0.4rem 1rem;cursor:pointer;transition:all 0.15s;"
+            onmouseover="this.style.borderColor='#F5C500';this.style.color='#F5C500'"
+            onmouseout="this.style.borderColor='#2A2A2A';this.style.color='#888'">
+      ← Semaine préc.
+    </button>
+    <div id="cal-title"
+         style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:#F5C500;
+                letter-spacing:0.05em;text-align:center;">
+      Chargement…
+    </div>
+    <button id="cal-next"
+            style="background:transparent;border:1px solid #2A2A2A;color:#888;
+                   font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:0.05em;
+                   padding:0.4rem 1rem;cursor:pointer;transition:all 0.15s;"
+            onmouseover="this.style.borderColor='#F5C500';this.style.color='#F5C500'"
+            onmouseout="this.style.borderColor='#2A2A2A';this.style.color='#888'">
+      Semaine suiv. →
+    </button>
+  </div>
+
+  <%# Légende %>
+  <div style="display:flex;gap:1.25rem;margin-bottom:1.25rem;flex-wrap:wrap;">
+    <span style="display:flex;align-items:center;gap:0.4rem;font-size:0.78rem;color:#888;">
+      <span style="width:14px;height:14px;background:#F5C500;border-radius:2px;display:inline-block;"></span>
+      Disponible
+    </span>
+    <span style="display:flex;align-items:center;gap:0.4rem;font-size:0.78rem;color:#888;">
+      <span style="width:14px;height:14px;background:#E74C3C;border-radius:2px;display:inline-block;"></span>
+      Occupé
+    </span>
+    <span style="display:flex;align-items:center;gap:0.4rem;font-size:0.78rem;color:#888;">
+      <span style="width:14px;height:14px;background:#2A2A2A;border-radius:2px;display:inline-block;"></span>
+      Indisponible
+    </span>
+  </div>
+
+  <%# Grille calendrier %>
+  <div id="cal-grid" style="overflow-x:auto;">
+    <table style="width:100%;border-collapse:collapse;min-width:500px;">
+      <thead>
+        <tr>
+          <th style="width:90px;padding:0.4rem;font-size:0.72rem;color:#555;
+                     text-align:left;font-weight:400;text-transform:uppercase;
+                     letter-spacing:0.05em;">Période</th>
+          <!-- Jours injectés en JS -->
+        </tr>
+      </thead>
+      <tbody id="cal-body">
+        <tr id="row-morning">
+          <td style="padding:0.4rem 0.5rem;font-size:0.8rem;color:#888;white-space:nowrap;vertical-align:middle;">
+            🌅 Matin
+          </td>
+          <!-- Cellules injectées en JS -->
+        </tr>
+        <tr id="row-afternoon">
+          <td style="padding:0.4rem 0.5rem;font-size:0.8rem;color:#888;white-space:nowrap;vertical-align:middle;">
+            🌇 Après-midi
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <%# Message sélection %>
+  <div id="cal-selection"
+       style="display:none;margin-top:1.5rem;padding:1rem;
+              background:#0D0D0D;border:1px solid #F5C500;">
+    <p style="color:#F5C500;font-family:'Bebas Neue',sans-serif;font-size:1rem;
+              letter-spacing:0.05em;margin-bottom:0.5rem;" id="cal-selection-text"></p>
+    <% if user_signed_in? %>
+      <% if tatoueur.shops.any? %>
+        <a id="cal-booking-link"
+           href="<%= new_shop_booking_path(tatoueur.shops.first) %>"
+           style="display:inline-block;background:#F5C500;color:#000;border:none;
+                  font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:0.08em;
+                  padding:0.6rem 1.5rem;text-decoration:none;">
+          📅 Réserver ce créneau
+        </a>
+      <% else %>
+        <span style="color:#555;font-size:0.85rem;">Ce tatoueur n'est pas rattaché à un shop.</span>
+      <% end %>
+    <% else %>
+      <%= link_to "Connectez-vous pour réserver", new_user_session_path,
+          style: "display:inline-block;background:#F5C500;color:#000;
+                  font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:0.08em;
+                  padding:0.6rem 1.5rem;text-decoration:none;" %>
+    <% end %>
+  </div>
+</div>
+
+<script>
+  const CAL_API   = "<%= disponibilites_tatoueur_path(tatoueur) %>"
+  const BOOK_BASE = "<%= tatoueur.shops.any? ? new_shop_booking_path(tatoueur.shops.first) : '#' %>"
+
+  let currentStart = null
+  let calData      = []
+
+  function mondayOf(date) {
+    const d = new Date(date)
+    const day = d.getDay()
+    const diff = (day === 0 ? -6 : 1 - day)
+    d.setDate(d.getDate() + diff)
+    d.setHours(0, 0, 0, 0)
+    return d
+  }
+
+  function isoDate(d) {
+    return d.toISOString().split('T')[0]
+  }
+
+  async function loadWeek(startDate) {
+    currentStart = startDate
+    const res  = await fetch(`${CAL_API}?start_date=${isoDate(startDate)}`)
+    const json = await res.json()
+    calData = json.days
+    renderCalendar(json)
+  }
+
+  function renderCalendar(json) {
+    const days = json.days
+    const start = new Date(days[0].date + 'T00:00:00')
+    const end   = new Date(days[6].date + 'T00:00:00')
+
+    // Titre
+    const fmt = d => d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })
+    document.getElementById('cal-title').textContent =
+      `${fmt(start)} – ${fmt(end)}`
+
+    // En-têtes jours
+    const thead = document.querySelector('#availability-calendar thead tr')
+    // Supprimer anciens headers
+    while (thead.children.length > 1) thead.removeChild(thead.lastChild)
+    days.forEach(day => {
+      const th = document.createElement('th')
+      th.style.cssText = 'padding:0.4rem;text-align:center;font-weight:400;'
+      const isPast = day.past
+      const parts  = day.label.split(' ')
+      th.innerHTML = `
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:0.95rem;
+                    color:${isPast ? '#444' : '#fff'};letter-spacing:0.03em;">${parts[0]}</div>
+        <div style="font-size:0.72rem;color:${isPast ? '#333' : '#666'};">${parts[1]} ${parts[2]}</div>
+      `
+      thead.appendChild(th)
+    })
+
+    // Cellules matin & après-midi
+    renderRow('row-morning', days, 'morning')
+    renderRow('row-afternoon', days, 'afternoon')
+  }
+
+  function renderRow(rowId, days, period) {
+    const row = document.getElementById(rowId)
+    while (row.children.length > 1) row.removeChild(row.lastChild)
+
+    days.forEach(day => {
+      const slot = day[period]
+      const td   = document.createElement('td')
+      td.style.cssText = 'padding:0.3rem;text-align:center;'
+
+      let bg, cursor, title, clickable = false
+
+      if (day.past) {
+        bg = '#111'; cursor = 'default'; title = 'Passé'
+      } else if (slot.available) {
+        bg = '#F5C500'; cursor = 'pointer'; title = 'Disponible — cliquer pour réserver'
+        clickable = true
+      } else if (slot.blocked) {
+        bg = '#E74C3C'; cursor = 'not-allowed'; title = 'Occupé'
+      } else {
+        bg = '#2A2A2A'; cursor = 'default'; title = 'Indisponible'
+      }
+
+      td.innerHTML = `
+        <div title="${title}"
+             style="height:36px;background:${bg};border-radius:3px;
+                    cursor:${cursor};transition:opacity 0.15s;"
+             ${clickable ? `onclick="selectSlot('${day.date}','${period}')"` : ''}
+             onmouseover="if('${clickable}'==='true') this.style.opacity='0.8'"
+             onmouseout="this.style.opacity='1'">
+        </div>
+      `
+      row.appendChild(td)
+    })
+  }
+
+  function selectSlot(date, period) {
+    const d      = new Date(date + 'T00:00:00')
+    const label  = d.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
+    const moment = period === 'morning' ? 'Matin' : 'Après-midi'
+    const time   = period === 'morning' ? '09:00' : '14:00'
+
+    document.getElementById('cal-selection-text').textContent =
+      `✅ ${label} — ${moment}`
+
+    const link = document.getElementById('cal-booking-link')
+    if (link && BOOK_BASE !== '#') {
+      link.href = `${BOOK_BASE}?date=${date}&start_time=${time}`
+    }
+
+    document.getElementById('cal-selection').style.display = 'block'
+    document.getElementById('cal-selection').scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  }
+
+  // Navigation
+  document.getElementById('cal-prev').addEventListener('click', () => {
+    const prev = new Date(currentStart)
+    prev.setDate(prev.getDate() - 7)
+    if (prev >= mondayOf(new Date())) loadWeek(prev)
+  })
+  document.getElementById('cal-next').addEventListener('click', () => {
+    const next = new Date(currentStart)
+    next.setDate(next.getDate() + 7)
+    loadWeek(next)
+  })
+
+  // Init
+  loadWeek(mondayOf(new Date()))
+</script>

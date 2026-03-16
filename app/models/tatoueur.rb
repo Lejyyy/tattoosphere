@@ -24,6 +24,11 @@ class Tatoueur < ApplicationRecord
   has_many :blocked_slots, dependent: :destroy
   has_many :reports, as: :reportable, dependent: :destroy
 
+  # ================================
+  # VIRTUAL ATTRIBUTES
+  # ================================
+  attr_accessor :remove_cover
+  attr_accessor :remove_avatar
 
   # ================================
   # SCOPES
@@ -36,6 +41,7 @@ class Tatoueur < ApplicationRecord
   # VALIDATIONS
   # ================================
   VERIFICATION_STATUSES = %w[unsubmitted pending approved rejected].freeze
+
   validates :verification_status, inclusion: { in: VERIFICATION_STATUSES }
   validates :siren, format: { with: /\A\d{9}\z/, message: "doit contenir exactement 9 chiffres" }, allow_blank: true
   validates :nickname, :first_name, :last_name, :email, presence: true
@@ -52,17 +58,23 @@ class Tatoueur < ApplicationRecord
   after_validation :geocode, if: :address_changed?
 
   # ================================
+  # CALLBACKS
+  # ================================
+  after_save :purge_cover,  if: :remove_cover?
+  after_save :purge_avatar, if: :remove_avatar?
+
+  # ================================
   # VÉRIFICATION — HELPERS
   # ================================
   def verification_documents_complete?
-  identity_document.attached? &&
-    identity_selfie.attached? &&
-    hygiene_certificate.attached? &&
-    siren.present? &&
-    first_name.present? &&
-    last_name.present? &&
-    bank_details_complete?
-end
+    identity_document.attached? &&
+      identity_selfie.attached? &&
+      hygiene_certificate.attached? &&
+      siren.present? &&
+      first_name.present? &&
+      last_name.present? &&
+      bank_details_complete?
+  end
 
   def submit_for_verification!
     return false unless verification_documents_complete?
@@ -90,10 +102,10 @@ end
     )
   end
 
-  def verified?       = verified == true
-  def pending_verification? = verification_status == "pending"
-  def banned?         = banned == true
-  def featured?       = featured == true
+  def verified?               = verified == true
+  def pending_verification?   = verification_status == "pending"
+  def banned?                 = banned == true
+  def featured?               = featured == true
 
   # ================================
   # AUTRES HELPERS
@@ -113,5 +125,23 @@ end
   def masked_iban
     return nil unless iban.present?
     iban.gsub(/.(?=.{4})/, "*")
+  end
+
+  private
+
+  def remove_cover?
+    ActiveModel::Type::Boolean.new.cast(remove_cover)
+  end
+
+  def purge_cover
+    cover.purge
+  end
+
+  def remove_avatar?
+    ActiveModel::Type::Boolean.new.cast(remove_avatar)
+  end
+
+  def purge_avatar
+    avatar.purge
   end
 end

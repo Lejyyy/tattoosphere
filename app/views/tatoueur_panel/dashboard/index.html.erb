@@ -1,0 +1,158 @@
+<% content_for :title, "Mon espace tatoueur" %>
+
+<%# ── KPIs ── %>
+<div class="row g-3 mb-4">
+  <% [
+    ["Réservations",  @bookings_count,                  tatoueur_panel_bookings_path,  "#F5C500"],
+    ["En attente",    @pending_bookings.count,           tatoueur_panel_bookings_path(status: "pending"), @pending_bookings.any? ? "#E67E22" : "#F5C500"],
+    ["Avis",          @reviews_count,                   tatoueur_panel_avis_path,      "#F5C500"],
+    ["Note moyenne",  @avg_rating || "—",               tatoueur_panel_avis_path,      "#F5C500"],
+    ["Messages",      @unread_count,                    tatoueur_panel_messages_path,  @unread_count > 0 ? "#E74C3C" : "#F5C500"],
+  ].each do |label, val, path, color| %>
+    <div class="col-6 col-md-4 col-lg">
+      <%= link_to path, style: "text-decoration:none;" do %>
+        <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid <%= color %>;
+                    padding:1.25rem;text-align:center;transition:border-color 0.2s;"
+             onmouseover="this.style.borderColor='#F5C500'"
+             onmouseout="this.style.borderColor='#2A2A2A'">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:<%= color %>;line-height:1;">
+            <%= val %>
+          </div>
+          <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-top:0.3rem;">
+            <%= label %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+
+<div class="row g-4">
+
+  <%# ── Prochains RDV ── %>
+  <div class="col-lg-7">
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1.5rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+        <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:#F5C500;
+                   border-left:4px solid #F5C500;padding-left:0.75rem;margin:0;">
+          Prochains rendez-vous
+        </h3>
+        <%= link_to "Tous →", tatoueur_panel_bookings_path,
+            style: "font-size:0.8rem;color:#888;text-decoration:none;" %>
+      </div>
+
+      <% if @upcoming_bookings.any? %>
+        <% @upcoming_bookings.each do |b| %>
+          <div style="display:flex;justify-content:space-between;align-items:center;
+                      padding:0.75rem 0;border-bottom:1px solid #2A2A2A;">
+            <div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;color:#fff;">
+                <%= b.date.strftime("%d %B %Y") %>
+                <% if b.start_time %>
+                  <span style="color:#888;font-size:0.85rem;">· <%= b.start_time.strftime("%Hh%M") %></span>
+                <% end %>
+              </div>
+              <div style="font-size:0.82rem;color:#888;margin-top:0.15rem;">
+                <%= b.user.nickname %> · <%= b.shop.name %>
+              </div>
+              <% if b.description.present? %>
+                <div style="font-size:0.78rem;color:#555;margin-top:0.1rem;">
+                  <%= b.description.truncate(50) %>
+                </div>
+              <% end %>
+            </div>
+            <div style="display:flex;flex-direction:column;align-items:flex-end;gap:0.4rem;">
+              <span style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.05em;
+                           background:#27AE60;color:#fff;padding:0.15rem 0.5rem;">Confirmé</span>
+              <%= link_to "→", tatoueur_panel_booking_path(b),
+                  style: "color:#F5C500;text-decoration:none;font-family:'Bebas Neue',sans-serif;" %>
+            </div>
+          </div>
+        <% end %>
+      <% else %>
+        <p style="color:#555;font-size:0.9rem;padding:1rem 0;">Aucun rendez-vous à venir.</p>
+      <% end %>
+    </div>
+  </div>
+
+  <%# ── Colonne droite ── %>
+  <div class="col-lg-5">
+
+    <%# En attente %>
+    <% if @pending_bookings.any? %>
+      <div style="background:#1A1A1A;border:1px solid #E67E22;padding:1.5rem;margin-bottom:1rem;">
+        <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:#E67E22;
+                   border-left:4px solid #E67E22;padding-left:0.75rem;margin-bottom:1rem;">
+          En attente de confirmation (<%= @pending_bookings.count %>)
+        </h3>
+        <% @pending_bookings.limit(3).each do |b| %>
+          <div style="display:flex;justify-content:space-between;align-items:center;
+                      padding:0.5rem 0;border-bottom:1px solid #2A2A2A;">
+            <div>
+              <span style="color:#fff;font-size:0.9rem;"><%= b.user.nickname %></span>
+              <span style="color:#555;font-size:0.78rem;margin-left:0.5rem;">
+                <%= b.date.strftime("%d/%m/%Y") %>
+              </span>
+            </div>
+            <%= link_to "Voir →", tatoueur_panel_booking_path(b),
+                style: "color:#F5C500;text-decoration:none;font-size:0.85rem;
+                        font-family:'Bebas Neue',sans-serif;" %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+
+    <%# Derniers avis %>
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1.5rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+        <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:#F5C500;
+                   border-left:4px solid #F5C500;padding-left:0.75rem;margin:0;">
+          Derniers avis
+        </h3>
+        <% if @avg_rating %>
+          <span style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:#F5C500;">
+            ⭐ <%= @avg_rating %>
+          </span>
+        <% end %>
+      </div>
+      <% if @recent_reviews.any? %>
+        <% @recent_reviews.each do |r| %>
+          <div style="padding:0.6rem 0;border-bottom:1px solid #2A2A2A;">
+            <div style="display:flex;justify-content:space-between;">
+              <span style="color:#fff;font-size:0.85rem;"><%= r.user.nickname %></span>
+              <span style="color:#F5C500;font-size:0.85rem;">
+                <%= "⭐" * r.rating %>
+              </span>
+            </div>
+            <% if r.comment.present? %>
+              <p style="color:#888;font-size:0.8rem;margin:0.2rem 0 0;"><%= r.comment.truncate(70) %></p>
+            <% end %>
+          </div>
+        <% end %>
+      <% else %>
+        <p style="color:#555;font-size:0.85rem;">Aucun avis pour le moment.</p>
+      <% end %>
+    </div>
+
+  </div>
+</div>
+
+<%# ── Accès rapides ── %>
+<div class="row g-3 mt-2">
+  <% [
+    ["🗓️ Disponibilités", tatoueur_panel_disponibilites_path],
+    ["🖼️ Mes photos",    tatoueur_panel_photos_path],
+    ["📁 Portfolio",      tatoueur_panel_portfolio_path],
+    ["💳 Paiements",      tatoueur_panel_paiements_path],
+    ["✅ Vérification",   tatoueur_panel_verification_path],
+  ].each do |label, path| %>
+    <div class="col-6 col-md-4 col-lg">
+      <%= link_to label, path,
+          style: "display:block;text-align:center;background:#1A1A1A;border:1px solid #2A2A2A;
+                  color:#888;font-family:'Bebas Neue',sans-serif;font-size:0.9rem;
+                  letter-spacing:0.05em;padding:0.75rem;text-decoration:none;transition:all 0.15s;",
+          onmouseover: "this.style.borderColor='#F5C500';this.style.color='#F5C500'",
+          onmouseout:  "this.style.borderColor='#2A2A2A';this.style.color='#888'" %>
+    </div>
+  <% end %>
+</div>

@@ -1,0 +1,54 @@
+<% content_for :title, "Messages" %>
+
+<h1 style="font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.05em;margin-bottom:1.5rem;">
+  Messages
+</h1>
+
+<% if @conversations.any? %>
+  <div style="display:flex;flex-direction:column;gap:0.5rem;">
+    <% @conversations.each do |conv| %>
+      <% other = conv.conversation_participants
+                     .reject { |p| p.participant == current_tatoueur }
+                     .first&.participant %>
+      <% last_msg = conv.messages.order(created_at: :desc).first %>
+      <% unread = conv.unread_count_for(current_user) rescue 0 %>
+      <%= link_to conversation_path(conv), style: "text-decoration:none;" do %>
+        <div style="background:#1A1A1A;border:1px solid <%= unread > 0 ? '#F5C500' : '#2A2A2A' %>;
+                    padding:1rem 1.25rem;transition:border-color 0.15s;
+                    display:flex;justify-content:space-between;align-items:center;"
+             onmouseover="this.style.borderColor='#F5C500'"
+             onmouseout="this.style.borderColor='<%= unread > 0 ? '#F5C500' : '#2A2A2A' %>'">
+          <div style="display:flex;align-items:center;gap:0.75rem;">
+            <div style="width:40px;height:40px;background:#2A2A2A;border-radius:50%;
+                        display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+              <%= other.is_a?(User) ? (other.nickname.first.upcase rescue "?") : "🏠" %>
+            </div>
+            <div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;color:#fff;">
+                <%= other.is_a?(User) ? other.nickname : other&.name %>
+                <% if unread > 0 %>
+                  <span style="background:#F5C500;color:#000;font-size:0.65rem;
+                               padding:0.1rem 0.4rem;margin-left:0.4rem;border-radius:10px;">
+                    <%= unread %>
+                  </span>
+                <% end %>
+              </div>
+              <% if last_msg %>
+                <div style="font-size:0.8rem;color:#555;margin-top:0.1rem;">
+                  <%= last_msg.content.truncate(60) %>
+                </div>
+              <% end %>
+            </div>
+          </div>
+          <div style="font-size:0.75rem;color:#444;white-space:nowrap;">
+            <%= last_msg ? time_ago_in_words(last_msg.created_at) : "" %>
+          </div>
+        </div>
+      <% end %>
+    <% end %>
+  </div>
+<% else %>
+  <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:3rem;text-align:center;">
+    <p style="color:#555;">Aucune conversation.</p>
+  </div>
+<% end %>
