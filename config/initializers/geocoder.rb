@@ -8,4 +8,5 @@ Geocoder.configure(
     "User-Agent" => "Tattoosphere/1.0 (contact@tattoosphere.com)",
     "Accept-Language" => "fr"
   }
+
 )
