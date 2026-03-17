@@ -96,3 +96,4 @@ gem "prawn-table", "~> 0.2.2"
 gem "whenever", "~> 1.1"
 
 gem "letter_opener", "~> 1.10"
+gem "matrix"

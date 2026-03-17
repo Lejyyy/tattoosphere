@@ -17,7 +17,7 @@ class TatoueursController < ApplicationController
 
     if params[:q].present?
       q = "%#{params[:q]}%"
-      @tatoueurs = @tatoueurs.where("nickname ILIKE ? OR email ILIKE ?", q, q)
+      @tatoueurs = @tatoueurs.where("tatoueurs.nickname ILIKE ? OR tatoueurs.email ILIKE ?", q, q)
     end
 
     if params[:style_id].present?

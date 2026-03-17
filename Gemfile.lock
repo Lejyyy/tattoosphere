@@ -523,6 +523,7 @@ DEPENDENCIES
   kamal
   kaminari
   letter_opener (~> 1.10)
+  matrix
   paypal-checkout-sdk (~> 1.0)
   pg (~> 1.1)
   prawn (~> 2.4)

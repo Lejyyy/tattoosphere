@@ -82,6 +82,16 @@
               onfocus: "this.style.borderColor='#F5C500'",
               onblur:  "this.style.borderColor='#2A2A2A'" %>
         </div>
+        <%# À insérer après le champ :nickname et avant le champ :email %>
+        <div class="col-12">
+        <%= f.label :phone, "Téléphone",
+      style: "display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;" %>
+      <%= f.telephone_field :phone,
+      placeholder: "+33 6 00 00 00 00",
+      style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;outline:none;",
+      onfocus: "this.style.borderColor='#F5C500'",
+      onblur:  "this.style.borderColor='#2A2A2A'" %>
+</div>
         <div class="col-12">
           <%= f.label :email, "Email",
               style: "display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;" %>
