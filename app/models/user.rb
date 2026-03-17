@@ -22,6 +22,7 @@ class User < ApplicationRecord
   has_many :participated_events, through: :event_participations, source: :event
   has_many :reports, foreign_key: :reporter_id, dependent: :destroy
   has_many :admin_logs, foreign_key: :admin_user_id
+  has_many :notifications, dependent: :destroy
 
   # ================================
   # SCOPES

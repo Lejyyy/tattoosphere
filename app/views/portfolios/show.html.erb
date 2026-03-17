@@ -3,233 +3,358 @@
   (current_user.shop.present? && current_user.shop.tatoueurs.include?(@tatoueur))
 ) %>
 
-<%# ================================ %>
-<%# LIGHTBOX %>
-<%# ================================ %>
-<div id="lightbox"
-     onclick="if(event.target===this) closeLightbox()"
-     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.92);
-            z-index:9999;align-items:center;justify-content:center;">
+<style>
+.pf-page { max-width: 1100px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
 
-  <button onclick="shiftLightbox(-1)"
-          style="position:fixed;left:1.5rem;top:50%;transform:translateY(-50%);
-                 background:none;border:none;color:#fff;font-size:2.5rem;cursor:pointer;
-                 opacity:0.7;transition:opacity 0.15s;"
-          onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
-    &#8249;
-  </button>
+/* ── Header ── */
+.pf-header {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  flex-wrap: wrap; gap: 1.25rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(255,255,255,0.07);
+  margin-bottom: 2rem;
+}
+.pf-back {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em;
+  color: #555; text-decoration: none; transition: color .15s; margin-bottom: 0.75rem;
+}
+.pf-back:hover { color: #F5C500; }
+.pf-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2.8rem; letter-spacing: 0.04em; color: #fff;
+  margin: 0 0 0.25rem;
+}
+.pf-meta { font-size: 13px; color: #666; }
+.pf-meta a { color: #F5C500; text-decoration: none; font-weight: 600; }
+.pf-meta a:hover { text-decoration: underline; }
+.pf-desc { font-size: 14px; color: #888; line-height: 1.75; max-width: 640px; margin-top: 0.75rem; }
 
-  <button onclick="shiftLightbox(1)"
-          style="position:fixed;right:1.5rem;top:50%;transform:translateY(-50%);
-                 background:none;border:none;color:#fff;font-size:2.5rem;cursor:pointer;
-                 opacity:0.7;transition:opacity 0.15s;"
-          onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
-    &#8250;
-  </button>
+.pf-actions { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
+.pf-btn {
+  font-family: 'Bebas Neue', sans-serif; font-size: 0.88rem; letter-spacing: 0.07em;
+  padding: 0.5rem 1.1rem; border: none; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+  text-decoration: none; border-radius: 2px; transition: opacity .15s;
+}
+.pf-btn:hover { opacity: .85; }
+.pf-btn--primary { background: #F5C500; color: #000; }
+.pf-btn--ghost { background: transparent; color: #666; border: 1px solid rgba(255,255,255,0.12); }
+.pf-btn--ghost:hover { color: #fff; border-color: rgba(255,255,255,0.3); opacity: 1; }
 
-  <button onclick="closeLightbox()"
-          style="position:fixed;top:1.25rem;right:1.5rem;background:none;border:none;
-                 color:#fff;font-size:1.75rem;cursor:pointer;opacity:0.7;transition:opacity 0.15s;"
-          onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
-    ✕
-  </button>
+/* ── Masonry grid ── */
+.pf-grid { columns: 3; column-gap: 0.75rem; }
+@media (max-width: 900px) { .pf-grid { columns: 2; } }
+@media (max-width: 500px) { .pf-grid { columns: 1; } }
 
-  <img id="lightbox-img"
-       style="max-width:90vw;max-height:90vh;object-fit:contain;
-              box-shadow:0 0 60px rgba(0,0,0,0.8);" src="" alt="">
+.pf-item {
+  break-inside: avoid; margin-bottom: 0.75rem;
+  background: #111; border: 1px solid #1e1e1e;
+  border-radius: 3px; overflow: hidden;
+  transition: border-color .2s;
+}
+.pf-item:hover { border-color: rgba(245,197,0,0.3); }
 
-  <div id="lightbox-caption"
-       style="position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);
-              color:#aaa;font-family:'Barlow Condensed',sans-serif;font-size:0.95rem;
-              letter-spacing:0.05em;white-space:nowrap;"></div>
+/* Image(s) */
+.pf-item__imgs { position: relative; overflow: hidden; }
+.pf-item__img {
+  width: 100%; display: block; cursor: zoom-in;
+  transition: transform .35s, filter .3s;
+}
+.pf-item:hover .pf-item__img { transform: scale(1.03); filter: brightness(.88); }
+
+/* Carousel mini */
+.pf-carousel { position: relative; }
+.pf-carousel__track { display: flex; overflow: hidden; }
+.pf-carousel__slide { min-width: 100%; }
+.pf-carousel__btn {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  background: rgba(0,0,0,.6); border: none; color: #fff;
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; font-size: 1rem; z-index: 2; opacity: 0;
+  transition: opacity .2s;
+}
+.pf-carousel:hover .pf-carousel__btn { opacity: 1; }
+.pf-carousel__btn--prev { left: 0.4rem; }
+.pf-carousel__btn--next { right: 0.4rem; }
+.pf-carousel__dots {
+  position: absolute; bottom: 0.4rem; left: 50%; transform: translateX(-50%);
+  display: flex; gap: 3px;
+}
+.pf-carousel__dot {
+  width: 5px; height: 5px; border-radius: 50%;
+  background: rgba(255,255,255,0.4);
+}
+.pf-carousel__dot.active { background: #F5C500; }
+
+/* Info footer */
+.pf-item__body { padding: 0.75rem 0.9rem; }
+.pf-item__desc { font-size: 12px; color: #777; line-height: 1.55; margin-bottom: 0.5rem; }
+.pf-item__tags { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-bottom: 0.5rem; }
+.pf-item__tag {
+  font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em;
+  padding: 2px 7px; border-radius: 2px;
+  background: rgba(245,197,0,0.1); color: #F5C500;
+  border: 1px solid rgba(245,197,0,0.2);
+}
+.pf-item__footer {
+  display: flex; justify-content: space-between; align-items: center;
+  padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.05);
+}
+.pf-item__price {
+  font-family: 'Bebas Neue', sans-serif; font-size: 1.15rem; color: #F5C500;
+}
+.pf-item__actions { display: flex; gap: 0.35rem; }
+.pf-item__action {
+  background: transparent; border: 1px solid rgba(255,255,255,0.1);
+  color: #666; width: 28px; height: 28px; border-radius: 2px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; text-decoration: none; font-size: 13px;
+  transition: color .15s, border-color .15s;
+}
+.pf-item__action:hover { color: #fff; border-color: rgba(255,255,255,0.3); }
+.pf-item__action--danger:hover { color: #e53e3e; border-color: rgba(229,62,62,0.4); }
+
+/* Empty state */
+.pf-empty {
+  background: #111; border: 1px solid #1e1e1e; border-radius: 3px;
+  padding: 5rem; text-align: center; color: #444;
+}
+.pf-empty__icon { font-size: 3rem; margin-bottom: 1rem; }
+
+/* Lightbox */
+.pf-lightbox {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.95); z-index: 9999;
+  align-items: center; justify-content: center;
+}
+.pf-lightbox.open { display: flex; }
+.pf-lightbox__img { max-width: 90vw; max-height: 90vh; object-fit: contain; border-radius: 2px; }
+.pf-lightbox__nav {
+  position: fixed; top: 50%; transform: translateY(-50%);
+  background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+  color: #fff; width: 44px; height: 44px; border-radius: 50%;
+  font-size: 1.5rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+}
+.pf-lightbox__nav:hover { background: rgba(255,255,255,0.12); }
+.pf-lightbox__prev { left: 1.5rem; }
+.pf-lightbox__next { right: 1.5rem; }
+.pf-lightbox__close {
+  position: fixed; top: 1rem; right: 1.5rem;
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.12);
+  color: #fff; width: 36px; height: 36px; border-radius: 50%;
+  font-size: 1rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background .15s;
+}
+.pf-lightbox__close:hover { background: rgba(255,255,255,0.15); }
+.pf-lightbox__caption {
+  position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
+  color: #555; font-size: 12px; letter-spacing: 0.04em; white-space: nowrap;
+}
+</style>
+
+<%# ── Lightbox ── %>
+<div id="pf-lightbox" onclick="if(event.target===this) pfCloseLightbox()" class="pf-lightbox">
+  <button onclick="pfShift(-1)" class="pf-lightbox__nav pf-lightbox__prev">&#8249;</button>
+  <button onclick="pfShift(1)"  class="pf-lightbox__nav pf-lightbox__next">&#8250;</button>
+  <button onclick="pfCloseLightbox()" class="pf-lightbox__close">✕</button>
+  <img id="pf-lb-img" class="pf-lightbox__img" src="" alt="">
+  <div id="pf-lb-cap" class="pf-lightbox__caption"></div>
 </div>
 
-<div class="container py-5">
+<div class="pf-page">
 
   <%# Header %>
-  <div class="mb-5">
-    <%= link_to "← Retour", tatoueur_path(@tatoueur), class: "btn btn-outline-secondary btn-sm mb-3" %>
-
-    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3">
-      <div>
-        <h1 style="font-size:3rem;margin-bottom:0.25rem;"><%= @portfolio.name %></h1>
-        <p class="text-secondary mb-0">
-          Par <%= link_to @tatoueur.nickname, tatoueur_path(@tatoueur), class: "text-yellow fw-bold" %>
-          · <%= @items.count %> réalisation(s)
-        </p>
-      </div>
-
-      <div class="d-flex gap-2 align-items-center">
-        <% unless can_manage %>
-          <%= render "favorites/button", favoritable: @portfolio %>
-        <% end %>
-        <% if can_manage %>
-          <%= link_to "✏️ Modifier", edit_tatoueur_portfolio_path(@tatoueur, @portfolio),
-              class: "btn btn-outline-primary btn-sm" %>
-          <%= link_to "➕ Ajouter une réalisation",
-              new_tatoueur_portfolio_portfolio_item_path(@tatoueur, @portfolio),
-              class: "hero-cta" %>
-        <% end %>
-      </div>
-    </div>
-
-    <% if @portfolio.description.present? %>
-      <p class="text-secondary mt-3" style="max-width:700px;line-height:1.8;">
-        <%= @portfolio.description %>
-      </p>
+  <div>
+    <%= link_to tatoueur_path(@tatoueur), class: "pf-back" do %>
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      <%= @tatoueur.nickname %>
     <% end %>
   </div>
 
-  <%# ================================ %>
-  <%# RÉALISATIONS %>
-  <%# ================================ %>
+  <div class="pf-header">
+    <div>
+      <h1 class="pf-title"><%= @portfolio.name %></h1>
+      <p class="pf-meta">
+        Par <a href="<%= tatoueur_path(@tatoueur) %>"><%= @tatoueur.nickname %></a>
+        &nbsp;·&nbsp; <%= @items.count %> réalisation<%= @items.count > 1 ? "s" : "" %>
+      </p>
+      <% if @portfolio.description.present? %>
+        <p class="pf-desc"><%= @portfolio.description %></p>
+      <% end %>
+    </div>
+
+    <div class="pf-actions">
+      <% unless can_manage %>
+        <%= render "favorites/button", favoritable: @portfolio %>
+      <% end %>
+      <% if can_manage %>
+        <%= link_to edit_tatoueur_portfolio_path(@tatoueur, @portfolio), class: "pf-btn pf-btn--ghost" do %>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+          Modifier
+        <% end %>
+        <%= link_to new_tatoueur_portfolio_portfolio_item_path(@tatoueur, @portfolio), class: "pf-btn pf-btn--primary" do %>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Ajouter une réalisation
+        <% end %>
+      <% end %>
+    </div>
+  </div>
+
+  <%# Grid réalisations %>
   <% if @items.any? %>
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-      <% @items.each do |item| %>
-        <div class="col">
-          <div class="card-dark h-100 d-flex flex-column">
+    <div class="pf-grid">
+      <% @items.each_with_index do |item, item_idx| %>
+        <div class="pf-item">
 
-            <%# Images %>
-            <% if item.images.attached? %>
-              <% if item.images.count > 1 %>
-                <div id="carousel-item-<%= item.id %>" class="carousel slide" data-bs-ride="false">
-                  <div class="carousel-inner">
-                    <% item.images.each_with_index do |img, i| %>
-                      <div class="carousel-item <%= 'active' if i == 0 %>">
-                        <%= image_tag img,
-                            style: "width:100%;height:220px;object-fit:cover;cursor:zoom-in;",
-                            data: {
-                              lightbox: true,
-                              src: url_for(img),
-                              caption: "#{item.description&.truncate(80)} — #{i + 1}/#{item.images.count}"
-                            },
-                            onclick: "openLightbox(this)" %>
-                      </div>
-                    <% end %>
-                  </div>
-                  <button class="carousel-control-prev" type="button"
-                          data-bs-target="#carousel-item-<%= item.id %>" data-bs-slide="prev">
-                    <span class="carousel-control-prev-icon"></span>
-                  </button>
-                  <button class="carousel-control-next" type="button"
-                          data-bs-target="#carousel-item-<%= item.id %>" data-bs-slide="next">
-                    <span class="carousel-control-next-icon"></span>
-                  </button>
+          <%# Images %>
+          <% if item.images.attached? %>
+            <% imgs = item.images.to_a %>
+            <% if imgs.size > 1 %>
+              <div class="pf-carousel" id="car-<%= item.id %>">
+                <div class="pf-carousel__track" id="car-track-<%= item.id %>">
+                  <% imgs.each_with_index do |img, i| %>
+                    <div class="pf-carousel__slide">
+                      <img src="<%= url_for(img) %>"
+                           class="pf-item__img"
+                           data-lightbox="true"
+                           data-src="<%= url_for(img) %>"
+                           data-caption="<%= j item.description&.truncate(60) %> <%= i+1 %>/<%= imgs.size %>"
+                           onclick="pfOpenLightbox(this)" />
+                    </div>
+                  <% end %>
                 </div>
-              <% else %>
-                <%= image_tag item.images.first,
-                    style: "width:100%;height:220px;object-fit:cover;cursor:zoom-in;",
-                    data: {
-                      lightbox: true,
-                      src: url_for(item.images.first),
-                      caption: item.description&.truncate(80)
-                    },
-                    onclick: "openLightbox(this)" %>
-              <% end %>
+                <button class="pf-carousel__btn pf-carousel__btn--prev" onclick="carShift('car-<%= item.id %>', -1)">&#8249;</button>
+                <button class="pf-carousel__btn pf-carousel__btn--next" onclick="carShift('car-<%= item.id %>', 1)">&#8250;</button>
+                <div class="pf-carousel__dots" id="car-dots-<%= item.id %>">
+                  <% imgs.size.times do |i| %>
+                    <div class="pf-carousel__dot <%= i == 0 ? 'active' : '' %>"></div>
+                  <% end %>
+                </div>
+              </div>
             <% else %>
-              <div class="card-img-placeholder" style="height:220px;">🎨</div>
+              <img src="<%= url_for(imgs.first) %>"
+                   class="pf-item__img"
+                   data-lightbox="true"
+                   data-src="<%= url_for(imgs.first) %>"
+                   data-caption="<%= j item.description&.truncate(80) %>"
+                   onclick="pfOpenLightbox(this)" />
             <% end %>
+          <% else %>
+            <div style="height:200px;background:#0d0d0d;display:flex;align-items:center;justify-content:center;font-size:2.5rem;color:#333;">🎨</div>
+          <% end %>
 
-            <div class="card-body d-flex flex-column flex-grow-1">
-
+          <%# Body %>
+          <% if item.description.present? || item.tattoo_styles.any? || item.price.present? || can_manage %>
+            <div class="pf-item__body">
               <% if item.description.present? %>
-                <p class="text-secondary mb-3" style="font-size:0.9rem;line-height:1.6;">
-                  <%= item.description.truncate(120) %>
-                </p>
+                <p class="pf-item__desc"><%= item.description.truncate(120) %></p>
               <% end %>
-
               <% if item.tattoo_styles.any? %>
-                <div class="d-flex flex-wrap gap-1 mb-3">
+                <div class="pf-item__tags">
                   <% item.tattoo_styles.each do |style| %>
-                    <span class="card-badge"><%= style.name %></span>
+                    <span class="pf-item__tag"><%= style.name %></span>
                   <% end %>
                 </div>
               <% end %>
-
-              <% if item.price.present? %>
-                <div style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:#F5C500;margin-bottom:0.75rem;">
-                  <%= number_to_currency(item.price, unit: "€", format: "%n %u") %>
+              <div class="pf-item__footer">
+                <% if item.price.present? %>
+                  <span class="pf-item__price"><%= number_to_currency(item.price, unit: "€", format: "%n %u") %></span>
+                <% else %>
+                  <span></span>
+                <% end %>
+                <div class="pf-item__actions">
+                  <% unless can_manage %>
+                    <%= render "favorites/button", favoritable: item %>
+                  <% end %>
+                  <% if can_manage %>
+                    <%= link_to edit_tatoueur_portfolio_portfolio_item_path(@tatoueur, @portfolio, item),
+                          class: "pf-item__action", title: "Modifier" do %>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                    <% end %>
+                    <%= link_to tatoueur_portfolio_portfolio_item_path(@tatoueur, @portfolio, item),
+                          data: { turbo_method: :delete, turbo_confirm: "Supprimer cette réalisation ?" },
+                          class: "pf-item__action pf-item__action--danger", title: "Supprimer" do %>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+                    <% end %>
+                  <% end %>
                 </div>
-              <% end %>
-
-              <div class="d-flex gap-2 mt-auto pt-2" style="border-top:1px solid #2A2A2A;">
-                <% if can_manage %>
-                  <%= link_to "✏️",
-                      edit_tatoueur_portfolio_portfolio_item_path(@tatoueur, @portfolio, item),
-                      class: "btn btn-outline-primary btn-sm", title: "Modifier" %>
-                  <%= link_to "🗑️",
-                      tatoueur_portfolio_portfolio_item_path(@tatoueur, @portfolio, item),
-                      data: { turbo_method: :delete, turbo_confirm: "Supprimer cette réalisation ?" },
-                      class: "btn btn-outline-danger btn-sm", title: "Supprimer" %>
-                <% end %>
-                <% unless can_manage %>
-                  <%= render "favorites/button", favoritable: item %>
-                <% end %>
               </div>
-
             </div>
-          </div>
+          <% end %>
+
         </div>
       <% end %>
     </div>
 
   <% else %>
-    <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:4rem;text-align:center;">
-      <div style="font-size:3rem;margin-bottom:1rem;">🎨</div>
-      <p class="text-secondary mb-3">Aucune réalisation dans ce portfolio.</p>
+    <div class="pf-empty">
+      <div class="pf-empty__icon">🎨</div>
+      <p style="color:#555;margin-bottom:1rem;">Aucune réalisation dans ce portfolio.</p>
       <% if can_manage %>
-        <%= link_to "➕ Ajouter la première réalisation",
-            new_tatoueur_portfolio_portfolio_item_path(@tatoueur, @portfolio),
-            class: "hero-cta" %>
+        <%= link_to new_tatoueur_portfolio_portfolio_item_path(@tatoueur, @portfolio),
+              class: "pf-btn pf-btn--primary" do %>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Ajouter la première réalisation
+        <% end %>
       <% end %>
     </div>
   <% end %>
 
 </div>
 
-<%# ================================ %>
-<%# LIGHTBOX JS %>
-<%# ================================ %>
 <script>
-  const lb       = document.getElementById('lightbox');
-  const lbImg    = document.getElementById('lightbox-img');
-  const lbCap    = document.getElementById('lightbox-caption');
-  let allImgs    = [];
-  let currentIdx = 0;
+  // ── Lightbox ──
+  let pfImgs = [], pfIdx = 0
 
-  function buildIndex() {
-    allImgs = Array.from(document.querySelectorAll('[data-lightbox]'));
+  function pfOpenLightbox(el) {
+    pfImgs = Array.from(document.querySelectorAll('[data-lightbox]'))
+    pfIdx  = pfImgs.indexOf(el)
+    pfShowAt(pfIdx)
+    document.getElementById('pf-lightbox').classList.add('open')
+    document.body.style.overflow = 'hidden'
   }
 
-  function openLightbox(el) {
-    buildIndex();
-    currentIdx = allImgs.indexOf(el);
-    showAt(currentIdx);
-    lb.style.display = 'flex';
-    document.body.style.overflow = 'hidden';
+  function pfShowAt(idx) {
+    const el = pfImgs[idx]
+    document.getElementById('pf-lb-img').src             = el.dataset.src
+    document.getElementById('pf-lb-cap').textContent     = el.dataset.caption || ''
   }
 
-  function showAt(idx) {
-    const el = allImgs[idx];
-    lbImg.src = el.dataset.src;
-    lbCap.textContent = el.dataset.caption || '';
+  function pfShift(dir) {
+    pfIdx = (pfIdx + dir + pfImgs.length) % pfImgs.length
+    pfShowAt(pfIdx)
   }
 
-  function shiftLightbox(dir) {
-    currentIdx = (currentIdx + dir + allImgs.length) % allImgs.length;
-    showAt(currentIdx);
+  function pfCloseLightbox() {
+    document.getElementById('pf-lightbox').classList.remove('open')
+    document.getElementById('pf-lb-img').src = ''
+    document.body.style.overflow = ''
   }
 
-  function closeLightbox() {
-    lb.style.display = 'none';
-    lbImg.src = '';
-    document.body.style.overflow = '';
-  }
+  document.addEventListener('keydown', e => {
+    const lb = document.getElementById('pf-lightbox')
+    if (!lb.classList.contains('open')) return
+    if (e.key === 'Escape')     pfCloseLightbox()
+    if (e.key === 'ArrowRight') pfShift(1)
+    if (e.key === 'ArrowLeft')  pfShift(-1)
+  })
 
-  document.addEventListener('keydown', (e) => {
-    if (lb.style.display === 'none') return;
-    if (e.key === 'Escape')     closeLightbox();
-    if (e.key === 'ArrowRight') shiftLightbox(1);
-    if (e.key === 'ArrowLeft')  shiftLightbox(-1);
-  });
+  // ── Mini carousel ──
+  const carState = {}
+
+  function carShift(id, dir) {
+    if (!carState[id]) carState[id] = 0
+    const track = document.getElementById('car-track-' + id)
+    const dots  = document.querySelectorAll('#car-dots-' + id + ' .pf-carousel__dot')
+    const total = track.children.length
+    carState[id] = (carState[id] + dir + total) % total
+    track.style.transform = `translateX(-${carState[id] * 100}%)`
+    track.style.transition = 'transform .3s'
+    dots.forEach((d, i) => d.classList.toggle('active', i === carState[id]))
+  }
 </script>

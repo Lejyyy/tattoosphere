@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_16_131724) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_17_142926) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -43,7 +43,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_16_131724) do
   end
 
   create_table "admin_logs", force: :cascade do |t|
+    t.string "action", default: "", null: false
+    t.bigint "admin_user_id", default: 0, null: false
     t.datetime "created_at", null: false
+    t.text "note"
+    t.bigint "target_id"
+    t.string "target_type"
     t.datetime "updated_at", null: false
   end
 
@@ -120,6 +125,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_16_131724) do
     t.datetime "created_at", null: false
     t.text "description"
     t.datetime "end_date"
+    t.boolean "featured", default: false, null: false
     t.boolean "is_public"
     t.string "location"
     t.string "name"
@@ -160,10 +166,28 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_16_131724) do
     t.bigint "conversation_id", null: false
     t.datetime "created_at", null: false
     t.datetime "read_at"
+    t.integer "shared_profile_id"
+    t.string "shared_profile_type"
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["conversation_id"], name: "index_messages_on_conversation_id"
     t.index ["user_id"], name: "index_messages_on_user_id"
+  end
+
+  create_table "notifications", force: :cascade do |t|
+    t.text "body"
+    t.datetime "created_at", null: false
+    t.string "kind", null: false
+    t.bigint "notifiable_id"
+    t.string "notifiable_type"
+    t.boolean "read", default: false, null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.string "url"
+    t.bigint "user_id", null: false
+    t.index ["notifiable_type", "notifiable_id"], name: "index_notifications_on_notifiable"
+    t.index ["user_id", "read"], name: "index_notifications_on_user_id_and_read"
+    t.index ["user_id"], name: "index_notifications_on_user_id"
   end
 
   create_table "portfolio_items", force: :cascade do |t|
@@ -194,7 +218,15 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_16_131724) do
   end
 
   create_table "reports", force: :cascade do |t|
+    t.text "admin_note"
     t.datetime "created_at", null: false
+    t.text "details"
+    t.string "reason", default: "other"
+    t.bigint "reportable_id"
+    t.string "reportable_type"
+    t.bigint "reporter_id"
+    t.bigint "resolved_by"
+    t.string "status", default: "pending"
     t.datetime "updated_at", null: false
   end
 
@@ -224,10 +256,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_16_131724) do
 
   create_table "shops", force: :cascade do |t|
     t.string "address"
+    t.boolean "banned", default: false, null: false
     t.string "cover_color"
     t.datetime "created_at", null: false
     t.text "description"
     t.string "email"
+    t.boolean "featured", default: false, null: false
     t.boolean "is_active"
     t.float "latitude"
     t.float "longitude"
@@ -262,12 +296,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_16_131724) do
   create_table "tatoueurs", force: :cascade do |t|
     t.string "address"
     t.string "bank_name"
+    t.boolean "banned", default: false, null: false
     t.string "bic"
     t.string "cover_color"
     t.datetime "created_at", null: false
     t.decimal "deposit_amount"
     t.text "description"
     t.string "email"
+    t.boolean "featured", default: false, null: false
     t.string "first_name"
     t.string "iban"
     t.boolean "is_active"
@@ -295,6 +331,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_16_131724) do
   end
 
   create_table "users", force: :cascade do |t|
+    t.boolean "banned", default: false, null: false
+    t.datetime "banned_at", precision: nil
     t.date "birth_date"
     t.datetime "created_at", null: false
     t.string "email", default: "", null: false
@@ -332,6 +370,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_16_131724) do
   add_foreign_key "media", "tatoueurs"
   add_foreign_key "messages", "conversations"
   add_foreign_key "messages", "users"
+  add_foreign_key "notifications", "users"
   add_foreign_key "portfolio_items", "portfolios"
   add_foreign_key "portfolio_styles", "portfolio_items"
   add_foreign_key "portfolio_styles", "tattoo_styles"

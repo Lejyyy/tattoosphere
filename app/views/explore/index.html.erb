@@ -1,280 +1,445 @@
 <% content_for :title, "Explorer" %>
 
-<%# ================================ %>
-<%# LIGHTBOX %>
-<%# ================================ %>
-<div id="lightbox"
-     onclick="if(event.target===this) closeLightbox()"
-     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.95);
-            z-index:9999;align-items:center;justify-content:center;flex-direction:column;">
+<style>
+/* ── Layout ── */
+.ex-page { display: flex; min-height: calc(100vh - 60px); }
 
-  <button onclick="shiftLightbox(-1)"
-          style="position:fixed;left:1.5rem;top:50%;transform:translateY(-50%);
-                 background:none;border:none;color:#fff;font-size:3rem;cursor:pointer;opacity:0.6;"
-          onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">&#8249;</button>
+/* ── Sidebar filtres ── */
+.ex-sidebar {
+  width: 260px; flex-shrink: 0;
+  background: #0d0d0d;
+  border-right: 1px solid rgba(255,255,255,0.06);
+  padding: 1.5rem 1.25rem;
+  display: flex; flex-direction: column; gap: 1.5rem;
+  position: sticky; top: 0; height: calc(100vh - 60px); overflow-y: auto;
+}
 
-  <button onclick="shiftLightbox(1)"
-          style="position:fixed;right:1.5rem;top:50%;transform:translateY(-50%);
-                 background:none;border:none;color:#fff;font-size:3rem;cursor:pointer;opacity:0.6;"
-          onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">&#8250;</button>
+.ex-sidebar-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.2rem; letter-spacing: 0.07em; color: #fff;
+  margin-bottom: 0.1rem;
+}
 
-  <button onclick="closeLightbox()"
-          style="position:fixed;top:1.25rem;right:1.5rem;background:none;border:none;
-                 color:#fff;font-size:1.75rem;cursor:pointer;opacity:0.6;"
-          onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">✕</button>
+.ex-filter-section { display: flex; flex-direction: column; gap: 0.6rem; }
+.ex-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #555; }
 
-  <img id="lightbox-img"
-       style="max-width:88vw;max-height:80vh;object-fit:contain;
-              box-shadow:0 0 80px rgba(0,0,0,0.9);" src="" alt="">
+.ex-input {
+  background: #1a1a1a; border: 1px solid #2a2a2a; color: #fff;
+  padding: 0.6rem 0.85rem; font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.9rem; outline: none; border-radius: 3px; transition: border-color .2s; width: 100%;
+}
+.ex-input:focus { border-color: #F5C500; }
 
-  <div id="lightbox-info"
-       style="margin-top:1.25rem;display:flex;align-items:center;gap:1rem;">
-    <img id="lightbox-avatar"
-         style="width:40px;height:40px;object-fit:cover;border:2px solid #F5C500;"
-         src="" alt="">
+/* Style tags cliquables */
+.ex-style-tags { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.ex-style-tag {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
+  padding: 4px 9px; border-radius: 2px; cursor: pointer;
+  border: 1px solid #2a2a2a; color: #666; background: transparent;
+  transition: all .15s; text-decoration: none;
+}
+.ex-style-tag:hover { border-color: #F5C500; color: #F5C500; }
+.ex-style-tag.active { background: rgba(245,197,0,0.15); border-color: #F5C500; color: #F5C500; }
+
+.ex-divider { border: none; border-top: 1px solid rgba(255,255,255,0.06); margin: 0; }
+
+/* Bouton localisation */
+.ex-loc-btn {
+  display: flex; align-items: center; gap: 0.5rem;
+  background: transparent; border: 1px solid #2a2a2a; color: #666;
+  padding: 0.6rem 0.85rem; border-radius: 3px; cursor: pointer;
+  font-size: 13px; transition: all .15s; width: 100%;
+}
+.ex-loc-btn:hover, .ex-loc-btn.active { border-color: #F5C500; color: #F5C500; }
+
+.ts-btn {
+  font-family: 'Bebas Neue', sans-serif; font-size: 0.88rem; letter-spacing: 0.07em;
+  padding: 0.6rem 1rem; border: none; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  text-decoration: none; border-radius: 3px; transition: opacity .15s; width: 100%;
+}
+.ts-btn:hover { opacity: .85; }
+.ts-btn--primary { background: #F5C500; color: #000; }
+.ts-btn--ghost { background: transparent; color: #555; border: 1px solid rgba(255,255,255,0.1); }
+.ts-btn--ghost:hover { color: #fff; border-color: rgba(255,255,255,0.3); opacity: 1; }
+
+/* ── Zone principale ── */
+.ex-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+/* ── Topbar ── */
+.ex-topbar {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem;
+  background: #0d0d0d; position: sticky; top: 0; z-index: 10;
+}
+.ex-topbar-left { display: flex; align-items: baseline; gap: 0.75rem; }
+.ex-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; letter-spacing: 0.05em; color: #fff; margin: 0; }
+.ex-title span { color: #F5C500; }
+.ex-count { font-size: 12px; color: #555; }
+.ex-count strong { color: #F5C500; }
+
+/* Vue toggle */
+.ex-view-toggle { display: flex; gap: 0.3rem; }
+.ex-view-btn {
+  background: transparent; border: 1px solid #2a2a2a; color: #555;
+  width: 32px; height: 32px; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; border-radius: 3px; transition: all .15s;
+}
+.ex-view-btn:hover, .ex-view-btn.active { border-color: #F5C500; color: #F5C500; }
+
+/* Filtres actifs pills */
+.ex-active-filters { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; }
+.ex-filter-pill {
+  display: inline-flex; align-items: center; gap: 5px;
+  background: rgba(245,197,0,0.1); border: 1px solid rgba(245,197,0,0.3);
+  color: #F5C500; font-size: 11px; padding: 3px 8px; border-radius: 2px;
+}
+.ex-filter-pill a { color: #F5C500; text-decoration: none; font-weight: 700; margin-left: 2px; }
+
+/* ── Grid ── */
+.ex-grid-wrap { padding: 1.25rem 1.5rem; flex: 1; }
+
+.ex-grid--3 { columns: 3; column-gap: 0.6rem; }
+.ex-grid--2 { columns: 2; column-gap: 0.6rem; }
+.ex-grid--1 { display: grid; grid-template-columns: 1fr; gap: 0.75rem; }
+
+@media (max-width: 900px) { .ex-grid--3 { columns: 2; } }
+@media (max-width: 600px) { .ex-grid--3, .ex-grid--2 { columns: 1; } .ex-sidebar { display: none; } }
+
+.ex-item {
+  break-inside: avoid; margin-bottom: 0.6rem;
+  position: relative; overflow: hidden; border-radius: 3px; cursor: pointer;
+  background: #111; border: 1px solid #2a2a2a;
+}
+.ex-item:hover { border-color: rgba(245,197,0,0.3); }
+
+.ex-item__img { width: 100%; display: block; transition: transform .4s; }
+.ex-item:hover .ex-item__img { transform: scale(1.04); }
+
+/* ── Empty ── */
+.ex-empty {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 5rem; text-align: center; color: #555; flex: 1;
+}
+.ex-empty__icon { font-size: 3rem; margin-bottom: 1rem; }
+.ex-empty p { margin-bottom: 1.25rem; }
+.ex-empty a { color: #F5C500; text-decoration: none; font-family: 'Bebas Neue', sans-serif; letter-spacing: 0.05em; }
+
+/* ── Lightbox ── */
+.ts-lightbox {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.96); z-index: 9999;
+  align-items: center; justify-content: center; flex-direction: column;
+}
+.ts-lightbox.open { display: flex; }
+.ts-lightbox__img { max-width: 82vw; max-height: 75vh; object-fit: contain; border-radius: 2px; }
+.ts-lightbox__nav {
+  position: fixed; top: 50%; transform: translateY(-50%);
+  background: none; border: none; color: #fff; font-size: 3rem;
+  cursor: pointer; opacity: 0.3; transition: opacity .2s; padding: 0 1.25rem; line-height: 1;
+}
+.ts-lightbox__nav:hover { opacity: 1; }
+.ts-lightbox__prev { left: 0; }
+.ts-lightbox__next { right: 0; }
+.ts-lightbox__close {
+  position: fixed; top: 1rem; right: 1.5rem;
+  background: none; border: none; color: #fff; font-size: 1.75rem;
+  cursor: pointer; opacity: 0.4; transition: opacity .2s;
+}
+.ts-lightbox__close:hover { opacity: 1; }
+.ts-lb-meta { margin-top: 1.25rem; display: flex; align-items: center; gap: 1rem; }
+.ts-lb-avatar { width: 38px; height: 38px; object-fit: cover; border-radius: 50%; border: 2px solid #F5C500; flex-shrink: 0; }
+.ts-lb-name { font-family: 'Bebas Neue', sans-serif; font-size: 1.05rem; color: #fff; letter-spacing: 0.05em; }
+.ts-lb-styles { font-size: 12px; color: #666; }
+.ts-lb-link {
+  margin-left: 0.75rem; font-family: 'Bebas Neue', sans-serif; font-size: 0.88rem;
+  color: #F5C500; text-decoration: none; border: 1px solid #F5C500;
+  padding: 0.3rem 0.75rem; letter-spacing: 0.05em; border-radius: 2px; transition: background .15s, color .15s;
+}
+.ts-lb-link:hover { background: #F5C500; color: #000; }
+.ts-lb-caption { margin-top: 0.4rem; color: #444; font-size: 12px; letter-spacing: 0.04em; }
+
+/* ── Counter badge ── */
+.ex-filter-count {
+  background: #F5C500; color: #000; font-size: 9px; font-weight: 700;
+  width: 16px; height: 16px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  margin-left: 4px;
+}
+</style>
+
+<%# ── Lightbox ── %>
+<div id="lightbox" onclick="if(event.target===this) closeLightbox()" class="ts-lightbox">
+  <button onclick="shiftLightbox(-1)" class="ts-lightbox__nav ts-lightbox__prev">&#8249;</button>
+  <button onclick="shiftLightbox(1)"  class="ts-lightbox__nav ts-lightbox__next">&#8250;</button>
+  <button onclick="closeLightbox()"   class="ts-lightbox__close">✕</button>
+  <img id="lightbox-img" class="ts-lightbox__img" src="" alt="">
+  <div class="ts-lb-meta">
+    <img id="lightbox-avatar" class="ts-lb-avatar" src="" alt="" style="display:none;">
     <div>
-      <div id="lightbox-name"
-           style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;
-                  color:#fff;letter-spacing:0.05em;"></div>
-      <div id="lightbox-styles" style="font-size:0.8rem;color:#888;"></div>
+      <div id="lightbox-name"   class="ts-lb-name"></div>
+      <div id="lightbox-styles" class="ts-lb-styles"></div>
     </div>
-    <a id="lightbox-link" href="#"
-       style="margin-left:1rem;font-family:'Bebas Neue',sans-serif;font-size:0.95rem;
-              color:#F5C500;text-decoration:none;border:1px solid #F5C500;
-              padding:0.3rem 0.8rem;letter-spacing:0.05em;"
-       onmouseover="this.style.background='#F5C500';this.style.color='#000'"
-       onmouseout="this.style.background='transparent';this.style.color='#F5C500'">
-      Voir le profil →
-    </a>
+    <a id="lightbox-link" href="#" class="ts-lb-link">Voir le profil →</a>
   </div>
-
-  <div id="lightbox-caption"
-       style="margin-top:0.5rem;color:#555;font-family:'Barlow Condensed',sans-serif;
-              font-size:0.85rem;letter-spacing:0.05em;"></div>
+  <div id="lightbox-caption" class="ts-lb-caption"></div>
 </div>
 
-<%# ================================ %>
-<%# EN-TÊTE %>
-<%# ================================ %>
-<section class="section pb-0">
-  <div class="container">
-    <h1 style="font-family:'Bebas Neue',sans-serif;font-size:3.5rem;
-               letter-spacing:0.05em;margin-bottom:0.25rem;">
-      Explorer les <span style="color:#F5C500;">réalisations</span>
-    </h1>
-    <p style="color:#888;font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;">
-      <%= @realisations.count %> réalisation<%= @realisations.count > 1 ? "s" : "" %>
-    </p>
-  </div>
-</section>
+<%# ── Page ── %>
+<div class="ex-page">
 
-<%# ================================ %>
-<%# FILTRES %>
-<%# ================================ %>
-<section class="section pb-0">
-  <div class="container">
-    <%= form_with url: explore_path, method: :get,
-                  html: { style: "display:flex;flex-wrap:wrap;gap:0.75rem;align-items:flex-end;" } do |f| %>
-
-      <div style="flex:1;min-width:160px;">
-        <label style="display:block;font-size:0.75rem;font-weight:700;text-transform:uppercase;
-                      letter-spacing:0.08em;color:#888;margin-bottom:0.4rem;">Style</label>
-        <%= f.select :style_id,
-            options_for_select([["Tous les styles", ""]] + @tattoo_styles.map { |s| [s.name, s.id] }, params[:style_id]),
-            {},
-            style: "width:100%;background:#1A1A1A;border:1px solid #2A2A2A;color:#fff;
-                    padding:0.7rem 1rem;font-family:'Barlow Condensed',sans-serif;
-                    font-size:1rem;outline:none;cursor:pointer;",
-            onfocus: "this.style.borderColor='#F5C500'",
-            onblur:  "this.style.borderColor='#2A2A2A'" %>
-      </div>
-
-      <div style="flex:1;min-width:160px;">
-        <label style="display:block;font-size:0.75rem;font-weight:700;text-transform:uppercase;
-                      letter-spacing:0.08em;color:#888;margin-bottom:0.4rem;">Ville</label>
-        <%= f.text_field :city,
-            value: params[:city],
-            placeholder: "Paris, Lyon…",
-            style: "width:100%;background:#1A1A1A;border:1px solid #2A2A2A;color:#fff;
-                    padding:0.7rem 1rem;font-family:'Barlow Condensed',sans-serif;
-                    font-size:1rem;outline:none;",
-            onfocus: "this.style.borderColor='#F5C500'",
-            onblur:  "this.style.borderColor='#2A2A2A'" %>
-      </div>
+  <%# ── Sidebar filtres ── %>
+  <aside class="ex-sidebar">
+    <%= form_with url: explore_path, method: :get, id: "ex-form" do |f| %>
 
       <div>
-        <label style="display:block;font-size:0.75rem;font-weight:700;text-transform:uppercase;
-                      letter-spacing:0.08em;color:#888;margin-bottom:0.4rem;">Localisation</label>
-        <button type="button" onclick="useMyLocation()"
-                style="background:<%= params[:near].present? ? '#F5C500' : 'transparent' %>;
-                       color:<%= params[:near].present? ? '#000' : '#F5C500' %>;
-                       border:1px solid #F5C500;font-family:'Bebas Neue',sans-serif;
-                       font-size:1rem;letter-spacing:0.05em;padding:0.7rem 1.25rem;
-                       cursor:pointer;white-space:nowrap;">
-          📍 Autour de moi
+        <div class="ex-sidebar-title">Filtrer</div>
+      </div>
+
+      <%# Styles %>
+      <div class="ex-filter-section">
+        <div class="ex-label">Style de tatouage</div>
+        <div class="ex-style-tags">
+          <%= link_to "Tous", explore_path(params.except("style_id").to_unsafe_h),
+              class: "ex-style-tag #{params[:style_id].blank? ? 'active' : ''}" %>
+          <% @tattoo_styles.each do |style| %>
+            <%= link_to style.name,
+                explore_path(params.to_unsafe_h.merge("style_id" => style.id)),
+                class: "ex-style-tag #{params[:style_id].to_s == style.id.to_s ? 'active' : ''}" %>
+          <% end %>
+        </div>
+      </div>
+
+      <hr class="ex-divider">
+
+      <%# Ville %>
+      <div class="ex-filter-section">
+        <label class="ex-label">Ville</label>
+        <%= f.text_field :city, value: params[:city], placeholder: "Paris, Lyon…", class: "ex-input" %>
+      </div>
+
+      <%# Géolocalisation %>
+      <div class="ex-filter-section">
+        <label class="ex-label">Autour de moi</label>
+        <button type="button" id="loc-btn" onclick="useMyLocation()"
+                class="ex-loc-btn <%= params[:near].present? ? 'active' : '' %>">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <%= params[:near].present? ? "Localisation active" : "Utiliser ma position" %>
         </button>
+        <% if params[:near].present? %>
+          <div style="display:flex;align-items:center;gap:0.5rem;margin-top:0.4rem;">
+            <label class="ex-label" style="white-space:nowrap;">Rayon (km)</label>
+            <%= f.select :distance,
+                options_for_select([[5,5],[10,10],[20,20],[50,50]], params[:distance]&.to_i || 5),
+                {}, class: "ex-input" %>
+          </div>
+        <% end %>
         <%= f.hidden_field :near, value: params[:near] %>
         <%= f.hidden_field :distance, value: params[:distance] || 5 %>
       </div>
 
-      <div>
-        <label style="display:block;font-size:0.75rem;color:transparent;margin-bottom:0.4rem;">.</label>
-        <%= f.submit "Rechercher",
-            style: "background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;
-                    font-size:1.1rem;letter-spacing:0.1em;padding:0.7rem 1.75rem;cursor:pointer;",
-            onmouseover: "this.style.background='#d4a800'",
-            onmouseout:  "this.style.background='#F5C500'" %>
-      </div>
+      <hr class="ex-divider">
+
+      <button type="submit" class="ts-btn ts-btn--primary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Rechercher
+      </button>
 
       <% if params.except("controller", "action").to_unsafe_h.any? %>
-        <div>
-          <label style="display:block;font-size:0.75rem;color:transparent;margin-bottom:0.4rem;">.</label>
-          <%= link_to "✕ Réinitialiser", explore_path,
-              style: "display:inline-block;padding:0.7rem 1rem;border:1px solid #444;
-                      color:#888;font-family:'Bebas Neue',sans-serif;font-size:1rem;
-                      letter-spacing:0.05em;text-decoration:none;" %>
-        </div>
+        <%= link_to explore_path, class: "ts-btn ts-btn--ghost" do %>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          Réinitialiser
+        <% end %>
       <% end %>
 
     <% end %>
-  </div>
-</section>
+  </aside>
 
-<%# ================================ %>
-<%# GRILLE %>
-<%# ================================ %>
-<section class="section">
-  <div class="container">
-    <% if @realisations.any? %>
+  <%# ── Zone principale ── %>
+  <main class="ex-main">
 
-      <div class="explore-grid">
-        <% @realisations.each_with_index do |r, idx| %>
-          <div style="position:relative;overflow:hidden;cursor:pointer;border-radius:8px;"
-               onclick="openLightbox(<%= idx %>)"
-               onmouseover="this.querySelector('.explore-overlay').style.opacity='1'"
-               onmouseout="this.querySelector('.explore-overlay').style.opacity='0'">
+    <%# Topbar %>
+    <div class="ex-topbar">
+      <div class="ex-topbar-left">
+        <h1 class="ex-title">Réalisations</h1>
+        <span class="ex-count">
+          <strong><%= @realisations.count %></strong> résultat<%= @realisations.count > 1 ? "s" : "" %>
+        </span>
+      </div>
 
-            <%= image_tag r[:image],
-                style: "width:100%;height:320px;object-fit:cover;display:block;
-                        transition:transform 0.4s;border-radius:8px;",
-                onmouseover: "this.style.transform='scale(1.04)'",
-                onmouseout:  "this.style.transform='scale(1)'" %>
+      <div style="display:flex;align-items:center;gap:0.75rem;">
+        <%# Filtres actifs %>
+        <div class="ex-active-filters">
+          <% if params[:style_id].present? %>
+            <% style = @tattoo_styles.find { |s| s.id.to_s == params[:style_id].to_s } %>
+            <span class="ex-filter-pill">
+              <%= style&.name %>
+              <%= link_to "×", explore_path(params.except("style_id").to_unsafe_h) %>
+            </span>
+          <% end %>
+          <% if params[:city].present? %>
+            <span class="ex-filter-pill">
+              📍 <%= params[:city] %>
+              <%= link_to "×", explore_path(params.except("city").to_unsafe_h) %>
+            </span>
+          <% end %>
+          <% if params[:near].present? %>
+            <span class="ex-filter-pill">
+              📍 Autour de moi (<%= params[:distance] || 5 %> km)
+              <%= link_to "×", explore_path(params.except("near", "distance").to_unsafe_h) %>
+            </span>
+          <% end %>
+        </div>
 
-            <div class="explore-overlay"
-                 style="position:absolute;inset:0;border-radius:8px;
-                        background:linear-gradient(to top,rgba(0,0,0,0.8) 0%,transparent 55%);
-                        opacity:0;transition:opacity 0.25s;pointer-events:none;">
-              <div style="position:absolute;bottom:0;left:0;right:0;padding:0.75rem;">
-                <div style="font-family:'Bebas Neue',sans-serif;font-size:0.95rem;
-                            color:#fff;letter-spacing:0.04em;">
-                  <%= r[:tatoueur].nickname %>
-                </div>
-                <% if r[:styles].any? %>
-                  <div style="font-size:0.7rem;color:#F5C500;">
+        <%# Tri %>
+        <select onchange="sortFeed(this.value)" class="ex-input" style="width:auto;padding:0.4rem 0.6rem;font-size:12px;">
+          <option value="recent">Plus récents</option>
+          <option value="tatoueur">Par tatoueur</option>
+        </select>
+
+        <%# Toggle vue %>
+        <div class="ex-view-toggle">
+          <button class="ex-view-btn active" id="btn-grid3" onclick="setView(3)" title="Grille 3 colonnes">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+          </button>
+          <button class="ex-view-btn" id="btn-grid2" onclick="setView(2)" title="Grille 2 colonnes">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="9" height="18"/><rect x="14" y="3" width="9" height="18"/></svg>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <%# Feed %>
+    <div class="ex-grid-wrap">
+      <% if @realisations.any? %>
+        <div class="ex-grid ex-grid--3" id="ex-grid">
+          <% @realisations.each_with_index do |r, idx| %>
+            <div class="ex-item" onclick="openLightbox(<%= idx %>)"
+                 data-tatoueur="<%= r[:tatoueur].nickname %>"
+                 data-created="<%= r[:created_at].to_i %>">
+              <%= image_tag r[:image], class: "ex-item__img", loading: "lazy" %>
+              <div class="ex-item__overlay">
+                <div class="ex-item__info">
+                  <div class="ex-item__name"><%= r[:tatoueur].nickname %></div>
+                  <div class="ex-item__meta">
                     <%= r[:styles].map(&:name).join(", ") %>
+                    <% if r[:price].present? %>
+                      · <%= number_to_currency(r[:price], unit: "€", format: "%n %u") %>
+                    <% end %>
                   </div>
-                <% end %>
-                <% if r[:price].present? %>
-                  <div style="font-family:'Bebas Neue',sans-serif;font-size:0.9rem;color:#F5C500;">
-                    <%= number_to_currency(r[:price], unit: "€", format: "%n %u") %>
-                  </div>
-                <% end %>
+                </div>
               </div>
+              <% if r[:type] == :portfolio_item %>
+                <span class="ex-item__type-badge ex-item__type-badge--portfolio">Portfolio</span>
+              <% end %>
             </div>
+          <% end %>
+        </div>
 
-          </div>
-        <% end %>
-      </div>
+        <script>
+          window.exploreData = <%= raw @realisations.map { |r|
+            {
+              src:         url_for(r[:image]),
+              avatar:      r[:tatoueur].avatar.attached? ? url_for(r[:tatoueur].avatar) : "",
+              name:        r[:tatoueur].nickname,
+              styles:      r[:styles].map(&:name).join(", "),
+              price:       r[:price] ? number_to_currency(r[:price], unit: "€", format: "%n %u") : nil,
+              description: r[:description],
+              profile:     r[:source_path]
+            }
+          }.to_json %>
+        </script>
 
-      <script>
-        const exploreData = <%= raw @realisations.map { |r|
-          {
-            src:         url_for(r[:image]),
-            avatar:      r[:tatoueur].avatar.attached? ? url_for(r[:tatoueur].avatar) : "",
-            name:        r[:tatoueur].nickname,
-            styles:      r[:styles].map(&:name).join(", "),
-            price:       r[:price] ? number_to_currency(r[:price], unit: "€", format: "%n %u") : nil,
-            description: r[:description],
-            profile:     r[:source_path]
-          }
-        }.to_json %>
-      </script>
-
-    <% else %>
-      <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:5rem;text-align:center;">
-        <div style="font-size:3rem;margin-bottom:1rem;">🎨</div>
-        <p style="color:#888;margin-bottom:1.5rem;">Aucune réalisation trouvée.</p>
-        <%= link_to "Réinitialiser les filtres", explore_path,
-            style: "color:#F5C500;text-decoration:none;font-family:'Bebas Neue',sans-serif;
-                    font-size:1.1rem;letter-spacing:0.05em;" %>
-      </div>
-    <% end %>
-  </div>
-</section>
-
-<style>
-  .explore-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 0.6rem;
-  }
-  @media (max-width: 768px) {
-    .explore-grid { grid-template-columns: repeat(2, 1fr); }
-  }
-  @media (max-width: 480px) {
-    .explore-grid { grid-template-columns: 1fr; }
-  }
-</style>
+      <% else %>
+        <div class="ex-empty">
+          <div class="ex-empty__icon">🎨</div>
+          <p>Aucune réalisation trouvée.</p>
+          <%= link_to "Réinitialiser les filtres", explore_path %>
+        </div>
+      <% end %>
+    </div>
+  </main>
+</div>
 
 <script>
+  // ── Lightbox ──
   let lbIdx = 0
 
   function openLightbox(idx) {
+    if (!window.exploreData || !window.exploreData[idx]) return
     lbIdx = idx
     renderLightbox()
-    document.getElementById('lightbox').style.display = 'flex'
+    document.getElementById('lightbox').classList.add('open')
     document.body.style.overflow = 'hidden'
   }
 
   function renderLightbox() {
-    const d = exploreData[lbIdx]
-    document.getElementById('lightbox-img').src      = d.src
-    document.getElementById('lightbox-avatar').src   = d.avatar || ''
-    document.getElementById('lightbox-avatar').style.display = d.avatar ? 'block' : 'none'
-    document.getElementById('lightbox-name').textContent    = d.name
-    document.getElementById('lightbox-styles').textContent  = d.styles
-    document.getElementById('lightbox-link').href           = d.profile
+    const d = window.exploreData[lbIdx]
+    document.getElementById('lightbox-img').src = d.src
+    const av = document.getElementById('lightbox-avatar')
+    av.src = d.avatar || ''
+    av.style.display = d.avatar ? 'block' : 'none'
+    document.getElementById('lightbox-name').textContent   = d.name
+    document.getElementById('lightbox-styles').textContent = d.styles
+    document.getElementById('lightbox-link').href          = d.profile
     document.getElementById('lightbox-caption').textContent =
       [d.description, d.price].filter(Boolean).join(' · ')
   }
 
   function shiftLightbox(dir) {
-    lbIdx = (lbIdx + dir + exploreData.length) % exploreData.length
+    if (!window.exploreData) return
+    lbIdx = (lbIdx + dir + window.exploreData.length) % window.exploreData.length
     renderLightbox()
   }
 
   function closeLightbox() {
-    document.getElementById('lightbox').style.display = 'none'
+    document.getElementById('lightbox').classList.remove('open')
     document.getElementById('lightbox-img').src = ''
     document.body.style.overflow = ''
   }
 
-  document.addEventListener('keydown', (e) => {
+  document.addEventListener('keydown', e => {
     const lb = document.getElementById('lightbox')
-    if (!lb || lb.style.display === 'none') return
+    if (!lb || !lb.classList.contains('open')) return
     if (e.key === 'Escape')     closeLightbox()
     if (e.key === 'ArrowRight') shiftLightbox(1)
     if (e.key === 'ArrowLeft')  shiftLightbox(-1)
   })
 
+  // ── Vues grille ──
+  function setView(n) {
+    const grid = document.getElementById('ex-grid')
+    if (!grid) return
+    grid.className = `ex-grid ex-grid--${n}`
+    ;['btn-grid3','btn-grid2','btn-list'].forEach(id => {
+      document.getElementById(id)?.classList.remove('active')
+    })
+    const map = { 3: 'btn-grid3', 2: 'btn-grid2', 1: 'btn-list' }
+    document.getElementById(map[n])?.classList.add('active')
+  }
+
+  // ── Tri côté client ──
+  function sortFeed(mode) {
+    const grid = document.getElementById('ex-grid')
+    if (!grid) return
+    const items = Array.from(grid.querySelectorAll('.ex-item'))
+    items.sort((a, b) => {
+      if (mode === 'tatoueur') return a.dataset.tatoueur.localeCompare(b.dataset.tatoueur)
+      return parseInt(b.dataset.created) - parseInt(a.dataset.created)
+    })
+    items.forEach(el => grid.appendChild(el))
+  }
+
+  // ── Géolocalisation ──
   function useMyLocation() {
     if (!navigator.geolocation) return alert("Géolocalisation non supportée.")
-    navigator.geolocation.getCurrentPosition((pos) => {
+    navigator.geolocation.getCurrentPosition(pos => {
       const coords = `${pos.coords.latitude},${pos.coords.longitude}`
       document.querySelector('input[name="near"]').value     = coords
       document.querySelector('input[name="distance"]').value = 5
       document.querySelector('input[name="city"]').value     = ''
-      document.querySelector('form').submit()
+      document.getElementById('ex-form').submit()
     }, () => alert("Impossible d'obtenir votre position."))
   }
 </script>

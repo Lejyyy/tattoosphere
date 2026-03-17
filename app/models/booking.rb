@@ -40,6 +40,8 @@ class Booking < ApplicationRecord
     tatoueur&.deposit_amount || 50.0
   end
 
+  after_update_commit :notify_status_change, if: :saved_change_to_status?
+
   private
 
   def send_confirmation_email
@@ -56,5 +58,18 @@ class Booking < ApplicationRecord
 
   def set_default_status
   self.status ||= "pending"
+end
+
+def notify_status_change
+    case status
+    when "confirmed"
+      NotificationService.booking_confirmed(self)
+    when "cancelled"
+      NotificationService.booking_cancelled(self, cancelled_by: cancelled_by_user)
+    end
+
+  def cancelled_by_user
+    client
+  end
 end
 end

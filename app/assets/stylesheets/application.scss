@@ -661,3 +661,415 @@ a {
   border-top: 2px solid $yellow;
   margin: 2rem 0;
 }
+
+// ================================
+// NOTIFICATIONS — Cloche navbar
+// ================================
+.notif-bell {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: transparent;
+  border: 2px solid rgba($white, 0.15);
+  color: $white;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+
+  &:hover {
+    border-color: $yellow;
+    background-color: rgba($yellow, 0.08);
+  }
+
+  // Badge compteur
+  span {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;
+    border-radius: 50%;
+    background-color: $yellow;
+    color: $black;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 700;
+    line-height: 18px;
+    text-align: center;
+    letter-spacing: 0;
+    pointer-events: none;
+  }
+
+  // État actif — quand il y a des notifs non lues
+  &.has-unread {
+    border-color: $yellow;
+    background-color: rgba($yellow, 0.1);
+    color: $yellow;
+  }
+}
+
+// ================================
+// NOTIFICATIONS — Dropdown
+// ================================
+.notif-dropdown {
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  width: 320px;
+  background-color: $gray;
+  border: 1px solid $gray-light;
+  border-top: 2px solid $yellow;
+  z-index: 1050;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+
+  .notif-dropdown-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid $gray-light;
+
+    span {
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 1rem;
+      letter-spacing: 0.08em;
+      color: $white;
+      text-transform: uppercase;
+    }
+  }
+
+  .notif-mark-all {
+    font-size: 0.75rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 600;
+
+    &:hover { color: $yellow; }
+  }
+
+  .notif-see-all {
+    display: block;
+    text-align: center;
+    padding: 0.6rem;
+    border-top: 1px solid $gray-light;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: $yellow;
+
+    &:hover { background-color: rgba($yellow, 0.08); }
+  }
+}
+
+// ================================
+// NOTIFICATIONS — Items (dropdown + page)
+// ================================
+.notification-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid $gray-light;
+  color: $white;
+  transition: background-color 0.15s ease;
+  cursor: pointer;
+
+  &:hover { background-color: $gray-light; }
+
+  &.unread {
+    background-color: rgba($yellow, 0.05);
+    border-left: 3px solid $yellow;
+
+    strong { color: $yellow; }
+  }
+
+  strong {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: $white;
+  }
+
+  p {
+    margin: 0.15rem 0 0;
+    font-size: 0.82rem;
+    color: #888;
+    line-height: 1.4;
+  }
+
+  time {
+    font-size: 0.72rem;
+    color: #555;
+    display: block;
+    margin-top: 0.2rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+}
+
+// ================================
+// NOTIFICATIONS — Toast temps réel
+// ================================
+.notification-toast {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  background-color: $gray;
+  border: 1px solid $gray-light;
+  border-left: 4px solid $yellow;
+  padding: 0.9rem 1.25rem;
+  min-width: 280px;
+  max-width: 360px;
+  z-index: 9999;
+  animation: toast-in 0.3s ease forwards;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+
+  strong {
+    display: block;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1rem;
+    letter-spacing: 0.06em;
+    color: $yellow;
+    text-transform: uppercase;
+  }
+
+  p {
+    margin: 0.2rem 0 0;
+    font-size: 0.85rem;
+    color: #aaa;
+  }
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+// ================================
+// NOTIFICATIONS — Page index
+// ================================
+.notifications-page {
+  max-width: 720px;
+  margin: 3rem auto;
+  padding: 0 1rem;
+}
+
+// Header
+.notifications-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid $yellow;
+
+  h1 {
+    margin: 0;
+    font-size: 2.2rem;
+    color: $white;
+  }
+
+  &__left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+}
+
+.notifications-count-badge {
+  display: inline-block;
+  background-color: $yellow;
+  color: $black;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.2rem 0.6rem;
+}
+
+.btn-mark-all {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #666;
+  border: 1px solid $gray-light;
+  padding: 0.45rem 0.9rem;
+  transition: all 0.2s ease;
+
+  span { color: $yellow; }
+
+  &:hover {
+    border-color: $yellow;
+    color: $yellow;
+    background-color: rgba($yellow, 0.06);
+  }
+}
+
+// État vide
+.notifications-empty {
+  text-align: center;
+  padding: 5rem 2rem;
+  border: 1px dashed $gray-light;
+
+  &__icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.4;
+  }
+
+  p {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.4rem;
+    letter-spacing: 0.05em;
+    color: $white;
+    margin-bottom: 0.5rem;
+  }
+
+  span {
+    font-size: 0.85rem;
+    color: #555;
+  }
+}
+
+// Séparateur de date
+.notifications-date-separator {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 0.85rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #555;
+  padding: 0.5rem 0;
+  margin: 0.5rem 0;
+  border-bottom: 1px solid $gray-light;
+}
+
+// Liste
+.notifications-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+// Item
+.notification-item {
+  display: grid;
+  grid-template-columns: 48px 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem;
+  border-bottom: 1px solid $gray-light;
+  transition: background-color 0.15s ease;
+
+  &:hover {
+    background-color: $gray;
+  }
+
+  &.unread {
+    background-color: rgba($yellow, 0.04);
+    border-left: 3px solid $yellow;
+
+    .notification-item__body strong { color: $yellow; }
+  }
+
+  // Icône type
+  &__icon {
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    border-radius: 50%;
+    flex-shrink: 0;
+
+    &.kind-message            { background-color: rgba(#5B8DEF, 0.12); }
+    &.kind-booking_confirmed  { background-color: rgba(#27AE60, 0.12); }
+    &.kind-booking_cancelled  { background-color: rgba($red,    0.12); }
+    &.kind-new_event          { background-color: rgba($yellow, 0.12); }
+  }
+
+  // Corps
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    color: $white;
+
+    &:hover { color: $white; }
+
+    strong {
+      font-size: 0.9rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: $white;
+      transition: color 0.15s;
+    }
+
+    p {
+      margin: 0;
+      font-size: 0.85rem;
+      color: #888;
+      line-height: 1.4;
+    }
+
+    time {
+      font-size: 0.72rem;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+  }
+
+  // Actions
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+
+  &:hover &__actions { opacity: 1; }
+}
+
+// Boutons icônes
+.btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  font-size: 0.8rem;
+  border: 1px solid $gray-light;
+  background: transparent;
+  color: #666;
+  transition: all 0.15s ease;
+  cursor: pointer;
+
+  &--check:hover {
+    border-color: #27AE60;
+    color: #27AE60;
+    background-color: rgba(#27AE60, 0.08);
+  }
+
+  &--delete:hover {
+    border-color: $red;
+    color: $red;
+    background-color: rgba($red, 0.08);
+  }
+}

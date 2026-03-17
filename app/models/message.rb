@@ -10,6 +10,7 @@ class Message < ApplicationRecord
                        if: :attachment?
 
   after_create_commit :broadcast_message
+  after_create_commit :notify_recipients
 
   private
 
@@ -29,5 +30,9 @@ class Message < ApplicationRecord
         attachment_name: attachment.attached? ? attachment.filename.to_s : nil
       }
     )
+  end
+
+   def notify_recipients
+    NotificationService.new_message(self)
   end
 end

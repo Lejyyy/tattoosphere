@@ -2,8 +2,6 @@
   <div class="container mb-4">
     <h1 class="section-title">Carte des tatoueurs & shops</h1>
     <p class="section-subtitle">Navigue sur la carte pour trouver un artiste près de chez toi</p>
-
-    <%# Filtres %>
     <%= form_with url: map_path, method: :get, class: "row g-2 mb-4" do |f| %>
       <div class="col-md-4">
         <%= f.text_field :location,
@@ -29,13 +27,14 @@
     <% end %>
   </div>
 
-  <div class="row g-0" style="height: 75vh;">
+  <%# Conteneur principal avec hauteur fixe explicite %>
+  <div style="display:flex; height:75vh; border:1px solid #2a2a2a; overflow:hidden;">
+
     <%# Sidebar liste %>
-    <div class="col-md-3" style="overflow-y: auto; background: #141414; border-right: 1px solid #2a2a2a; padding: 1rem;">
-      <h6 style="color:#666;font-size:0.8rem;letter-spacing:1px;text-transform:uppercase;">
+    <div style="width:300px; flex-shrink:0; overflow-y:auto; background:#141414; border-right:1px solid #2a2a2a; padding:1rem;">
+      <h6 style="color:#666;font-size:0.8rem;letter-spacing:1px;text-transform:uppercase;margin-bottom:0.75rem;">
         <%= @tatoueurs.count + @shops.count %> résultats
       </h6>
-
       <% @tatoueurs.each do |t| %>
         <div class="card-dark p-3 mb-2" style="cursor:pointer;" onclick="window.location='<%= tatoueur_path(t) %>'">
           <div class="d-flex align-items-center gap-2">
@@ -47,7 +46,6 @@
           </div>
         </div>
       <% end %>
-
       <% @shops.each do |s| %>
         <div class="card-dark p-3 mb-2" style="cursor:pointer;" onclick="window.location='<%= shop_path(s) %>'">
           <div class="d-flex align-items-center gap-2">
@@ -61,13 +59,14 @@
       <% end %>
     </div>
 
-    <%# Map %>
-    <div class="col-md-9">
+    <%# Map — flex:1 lui donne toute la largeur restante, hauteur héritée du parent %>
+    <div style="flex:1; position:relative;">
       <%= render "shared/map",
           map_id: "main-map",
           height: "100%",
           tatoueurs_json: @tatoueurs_json,
           shops_json: @shops_json %>
     </div>
+
   </div>
 </div>

@@ -35,6 +35,6 @@ class MessagesController < ApplicationController
   end
 
   def message_params
-    params.require(:message).permit(:content, :attachment)
+    params.require(:message).permit(:content, :attachment, :shared_profile_type, :shared_profile_id)
   end
 end

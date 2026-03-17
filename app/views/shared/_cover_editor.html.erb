@@ -1,111 +1,339 @@
 <%# Paramètres attendus :
 #   record       — @tatoueur ou @shop
 #   update_path  — ex: tatoueur_path(@tatoueur), shop_path(@shop)
-#   param_name   — :tatoueur ou :shop
+#   param_name   — "tatoueur" ou "shop"
 %>
 
-<%# Bouton flottant — ouvre le panneau %>
-<button onclick="document.getElementById('cover-editor').style.display = document.getElementById('cover-editor').style.display === 'none' ? 'flex' : 'none'"
-        style="position:fixed;bottom:1.5rem;right:1.5rem;z-index:1000;
-               background:#F5C500;color:#000;border:none;
-               font-family:'Bebas Neue',sans-serif;font-size:0.95rem;
-               letter-spacing:0.08em;padding:0.6rem 1.25rem;cursor:pointer;
-               box-shadow:0 4px 20px rgba(0,0,0,0.5);">
-  🎨 Personnaliser le fond
+<style>
+  .ce-btn {
+    position: fixed; bottom: 1.5rem; right: 5rem; z-index: 999;
+    background: #F5C500; color: #000; border: none;
+    font-family: 'Bebas Neue', sans-serif; font-size: 0.9rem;
+    letter-spacing: 0.08em; padding: 0.55rem 1.1rem; cursor: pointer;
+    box-shadow: 0 4px 20px rgba(0,0,0,.5);
+    display: flex; align-items: center; gap: 6px; border-radius: 2px;
+    transition: opacity .15s;
+  }
+  .ce-btn:hover { opacity: .85; }
+
+  .ce-panel {
+    display: none; position: fixed; bottom: 5rem; right: 5rem; z-index: 999;
+    background: #111; border: 1px solid #2a2a2a; border-top: 3px solid #F5C500;
+    width: 340px; flex-direction: column;
+    box-shadow: 0 12px 48px rgba(0,0,0,.8);
+    border-radius: 0 0 4px 4px;
+    max-height: calc(100vh - 8rem);
+    overflow-y: auto;
+  }
+
+  .ce-header {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: .75rem 1rem;
+    border-bottom: 1px solid #1e1e1e;
+    position: sticky; top: 0; background: #111; z-index: 1;
+  }
+  .ce-title {
+    font-family: 'Bebas Neue', sans-serif; font-size: 1rem;
+    color: #F5C500; letter-spacing: .06em;
+  }
+  .ce-close {
+    background: transparent; border: none; color: #555; cursor: pointer;
+    font-size: 1rem; line-height: 1; transition: color .15s;
+  }
+  .ce-close:hover { color: #fff; }
+
+  /* Tabs */
+  .ce-tabs { display: flex; border-bottom: 1px solid #1e1e1e; }
+  .ce-tab {
+    flex: 1; background: transparent; border: none; color: #555;
+    font-family: 'Bebas Neue', sans-serif; font-size: 0.85rem;
+    letter-spacing: .06em; padding: .6rem .5rem; cursor: pointer;
+    border-bottom: 2px solid transparent; margin-bottom: -1px;
+    transition: color .2s;
+  }
+  .ce-tab:hover { color: #aaa; }
+  .ce-tab.active { color: #F5C500; border-bottom-color: #F5C500; }
+
+  .ce-tab-content { display: none; padding: 1rem; }
+  .ce-tab-content.active { display: block; }
+
+  .ce-label {
+    display: block; font-size: 10px; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .1em;
+    color: #555; margin-bottom: .5rem;
+  }
+  .ce-hint { font-size: 11px; color: #444; margin-top: .35rem; }
+
+  /* Preset grid */
+  .ce-preset-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: .4rem;
+  }
+  .ce-preset-btn {
+    padding: 0; border: 2px solid transparent; cursor: pointer;
+    border-radius: 3px; overflow: hidden; transition: border-color .15s;
+    position: relative;
+  }
+  .ce-preset-btn:hover { border-color: rgba(245,197,0,.5); }
+  .ce-preset-btn.selected { border-color: #F5C500; }
+  .ce-preset-btn img { width: 100%; height: 52px; object-fit: cover; display: block; }
+  .ce-preset-btn .ce-preset-check {
+    display: none; position: absolute; inset: 0;
+    background: rgba(245,197,0,.25);
+    align-items: center; justify-content: center;
+  }
+  .ce-preset-btn.selected .ce-preset-check { display: flex; }
+
+  /* Current cover preview */
+  .ce-current {
+    position: relative; margin-bottom: .75rem; border-radius: 2px; overflow: hidden;
+  }
+  .ce-current img { width: 100%; height: 80px; object-fit: cover; display: block; }
+  .ce-current-remove {
+    position: absolute; top: .3rem; right: .3rem;
+    background: rgba(0,0,0,.75); color: #fff;
+    font-size: 11px; padding: .2rem .5rem; border: none; cursor: pointer;
+    border-radius: 2px; transition: background .15s;
+  }
+  .ce-current-remove:hover { background: #e53e3e; }
+
+  /* File input */
+  .ce-file-label {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    background: #1a1a1a; border: 1px dashed #2a2a2a; color: #666;
+    padding: .75rem; cursor: pointer; border-radius: 2px;
+    font-size: 13px; transition: border-color .15s, color .15s;
+  }
+  .ce-file-label:hover { border-color: #F5C500; color: #F5C500; }
+  .ce-file-input { display: none; }
+
+  /* Color swatches */
+  .ce-color-row {
+    display: flex; align-items: center; gap: .6rem; margin-bottom: .75rem;
+  }
+  .ce-color-native {
+    width: 44px; height: 36px; border: 1px solid #2a2a2a;
+    background: transparent; cursor: pointer; padding: 0; border-radius: 2px;
+  }
+  .ce-color-val { font-size: 12px; color: #666; font-family: monospace; }
+  .ce-swatches { display: flex; flex-wrap: wrap; gap: .35rem; }
+  .ce-swatch {
+    width: 28px; height: 28px; border: 1px solid #333; cursor: pointer;
+    border-radius: 2px; transition: transform .15s, border-color .15s;
+    position: relative;
+  }
+  .ce-swatch:hover { transform: scale(1.15); border-color: #666; }
+  .ce-swatch.selected { border-color: #F5C500; }
+  .ce-swatch .ce-swatch-label {
+    display: none; position: absolute; bottom: calc(100% + 4px); left: 50%;
+    transform: translateX(-50%); background: #222; color: #ccc;
+    font-size: 10px; padding: 2px 5px; white-space: nowrap; border-radius: 2px;
+    pointer-events: none;
+  }
+  .ce-swatch:hover .ce-swatch-label { display: block; }
+
+  /* Submit */
+  .ce-submit {
+    background: #F5C500; color: #000; border: none;
+    font-family: 'Bebas Neue', sans-serif; font-size: 1rem;
+    letter-spacing: .08em; padding: .65rem; cursor: pointer;
+    width: 100%; border-radius: 2px; transition: background .15s;
+    margin-top: .25rem;
+  }
+  .ce-submit:hover { background: #d4a800; }
+</style>
+
+<%# Bouton flottant %>
+<button class="ce-btn" onclick="ceToggle()">
+  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <circle cx="12" cy="12" r="3"/>
+    <path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/>
+  </svg>
+  Personnaliser le fond
 </button>
 
-<%# Panneau éditeur %>
-<div id="cover-editor"
-     style="display:none;position:fixed;bottom:5rem;right:1.5rem;z-index:1000;
-            background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;
-            padding:1.5rem;width:300px;flex-direction:column;gap:1rem;
-            box-shadow:0 8px 40px rgba(0,0,0,0.7);">
+<%# Panneau %>
+<div id="cover-editor" class="ce-panel">
 
-  <div style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:#F5C500;
-              letter-spacing:0.08em;border-left:3px solid #F5C500;padding-left:0.75rem;">
-    Fond de profil
+  <div class="ce-header">
+    <span class="ce-title">Fond de profil</span>
+    <button class="ce-close" onclick="ceToggle()">✕</button>
+  </div>
+
+  <%# Tabs %>
+  <div class="ce-tabs">
+    <button class="ce-tab active" onclick="ceTab('presets', this)">Galerie</button>
+    <button class="ce-tab" onclick="ceTab('upload', this)">Mon image</button>
+    <button class="ce-tab" onclick="ceTab('color', this)">Couleur</button>
   </div>
 
   <%= form_with model: record, url: update_path, method: :patch,
-                html: { enctype: "multipart/form-data",
-                        style: "display:flex;flex-direction:column;gap:1rem;" } do |f| %>
+                html: { enctype: "multipart/form-data", id: "ce-form" } do |f| %>
 
-    <%# Image de fond %>
-    <div>
-      <label style="display:block;font-size:0.75rem;font-weight:700;text-transform:uppercase;
-                    letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;">
-        Image de fond
-      </label>
+            <input type="hidden" id="preset-cover-url" name="preset_cover_url" value="">
+        <input type="hidden" id="preset-remove-cover" name="<%= param_name %>[remove_cover]" value="0">
+
+    <%# ── Tab Galerie ── %>
+    <div id="ce-tab-presets" class="ce-tab-content active">
+      <%
+        preset_covers = [
+          { file: "covers/japonais.png",     label: "Japonais" },
+          { file: "covers/blackwork.png",    label: "Blackwork" },
+          { file: "covers/minimalist.png",   label: "Minimaliste" },
+          { file: "covers/neotrad.png",      label: "Néo Traditionnel" },
+          { file: "covers/geometrique.png",  label: "Géométrique" },
+          { file: "covers/tradi.png",        label: "Traditionnel" },
+          { file: "covers/realist.png",      label: "Réaliste" },
+          { file: "covers/old_school.png",   label: "Old School" },
+          { file: "covers/new_school.png",   label: "New School" },
+        ]
+      %>
+      <div class="ce-preset-grid">
+        <% preset_covers.each do |preset| %>
+          <% path = "/covers/#{preset[:file]}" %>
+          <% next if path.blank? %>
+          <button type="button"
+                  class="ce-preset-btn"
+                  title="<%= preset[:label] %>"
+                  onclick="ceSelectPreset('<%= path %>', this)">
+                  <%= image_tag preset[:file] %>
+            <img src="<%= path %>" alt="<%= preset[:label] %>">
+            <div class="ce-preset-check">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#F5C500" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
+          </button>
+        <% end %>
+      </div>
+      <p class="ce-hint">Clique sur une image puis "Enregistrer".</p>
+    </div>
+
+    <%# ── Tab Upload ── %>
+    <div id="ce-tab-upload" class="ce-tab-content">
       <% if record.cover.attached? %>
-        <div style="position:relative;margin-bottom:0.5rem;">
-          <%= image_tag record.cover,
-              style: "width:100%;height:80px;object-fit:cover;border:1px solid #2A2A2A;" %>
-          <%= button_to "✕",
+        <div class="ce-current">
+          <%= image_tag record.cover %>
+          <%= button_to "✕ Supprimer",
               update_path,
               method: :patch,
               params: { "#{param_name}[remove_cover]" => "1" },
               data: { turbo_confirm: "Supprimer l'image de fond ?" },
-              style: "position:absolute;top:0.3rem;right:0.3rem;background:rgba(0,0,0,0.8);
-                      color:#fff;font-size:0.7rem;padding:0.2rem 0.5rem;
-                      border:none;cursor:pointer;" %>
+              class: "ce-current-remove" %>
         </div>
       <% end %>
-      <%= f.file_field :"cover",
+      <label class="ce-file-label" for="ce-file-input">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Choisir une image
+      </label>
+      <%= f.file_field :cover,
           accept: "image/*",
-          style: "color:#fff;font-family:'Barlow Condensed',sans-serif;
-                  font-size:0.9rem;width:100%;" %>
-      <p style="color:#555;font-size:0.75rem;margin-top:0.25rem;">
-        JPG, PNG, WEBP — max 5 Mo
-      </p>
+          id: "ce-file-input",
+          class: "ce-file-input",
+          onchange: "ceFileSelected(this)" %>
+      <div id="ce-file-preview" style="margin-top:.5rem;display:none;">
+        <img id="ce-file-preview-img" style="width:100%;height:80px;object-fit:cover;border-radius:2px;">
+      </div>
+      <p class="ce-hint">JPG, PNG, WEBP — max 5 Mo</p>
     </div>
 
-    <%# Couleur de fond (utilisée si pas d'image) %>
-    <div>
-      <label style="display:block;font-size:0.75rem;font-weight:700;text-transform:uppercase;
-                    letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;">
-        Couleur de fond
-        <span style="color:#555;font-weight:400;">(si pas d'image)</span>
-      </label>
-      <div style="display:flex;align-items:center;gap:0.75rem;">
-        <%= f.color_field :"#{param_name}_color".to_sym,
+    <%# ── Tab Couleur ── %>
+    <div id="ce-tab-color" class="ce-tab-content">
+      <label class="ce-label">Couleur personnalisée</label>
+      <div class="ce-color-row">
+        <%= f.color_field :cover_color,
             value: record.cover_color || "#1A1A1A",
-            style: "width:48px;height:36px;border:1px solid #2A2A2A;
-                    background:transparent;cursor:pointer;padding:0;" %>
-        <span style="color:#888;font-size:0.85rem;font-family:'Barlow Condensed',sans-serif;">
-          <%= record.cover_color || "#1A1A1A" %>
-        </span>
+            class: "ce-color-native",
+            id: "ce-color-input",
+            oninput: "document.getElementById('ce-color-val').textContent = this.value" %>
+        <span class="ce-color-val" id="ce-color-val"><%= record.cover_color || "#1A1A1A" %></span>
       </div>
 
-      <%# Palettes prédéfinies %>
-      <div style="display:flex;gap:0.4rem;flex-wrap:wrap;margin-top:0.75rem;">
+      <label class="ce-label">Teintes neutres</label>
+      <div class="ce-swatches">
         <% [
           ["#0D0D0D", "Noir"],
-          ["#1A1A1A", "Gris foncé"],
-          ["#1a0a00", "Brun nuit"],
-          ["#0a0a1a", "Bleu nuit"],
-          ["#0d1a0d", "Vert forêt"],
-          ["#1a000d", "Rouge sang"],
-          ["#1a1500", "Or sombre"],
+          ["#252525", "Gris foncé"],
+          ["#3f3f3f", "Gris moyen"],
+          ["#230e01", "Brun nuit"],
+          ["#11112d", "Bleu nuit"],
+          ["#174717", "Vert forêt"],
+          ["#bb0808", "Rouge sang"],
+          ["#ba9707", "Or sombre"],
+          ["#102b2b", "Sarcelle nuit"],
+          ["#270227", "Violet nuit"],
+          ["#25250e", "Kaki"],
+          ["#2d2c2c", "Anthracite"],
         ].each do |hex, label| %>
           <button type="button"
-                  title="<%= label %>"
-                  onclick="document.querySelector('[name=\'<%= "#{param_name}[cover_color]" %>\']').value = '<%= hex %>'"
-                  style="width:24px;height:24px;background:<%= hex %>;border:1px solid #444;
-                         cursor:pointer;transition:transform 0.15s;"
-                  onmouseover="this.style.transform='scale(1.2)'"
-                  onmouseout="this.style.transform='scale(1)'">
+                  class="ce-swatch"
+                  style="background:<%= hex %>;"
+                  onclick="ceSwatch('<%= hex %>', this)">
+            <span class="ce-swatch-label"><%= label %></span>
           </button>
         <% end %>
       </div>
+      <p class="ce-hint">La couleur s'applique uniquement si aucune image n'est définie.</p>
     </div>
 
-    <%# Bouton enregistrer %>
-    <%= f.submit "Enregistrer",
-        style: "background:#F5C500;color:#000;border:none;
-                font-family:'Bebas Neue',sans-serif;font-size:1.1rem;
-                letter-spacing:0.08em;padding:0.65rem;cursor:pointer;width:100%;",
-        onmouseover: "this.style.background='#d4a800'",
-        onmouseout:  "this.style.background='#F5C500'" %>
+    <%# Submit %>
+    <div style="padding:.75rem 1rem;border-top:1px solid #1e1e1e;">
+      <%= f.submit "Enregistrer", class: "ce-submit" %>
+    </div>
 
   <% end %>
 </div>
+
+<script>
+  function ceToggle() {
+    const p = document.getElementById('cover-editor')
+    p.style.display = p.style.display === 'flex' ? 'none' : 'flex'
+  }
+
+  function ceTab(key, btn) {
+    document.querySelectorAll('.ce-tab-content').forEach(el => el.classList.remove('active'))
+    document.querySelectorAll('.ce-tab').forEach(el => el.classList.remove('active'))
+    document.getElementById('ce-tab-' + key).classList.add('active')
+    btn.classList.add('active')
+  }
+
+  function ceSelectPreset(url, btn) {
+    document.querySelectorAll('.ce-preset-btn').forEach(b => b.classList.remove('selected'))
+    btn.classList.add('selected')
+    document.getElementById('preset-cover-url').value = url
+    // Désélectionner le fichier uploadé si preset choisi
+    const fi = document.getElementById('ce-file-input')
+    if (fi) fi.value = ''
+    document.getElementById('ce-file-preview').style.display = 'none'
+  }
+
+  function ceFileSelected(input) {
+    if (!input.files || !input.files[0]) return
+    const reader = new FileReader()
+    reader.onload = e => {
+      const preview = document.getElementById('ce-file-preview')
+      document.getElementById('ce-file-preview-img').src = e.target.result
+      preview.style.display = 'block'
+    }
+    reader.readAsDataURL(input.files[0])
+    // Désélectionner le preset si fichier choisi
+    document.querySelectorAll('.ce-preset-btn').forEach(b => b.classList.remove('selected'))
+    document.getElementById('preset-cover-url').value = ''
+  }
+
+  function ceSwatch(hex, btn) {
+    document.querySelectorAll('.ce-swatch').forEach(b => b.classList.remove('selected'))
+    btn.classList.add('selected')
+    const input = document.getElementById('ce-color-input')
+    if (input) {
+      input.value = hex
+      document.getElementById('ce-color-val').textContent = hex
+    }
+  }
+
+  // Fermer en cliquant en dehors
+  document.addEventListener('click', e => {
+    const panel = document.getElementById('cover-editor')
+    const btn   = document.querySelector('.ce-btn')
+    if (panel && btn && !panel.contains(e.target) && !btn.contains(e.target)) {
+      panel.style.display = 'none'
+    }
+  })
+</script>

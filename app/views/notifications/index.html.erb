@@ -1,0 +1,78 @@
+<div class="notifications-page">
+
+  <%# HEADER %>
+  <div class="notifications-header">
+    <div class="notifications-header__left">
+      <h1>Notifications</h1>
+      <% if @unread_count > 0 %>
+        <span class="notifications-count-badge"><%= @unread_count %> non lue<%= 's' if @unread_count > 1 %></span>
+      <% end %>
+    </div>
+    <% if @unread_count > 0 %>
+      <%= link_to mark_all_as_read_notifications_path,
+            data: { turbo_method: :patch },
+            class: "btn-mark-all" do %>
+        <span>✓</span> Tout marquer comme lu
+      <% end %>
+    <% end %>
+  </div>
+
+  <%# LISTE %>
+  <% if @notifications.empty? %>
+    <div class="notifications-empty">
+      <div class="notifications-empty__icon">🔔</div>
+      <p>Aucune notification pour le moment</p>
+      <span>Vous serez alerté ici pour vos messages, réservations et événements</span>
+    </div>
+
+  <% else %>
+    <div class="notifications-list">
+      <% @notifications.group_by { |n| n.created_at.to_date }.each do |date, notifs| %>
+
+        <%# Séparateur de date %>
+        <div class="notifications-date-separator">
+          <%= date == Date.today ? "Aujourd'hui" : date == Date.yesterday ? "Hier" : I18n.l(date, format: "%A %d %B") %>
+        </div>
+
+        <% notifs.each do |notif| %>
+          <div class="notification-item <%= 'unread' unless notif.read %>">
+
+            <%# Icône type %>
+            <div class="notification-item__icon kind-<%= notif.kind %>">
+              <%= notification_icon(notif.kind) %>
+            </div>
+
+            <%# Contenu cliquable %>
+            <%= link_to notif.url || notifications_path,
+                  data: { turbo_action: "advance" },
+                  class: "notification-item__body" do %>
+              <strong><%= notif.title %></strong>
+              <p><%= notif.body %></p>
+              <time><%= time_ago_in_words(notif.created_at) %> ago</time>
+            <% end %>
+
+            <%# Actions %>
+            <div class="notification-item__actions">
+              <% unless notif.read %>
+                <%= link_to mark_as_read_notification_path(notif),
+                      data: { turbo_method: :patch },
+                      title: "Marquer comme lu",
+                      class: "btn-icon btn-icon--check" do %>
+                  ✓
+                <% end %>
+              <% end %>
+              <%= link_to notification_path(notif),
+                    data: { turbo_method: :delete, turbo_confirm: "Supprimer cette notification ?" },
+                    title: "Supprimer",
+                    class: "btn-icon btn-icon--delete" do %>
+                ✕
+              <% end %>
+            </div>
+
+          </div>
+        <% end %>
+      <% end %>
+    </div>
+  <% end %>
+
+</div>

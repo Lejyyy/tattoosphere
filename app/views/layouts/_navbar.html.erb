@@ -1,47 +1,355 @@
 <nav class="navbar navbar-expand-lg sticky-top">
   <div class="container">
+
+    <%# Logo %>
     <%= link_to root_path, class: "navbar-brand" do %>
-  <span style="color:#fff;">Tattoo</span><span style="color:#F5C500;">sphere</span>
-<% end %>
+      <span style="color:#fff;">Tattoo</span><span style="color:#F5C500;">sphere</span>
+    <% end %>
+
+    <%# ── Barre de recherche globale ── %>
+    <div class="ts-global-search" id="ts-global-search">
+      <div class="ts-global-search__wrap">
+        <svg class="ts-global-search__icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input id="ts-search-input"
+               type="text"
+               placeholder="Rechercher un tatoueur, shop, utilisateur…"
+               class="ts-global-search__input"
+               autocomplete="off"
+               oninput="tsSearchQuery(this.value)"
+               onfocus="tsSearchOpen()"
+               onkeydown="tsSearchKey(event)" />
+        <button id="ts-search-clear" class="ts-global-search__clear" onclick="tsSearchClear()" style="display:none;">✕</button>
+      </div>
+      <div id="ts-search-results" class="ts-search-results" style="display:none;"></div>
+    </div>
+
     <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
       <span class="navbar-toggler-icon"></span>
     </button>
+
+    <% if user_signed_in? %>
+  <div data-controller="notifications"
+       data-notifications-count-value="<%= current_user.notifications.unread.count %>">
+
+    <%# Bouton cloche %>
+    <button data-action="click->notifications#toggleDropdown" class="notif-bell" aria-label="Notifications">
+      🔔
+      <span data-notifications-target="badge"
+            <%= current_user.notifications.unread.none? ? 'hidden' : '' %>>
+        <%= current_user.notifications.unread.count %>
+      </span>
+    </button>
+
+    <%# Dropdown (optionnel, à adapter selon ton UI) %>
+    <div data-notifications-target="dropdown" class="notif-dropdown" hidden>
+      <div class="notif-dropdown-header">
+        <span>Notifications</span>
+        <%= link_to "Tout marquer lu", mark_all_as_read_notifications_path, method: :patch, class: "notif-mark-all" %>
+      </div>
+      <div data-notifications-target="list">
+        <%# Les notifs récentes peuvent être rendues ici en partial si tu veux un dropdown pré-rempli %>
+      </div>
+      <%= link_to "Voir toutes", notifications_path, class: "notif-see-all" %>
+    </div>
+
+  </div>
+<% end %>
+
     <div class="collapse navbar-collapse" id="navbarNav">
       <ul class="navbar-nav ms-auto align-items-center gap-2">
-        <li class="nav-item">
-          <%= link_to "Explorer", explore_path, class: "nav-link" %>
-        </li>
-        <li class="nav-item">
-          <%= link_to "Shops", shops_path, class: "nav-link" %>
-        </li>
-        <li class="nav-item">
-          <%= link_to "Tatoueurs", tatoueurs_path, class: "nav-link" %>
-        </li>
-        <li class="nav-item">
-          <%= link_to "Événements", events_path, class: "nav-link" %>
-        </li>
+        <li class="nav-item"><%= link_to "Explorer",    explore_path,  class: "nav-link" %></li>
+        <li class="nav-item"><%= link_to "Shops",       shops_path,    class: "nav-link" %></li>
+        <li class="nav-item"><%= link_to "Tatoueurs",   tatoueurs_path, class: "nav-link" %></li>
+        <li class="nav-item"><%= link_to "Événements",  events_path,   class: "nav-link" %></li>
         <% if user_signed_in? %>
-          <li class="nav-item">
-            <%= link_to "Mon espace", dashboard_path, class: "nav-link" %>
-          </li>
-          <li class="nav-item">
-            <%= link_to "Favoris", favorites_path, class: "nav-link" %>
-          </li>
+          <li class="nav-item"><%= link_to "Mon espace", dashboard_path, class: "nav-link" %></li>
+          <li class="nav-item"><%= link_to "Favoris",    favorites_path, class: "nav-link" %></li>
           <li class="nav-item ms-2">
             <%= button_to "Déconnexion", destroy_user_session_path,
-            method: :delete,
-            class: "btn btn-outline-primary btn-sm",
-            form: { style: "display:inline;" } %>
+                method: :delete, class: "btn btn-outline-primary btn-sm",
+                form: { style: "display:inline;" } %>
           </li>
         <% else %>
-          <li class="nav-item">
-            <%= link_to "Connexion", new_user_session_path, class: "nav-link" %>
-          </li>
+          <li class="nav-item"><%= link_to "Connexion", new_user_session_path, class: "nav-link" %></li>
           <li class="nav-item ms-2">
-            <%= link_to "Inscription", new_user_registration_path, class: "btn btn-warning btn-sm px-3 text-dark fw-bold" %>
+            <%= link_to "Inscription", new_user_registration_path,
+                class: "btn btn-warning btn-sm px-3 text-dark fw-bold" %>
           </li>
         <% end %>
       </ul>
     </div>
+
   </div>
 </nav>
+
+<style>
+.ts-global-search {
+  position: relative;
+  flex: 1;
+  max-width: 380px;
+  margin: 0 1.5rem;
+}
+
+.ts-global-search__wrap {
+  display: flex;
+  align-items: center;
+  background: #1a1a1a;
+  border: 1px solid #2a2a2a;
+  border-radius: 4px;
+  padding: 0 0.75rem;
+  transition: border-color .2s;
+}
+
+.ts-global-search__wrap:focus-within {
+  border-color: #F5C500;
+}
+
+.ts-global-search__icon {
+  color: #555;
+  flex-shrink: 0;
+  margin-right: 0.5rem;
+}
+
+.ts-global-search__input {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.9rem;
+  outline: none;
+  padding: 0.5rem 0;
+  width: 100%;
+}
+
+.ts-global-search__input::placeholder { color: #555; }
+
+.ts-global-search__clear {
+  background: transparent;
+  border: none;
+  color: #555;
+  cursor: pointer;
+  font-size: 0.75rem;
+  padding: 0;
+  line-height: 1;
+  flex-shrink: 0;
+  transition: color .15s;
+}
+.ts-global-search__clear:hover { color: #fff; }
+
+/* Dropdown résultats */
+.ts-search-results {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0; right: 0;
+  background: #111;
+  border: 1px solid #2a2a2a;
+  border-radius: 4px;
+  overflow: hidden;
+  z-index: 1000;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+}
+
+.ts-search-group__label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #555;
+  padding: 0.6rem 0.9rem 0.3rem;
+  border-top: 1px solid #1e1e1e;
+}
+.ts-search-group__label:first-child { border-top: none; }
+
+.ts-search-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.55rem 0.9rem;
+  text-decoration: none;
+  transition: background .12s;
+  cursor: pointer;
+}
+.ts-search-item:hover, .ts-search-item.focused { background: #1a1a1a; }
+
+.ts-search-item__avatar {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  object-fit: cover;
+  background: #2a2a2a;
+  flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; color: #555;
+  overflow: hidden;
+}
+.ts-search-item__avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+.ts-search-item__name {
+  font-size: 13px;
+  font-weight: 500;
+  color: #fff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ts-search-item__sub { font-size: 11px; color: #666; }
+
+.ts-search-empty {
+  padding: 1.25rem 0.9rem;
+  font-size: 13px;
+  color: #555;
+  text-align: center;
+}
+
+.ts-search-loading {
+  padding: 1rem 0.9rem;
+  font-size: 12px;
+  color: #555;
+  text-align: center;
+  display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+}
+
+@media (max-width: 991px) {
+  .ts-global-search { max-width: 100%; margin: 0.5rem 0; order: 3; width: 100%; }
+}
+</style>
+
+<script>
+(function() {
+  let tsTimeout = null
+  let tsFocusIdx = -1
+  let tsCurrentResults = []
+
+  function tsSearchQuery(q) {
+    const clear = document.getElementById('ts-search-clear')
+    clear.style.display = q.length > 0 ? 'block' : 'none'
+
+    clearTimeout(tsTimeout)
+    if (q.length < 2) { tsHideResults(); return }
+
+    tsShowLoading()
+    tsTimeout = setTimeout(() => tsFetch(q), 280)
+  }
+
+  function tsFetch(q) {
+    fetch(`/conversations/search_recipients?q=${encodeURIComponent(q)}`, {
+      headers: { 'Accept': 'application/json' }
+    })
+    .then(r => r.json())
+    .then(data => tsRender(data, q))
+    .catch(() => tsHideResults())
+  }
+
+  function tsRender(data, q) {
+    const box = document.getElementById('ts-search-results')
+    if (!data.length) {
+      box.innerHTML = `<div class="ts-search-empty">Aucun résultat pour "<strong style="color:#fff;">${q}</strong>"</div>`
+      box.style.display = 'block'
+      return
+    }
+
+    const groups = { Tatoueur: [], Shop: [], User: [] }
+    data.forEach(r => (groups[r.type] || (groups[r.type] = [])).push(r))
+
+    const labels = { Tatoueur: 'Tatoueurs', Shop: 'Shops', User: 'Membres' }
+    const icons  = { Tatoueur: '🖋', Shop: '🏠', User: '👤' }
+
+    let html = ''
+    tsCurrentResults = []
+
+    Object.entries(groups).forEach(([type, items]) => {
+      if (!items.length) return
+      html += `<div class="ts-search-group__label">${labels[type]}</div>`
+      items.forEach(r => {
+        const idx = tsCurrentResults.length
+        tsCurrentResults.push(r)
+        const avatarHtml = r.avatar
+          ? `<div class="ts-search-item__avatar"><img src="${r.avatar}" alt=""></div>`
+          : `<div class="ts-search-item__avatar">${icons[type]}</div>`
+        html += `
+          <a href="#" class="ts-search-item" data-idx="${idx}" onclick="tsNavigate(event, ${idx})">
+            ${avatarHtml}
+            <div style="min-width:0;">
+              <div class="ts-search-item__name">${r.name}</div>
+              <div class="ts-search-item__sub">${r.subtitle}</div>
+            </div>
+          </a>`
+      })
+    })
+
+    box.innerHTML = html
+    box.style.display = 'block'
+    tsFocusIdx = -1
+  }
+
+  function tsNavigate(e, idx) {
+    e.preventDefault()
+    const r = tsCurrentResults[idx]
+    if (!r) return
+    let path = '/'
+    if (r.type === 'Tatoueur') path = `/tatoueurs/${r.id}`
+    else if (r.type === 'Shop') path = `/shops/${r.id}`
+    else if (r.type === 'User') path = `/users/${r.id}`
+    tsSearchClear()
+    window.location.href = path
+  }
+
+  function tsSearchKey(e) {
+    const items = document.querySelectorAll('.ts-search-item')
+    if (!items.length) return
+    if (e.key === 'ArrowDown') {
+      e.preventDefault()
+      tsFocusIdx = Math.min(tsFocusIdx + 1, items.length - 1)
+      tsHighlight(items)
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault()
+      tsFocusIdx = Math.max(tsFocusIdx - 1, 0)
+      tsHighlight(items)
+    } else if (e.key === 'Enter' && tsFocusIdx >= 0) {
+      e.preventDefault()
+      items[tsFocusIdx]?.click()
+    } else if (e.key === 'Escape') {
+      tsSearchClear()
+    }
+  }
+
+  function tsHighlight(items) {
+    items.forEach((el, i) => el.classList.toggle('focused', i === tsFocusIdx))
+    items[tsFocusIdx]?.scrollIntoView({ block: 'nearest' })
+  }
+
+  function tsShowLoading() {
+    const box = document.getElementById('ts-search-results')
+    box.innerHTML = '<div class="ts-search-loading"><span style="opacity:.5;">Recherche…</span></div>'
+    box.style.display = 'block'
+  }
+
+  function tsHideResults() {
+    document.getElementById('ts-search-results').style.display = 'none'
+    tsCurrentResults = []
+    tsFocusIdx = -1
+  }
+
+  function tsSearchClear() {
+    document.getElementById('ts-search-input').value = ''
+    document.getElementById('ts-search-clear').style.display = 'none'
+    tsHideResults()
+  }
+
+  window.tsSearchQuery = tsSearchQuery
+  window.tsSearchKey   = tsSearchKey
+  window.tsSearchOpen  = function() {
+    const val = document.getElementById('ts-search-input').value
+    if (val.length >= 2) tsRender(tsCurrentResults, val)
+  }
+  window.tsSearchClear = tsSearchClear
+  window.tsNavigate    = tsNavigate
+
+  // Fermer en cliquant en dehors
+  document.addEventListener('click', function(e) {
+    if (!document.getElementById('ts-global-search')?.contains(e.target)) {
+      tsHideResults()
+    }
+  })
+})()
+</script>

@@ -196,4 +196,17 @@ Rails.application.routes.draw do
     get   "evenements", to: "events#index"
     get   "portfolios", to: "portfolios#index"
   end
+
+  # ================================
+  # NOTIFICATIONS
+  # ================================
+
+  resources :notifications, only: [ :index, :destroy ] do
+  collection do
+    patch :mark_all_as_read
+  end
+  member do
+    patch :mark_as_read
+  end
+end
 end

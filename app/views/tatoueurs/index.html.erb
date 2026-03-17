@@ -1,175 +1,292 @@
-<%# ================================ %>
-<%# HEADER %>
-<%# ================================ %>
-<div style="background:#0D0D0D;border-bottom:1px solid #1A1A1A;padding:1rem 1.5rem;">
-  <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap">
-    <div>
-      <h1 style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:#fff;letter-spacing:0.05em;margin:0;">
-        Tatoueurs
-      </h1>
-      <p style="font-size:0.85rem;color:#666;margin:0;">Trouvez votre artiste tatoueur</p>
-    </div>
-    <div style="display:flex;gap:0.5rem;align-items:center;">
-      <button id="btn-grille" onclick="switchView('grille')"
-              style="background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;font-size:0.95rem;letter-spacing:0.08em;padding:0.5rem 1.25rem;cursor:pointer;">
-        ⊞ Grille
-      </button>
-      <button id="btn-carte" onclick="switchView('carte')"
-              style="background:transparent;color:#888;border:1px solid #2A2A2A;font-family:'Bebas Neue',sans-serif;font-size:0.95rem;letter-spacing:0.08em;padding:0.5rem 1.25rem;cursor:pointer;">
-        🗺 Carte
-      </button>
-    </div>
-  </div>
-</div>
+<style>
+/* ── Layout ── */
+.ts-page { display: flex; min-height: calc(100vh - 60px); }
 
-<%# ================================ %>
-<%# BARRE DE RECHERCHE %>
-<%# ================================ %>
-<div style="background:#111;border-bottom:1px solid #1A1A1A;padding:0.75rem 1.5rem;">
-  <%= form_with url: tatoueurs_path, method: :get, class: "d-flex gap-2 flex-wrap align-items-center" do |f| %>
-    <div style="position:relative;flex:1;min-width:200px;">
-      <span style="position:absolute;left:1rem;top:50%;transform:translateY(-50%);color:#555;">🔍</span>
-      <%= f.text_field :q,
-          value: params[:q],
-          placeholder: "Rechercher par nom, ville, style...",
-          style: "width:100%;background:#1A1A1A;border:1px solid #2A2A2A;color:#fff;padding:0.7rem 1rem 0.7rem 2.5rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;outline:none;",
-          onfocus: "this.style.borderColor='#F5C500'",
-          onblur:  "this.style.borderColor='#2A2A2A'" %>
-    </div>
-    <%= f.select :style_id,
-        TattooStyle.all.map { |s| [s.name, s.id] },
-        { include_blank: "Tous les styles" },
-        style: "background:#1A1A1A;border:1px solid #2A2A2A;color:#fff;padding:0.7rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:0.95rem;outline:none;cursor:pointer;" %>
-    <%= f.text_field :location,
-        value: params[:location],
-        placeholder: "Ville...",
-        style: "background:#1A1A1A;border:1px solid #2A2A2A;color:#fff;padding:0.7rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:0.95rem;outline:none;width:160px;",
-        onfocus: "this.style.borderColor='#F5C500'",
-        onblur:  "this.style.borderColor='#2A2A2A'" %>
-    <%= f.submit "Rechercher",
-        style: "background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;font-size:0.95rem;letter-spacing:0.08em;padding:0.7rem 1.5rem;cursor:pointer;text-transform:uppercase;" %>
-    <% if params[:style_id].present? || params[:location].present? || params[:q].present? %>
-      <%= link_to "✕", tatoueurs_path,
-          style: "color:#888;font-size:1.2rem;line-height:1;text-decoration:none;" %>
+/* ── Sidebar ── */
+.ts-sidebar {
+  width: 240px; flex-shrink: 0;
+  background: #0d0d0d;
+  border-right: 1px solid rgba(255,255,255,0.06);
+  padding: 1.5rem 1.25rem;
+  display: flex; flex-direction: column; gap: 1.5rem;
+  position: sticky; top: 0; height: calc(100vh - 60px); overflow-y: auto;
+}
+.ts-sidebar-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.2rem; letter-spacing: 0.07em; color: #fff; margin: 0;
+}
+.ts-filter-section { display: flex; flex-direction: column; gap: 0.6rem; }
+.ts-filter-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #555; }
+.ts-filter-input {
+  background: #1a1a1a; border: 1px solid #2a2a2a; color: #fff;
+  padding: 0.6rem 0.85rem; font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.9rem; outline: none; border-radius: 3px; transition: border-color .2s; width: 100%;
+}
+.ts-filter-input:focus { border-color: #F5C500; }
+.ts-style-tags { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.ts-style-tag {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em;
+  padding: 4px 9px; border-radius: 2px; cursor: pointer;
+  border: 1px solid #2a2a2a; color: #666; background: transparent;
+  transition: all .15s; text-decoration: none;
+}
+.ts-style-tag:hover { border-color: #F5C500; color: #F5C500; }
+.ts-style-tag.active { background: rgba(245,197,0,0.12); border-color: #F5C500; color: #F5C500; }
+.ts-filter-divider { border: none; border-top: 1px solid rgba(255,255,255,0.06); margin: 0; }
+.ts-filter-btn {
+  font-family: 'Bebas Neue', sans-serif; font-size: 0.88rem; letter-spacing: 0.07em;
+  padding: 0.6rem 1rem; border: none; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  text-decoration: none; border-radius: 3px; transition: opacity .15s; width: 100%;
+}
+.ts-filter-btn:hover { opacity: .85; }
+.ts-filter-btn--primary { background: #F5C500; color: #000; }
+.ts-filter-btn--ghost { background: transparent; color: #555; border: 1px solid rgba(255,255,255,0.1); }
+.ts-filter-btn--ghost:hover { color: #fff; border-color: rgba(255,255,255,0.3); opacity: 1; }
+
+/* ── Main ── */
+.ts-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+/* ── Topbar ── */
+.ts-topbar {
+  padding: 0.85rem 1.5rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
+  background: #0d0d0d; position: sticky; top: 0; z-index: 10; flex-wrap: wrap;
+}
+.ts-topbar-left { display: flex; align-items: baseline; gap: 0.75rem; }
+.ts-topbar-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; letter-spacing: 0.05em; color: #fff; margin: 0; }
+.ts-topbar-count { font-size: 12px; color: #555; }
+.ts-topbar-count strong { color: #F5C500; }
+
+/* Vue toggle */
+.ts-view-toggle { display: flex; gap: 0.3rem; }
+.ts-view-btn {
+  background: transparent; border: 1px solid #2a2a2a; color: #555;
+  padding: 0.4rem 0.85rem; cursor: pointer; border-radius: 3px;
+  font-family: 'Bebas Neue', sans-serif; font-size: 0.85rem; letter-spacing: 0.06em;
+  transition: all .15s;
+}
+.ts-view-btn:hover, .ts-view-btn.active { border-color: #F5C500; color: #F5C500; }
+.ts-view-btn.active { background: rgba(245,197,0,0.08); }
+
+/* Active filter pills */
+.ts-active-filters { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; }
+.ts-filter-pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: rgba(245,197,0,0.1); border: 1px solid rgba(245,197,0,0.3);
+  color: #F5C500; font-size: 11px; padding: 3px 8px; border-radius: 2px;
+}
+.ts-filter-pill a { color: #F5C500; text-decoration: none; font-weight: 700; margin-left: 2px; }
+
+/* ── Grid wrap ── */
+.ts-grid-wrap { padding: 1.5rem; flex: 1; }
+.ts-map-wrap { flex: 1; }
+
+/* Cards — inchangées */
+.tatoueur-card-link { text-decoration: none; display: block; height: 100%; }
+.tatoueur-card { display: flex; flex-direction: column; height: 100%; background: #1A1A1A; border: 1px solid #2A2A2A; overflow: hidden; transition: border-color 0.2s; }
+.tatoueur-card:hover { border-color: #F5C500 !important; }
+.tatoueur-card__photo { position: relative; height: 280px; flex-shrink: 0; overflow: hidden; background: #111; }
+.tatoueur-card__img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.3s; }
+.tatoueur-card:hover .tatoueur-card__img { transform: scale(1.03); }
+.tatoueur-card__placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 4rem; color: #333; }
+.tatoueur-card__badges { position: absolute; top: 0.6rem; right: 0.6rem; display: flex; align-items: center; gap: 0.35rem; }
+.tatoueur-card__badge { font-size: 0.7rem; font-weight: 700; padding: 0.2rem 0.5rem; text-transform: uppercase; letter-spacing: 0.05em; }
+.tatoueur-card__badge--verified { background: rgba(39,174,96,0.9); color: #fff; }
+.tatoueur-card__badge--featured { background: #8B5CF6; color: #fff; border-radius: 50%; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; padding: 0; font-size: 0.85rem; }
+.tatoueur-card__body { padding: 1rem; background: linear-gradient(to top, #0D0D0D 0%, rgba(13,13,13,0.95) 100%); display: flex; flex-direction: column; gap: 0.35rem; min-height: 130px; }
+.tatoueur-card__avatar { width: 36px; height: 36px; object-fit: cover; border-radius: 50%; border: 2px solid #F5C500; flex-shrink: 0; }
+.tatoueur-card__name { font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem; color: #fff; letter-spacing: 0.03em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tatoueur-card__shop { font-size: 0.8rem; color: #888; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-height: 1.2em; }
+.tatoueur-card__rating { font-size: 0.8rem; color: #F5C500; min-height: 1.2em; }
+.tatoueur-card__styles { display: flex; flex-wrap: wrap; gap: 0.25rem; min-height: 1.6em; }
+.tatoueur-card__style-tag { background: rgba(245,197,0,0.15); color: #F5C500; font-size: 0.7rem; padding: 0.15rem 0.5rem; text-transform: uppercase; letter-spacing: 0.05em; }
+
+@media (max-width: 700px) { .ts-sidebar { display: none; } }
+</style>
+
+<div class="ts-page">
+
+  <%# ── Sidebar filtres ── %>
+  <aside class="ts-sidebar">
+    <%= form_with url: tatoueurs_path, method: :get, id: "ts-form" do |f| %>
+
+      <div class="ts-sidebar-title">Filtrer</div>
+
+      <%# Recherche texte %>
+      <div class="ts-filter-section">
+        <label class="ts-filter-label">Recherche</label>
+        <div style="position:relative;">
+          <svg style="position:absolute;left:0.7rem;top:50%;transform:translateY(-50%);color:#555;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <%= f.text_field :q, value: params[:q], placeholder: "Nom, ville...",
+              class: "ts-filter-input", style: "padding-left:2.1rem;" %>
+        </div>
+      </div>
+
+      <hr class="ts-filter-divider">
+
+      <%# Styles %>
+      <div class="ts-filter-section">
+        <div class="ts-filter-label">Style</div>
+        <div class="ts-style-tags">
+          <%= link_to "Tous", tatoueurs_path(params.except("style_id").to_unsafe_h),
+              class: "ts-style-tag #{params[:style_id].blank? ? 'active' : ''}" %>
+          <% TattooStyle.order(:name).each do |style| %>
+            <%= link_to style.name,
+                tatoueurs_path(params.to_unsafe_h.merge("style_id" => style.id)),
+                class: "ts-style-tag #{params[:style_id].to_s == style.id.to_s ? 'active' : ''}" %>
+          <% end %>
+        </div>
+      </div>
+
+      <hr class="ts-filter-divider">
+
+      <%# Ville %>
+      <div class="ts-filter-section">
+        <label class="ts-filter-label">Ville</label>
+        <%= f.text_field :location, value: params[:location], placeholder: "Paris, Lyon…",
+            class: "ts-filter-input" %>
+      </div>
+
+      <hr class="ts-filter-divider">
+
+      <%= f.hidden_field :style_id, value: params[:style_id] %>
+      <button type="submit" class="ts-filter-btn ts-filter-btn--primary">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Rechercher
+      </button>
+
+      <% if params[:q].present? || params[:style_id].present? || params[:location].present? %>
+        <%= link_to tatoueurs_path, class: "ts-filter-btn ts-filter-btn--ghost" do %>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          Réinitialiser
+        <% end %>
+      <% end %>
+
     <% end %>
-  <% end %>
-</div>
+  </aside>
 
-<%# ================================ %>
-<%# COMPTEUR %>
-<%# ================================ %>
-<div style="padding:0.75rem 1.5rem;border-bottom:1px solid #1A1A1A;">
-  <span style="font-size:0.9rem;color:#888;">
-    <strong style="color:#F5C500;"><%= @tatoueurs.count %></strong>
-    artiste<%= @tatoueurs.count > 1 ? "s" : "" %> disponible<%= @tatoueurs.count > 1 ? "s" : "" %>
-  </span>
-</div>
+  <%# ── Zone principale ── %>
+  <main class="ts-main">
 
-<%# ================================ %>
-<%# VUE GRILLE %>
-<%# ================================ %>
-<div id="view-grille" style="padding:1.5rem;">
-  <% if @tatoueurs.any? %>
-    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
-      <% @tatoueurs.each do |tatoueur| %>
-        <div class="col">
-          <%= link_to tatoueur_path(tatoueur), style: "text-decoration:none;display:block;" do %>
-            <div style="position:relative;overflow:hidden;background:#1A1A1A;
-                        border:1px solid <%= tatoueur.featured? ? '#8B5CF6' : '#2A2A2A' %>;
-                        transition:border-color 0.2s;"
-                 onmouseover="this.style.borderColor='#F5C500'"
-                 onmouseout="this.style.borderColor='<%= tatoueur.featured? ? '#8B5CF6' : '#2A2A2A' %>'">
+    <%# Topbar %>
+    <div class="ts-topbar">
+      <div class="ts-topbar-left">
+        <h1 class="ts-topbar-title">Tatoueurs</h1>
+        <span class="ts-topbar-count">
+          <strong><%= @tatoueurs.count %></strong> artiste<%= @tatoueurs.count > 1 ? "s" : "" %>
+        </span>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+        <%# Filtres actifs %>
+        <div class="ts-active-filters">
+          <% if params[:q].present? %>
+            <span class="ts-filter-pill">
+              "<%= params[:q] %>"
+              <%= link_to "×", tatoueurs_path(params.except("q").to_unsafe_h) %>
+            </span>
+          <% end %>
+          <% if params[:style_id].present? %>
+            <% style = TattooStyle.find_by(id: params[:style_id]) %>
+            <span class="ts-filter-pill">
+              <%= style&.name %>
+              <%= link_to "×", tatoueurs_path(params.except("style_id").to_unsafe_h) %>
+            </span>
+          <% end %>
+          <% if params[:location].present? %>
+            <span class="ts-filter-pill">
+              📍 <%= params[:location] %>
+              <%= link_to "×", tatoueurs_path(params.except("location").to_unsafe_h) %>
+            </span>
+          <% end %>
+        </div>
+        <%# Toggle vue %>
+        <div class="ts-view-toggle">
+          <button class="ts-view-btn active" id="btn-grille" onclick="switchView('grille')">⊞ Grille</button>
+          <button class="ts-view-btn" id="btn-carte" onclick="switchView('carte')">🗺 Carte</button>
+        </div>
+      </div>
+    </div>
 
-              <%# Photo principale %>
-              <% photo = tatoueur.photos.first || (tatoueur.avatar.attached? ? tatoueur.avatar : nil) %>
-              <% if photo %>
-                <%= image_tag photo,
-                    style: "width:100%;height:320px;object-fit:cover;display:block;transition:transform 0.3s;",
-                    onmouseover: "this.style.transform='scale(1.03)'",
-                    onmouseout:  "this.style.transform='scale(1)'" %>
-              <% else %>
-                <div style="width:100%;height:320px;background:#1A1A1A;display:flex;align-items:center;justify-content:center;font-size:4rem;">🖋️</div>
-              <% end %>
-
-              <%# Badge featured ⭐ %>
-              <% if tatoueur.featured? %>
-                <div style="position:absolute;top:0.6rem;right:0.6rem;
-                            width:28px;height:28px;background:#8B5CF6;border-radius:50%;
-                            display:flex;align-items:center;justify-content:center;
-                            font-size:0.85rem;box-shadow:0 2px 8px rgba(139,92,246,0.6);">
-                  ⭐
-                </div>
-              <% end %>
-
-              <%# Badge vérifié %>
-              <% if tatoueur.verified? %>
-                <span style="position:absolute;top:0.75rem;<%= tatoueur.featured? ? 'right:2.5rem' : 'right:0.75rem' %>;background:rgba(39,174,96,0.9);color:#fff;font-size:0.7rem;font-weight:700;padding:0.2rem 0.5rem;text-transform:uppercase;letter-spacing:0.05em;">
-                  ✅ Vérifié
-                </span>
-              <% end %>
-
-              <%# Infos en bas %>
-              <div style="padding:1rem;background:linear-gradient(to top, #0D0D0D 0%, rgba(13,13,13,0.95) 100%);">
-                <div class="d-flex align-items-center gap-2 mb-1">
-                  <% if tatoueur.avatar.attached? %>
-                    <%= image_tag tatoueur.avatar,
-                        style: "width:36px;height:36px;object-fit:cover;border-radius:50%;border:2px solid #F5C500;flex-shrink:0;" %>
-                  <% end %>
-                  <div>
-                    <div style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:#fff;letter-spacing:0.03em;">
-                      <%= tatoueur.nickname %>
+    <%# ── Vue Grille ── %>
+    <div id="view-grille" class="ts-grid-wrap">
+      <% if @tatoueurs.any? %>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+          <% @tatoueurs.each do |tatoueur| %>
+            <div class="col">
+              <%= link_to tatoueur_path(tatoueur), class: "tatoueur-card-link" do %>
+                <div class="tatoueur-card" style="border-color:<%= tatoueur.featured? ? '#8B5CF6' : '#2A2A2A' %>;">
+                  <div class="tatoueur-card__photo">
+                    <% photo = tatoueur.photos.first || (tatoueur.avatar.attached? ? tatoueur.avatar : nil) %>
+                    <% if photo %>
+                      <%= image_tag photo, class: "tatoueur-card__img" %>
+                    <% else %>
+                      <div class="tatoueur-card__placeholder">🖋️</div>
+                    <% end %>
+                    <div class="tatoueur-card__badges">
+                      <% if tatoueur.verified? %>
+                        <span class="tatoueur-card__badge tatoueur-card__badge--verified">✅ Vérifié</span>
+                      <% end %>
+                      <% if tatoueur.featured? %>
+                        <span class="tatoueur-card__badge tatoueur-card__badge--featured">⭐</span>
+                      <% end %>
                     </div>
-                    <% if tatoueur.shops.any? %>
-                      <div style="font-size:0.8rem;color:#888;"><%= tatoueur.shops.first.name %></div>
-                    <% end %>
+                  </div>
+                  <div class="tatoueur-card__body">
+                    <div class="d-flex align-items-center gap-2 mb-1">
+                      <% if tatoueur.avatar.attached? %>
+                        <%= image_tag tatoueur.avatar, class: "tatoueur-card__avatar" %>
+                      <% end %>
+                      <div style="min-width:0;">
+                        <div class="tatoueur-card__name"><%= tatoueur.nickname %></div>
+                        <div class="tatoueur-card__shop"><%= tatoueur.shops.first&.name || "&nbsp;".html_safe %></div>
+                      </div>
+                    </div>
+                    <div class="tatoueur-card__rating">
+                      <% if tatoueur.reviews.any? %>
+                        <% avg = tatoueur.reviews.average(:rating).to_f.round(1) %>
+                        ⭐ <%= avg %> <span style="color:#666;">(<%= tatoueur.reviews.count %> avis)</span>
+                      <% end %>
+                    </div>
+                    <div class="tatoueur-card__styles">
+                      <% tatoueur.tattoo_styles.first(3).each do |style| %>
+                        <span class="tatoueur-card__style-tag"><%= style.name %></span>
+                      <% end %>
+                      <% if tatoueur.tattoo_styles.count > 3 %>
+                        <span style="color:#666;font-size:0.7rem;">+<%= tatoueur.tattoo_styles.count - 3 %></span>
+                      <% end %>
+                    </div>
                   </div>
                 </div>
-                <% if tatoueur.reviews.any? %>
-                  <% avg = tatoueur.reviews.average(:rating).to_f.round(1) %>
-                  <div style="font-size:0.8rem;color:#F5C500;">
-                    ⭐ <%= avg %> <span style="color:#666;">(<%= tatoueur.reviews.count %> avis)</span>
-                  </div>
-                <% end %>
-                <% if tatoueur.tattoo_styles.any? %>
-                  <div class="d-flex flex-wrap gap-1 mt-2">
-                    <% tatoueur.tattoo_styles.first(3).each do |style| %>
-                      <span style="background:rgba(245,197,0,0.15);color:#F5C500;font-size:0.7rem;padding:0.15rem 0.5rem;text-transform:uppercase;letter-spacing:0.05em;">
-                        <%= style.name %>
-                      </span>
-                    <% end %>
-                    <% if tatoueur.tattoo_styles.count > 3 %>
-                      <span style="color:#666;font-size:0.7rem;">+<%= tatoueur.tattoo_styles.count - 3 %></span>
-                    <% end %>
-                  </div>
-                <% end %>
-              </div>
-
+              <% end %>
             </div>
           <% end %>
         </div>
+      <% else %>
+        <div style="text-align:center;padding:4rem 2rem;color:#555;">
+          <div style="font-size:3rem;margin-bottom:1rem;">🖋️</div>
+          <p>Aucun tatoueur trouvé.</p>
+          <%= link_to "Réinitialiser la recherche", tatoueurs_path, style: "color:#F5C500;" %>
+        </div>
       <% end %>
     </div>
-  <% else %>
-    <div style="text-align:center;padding:4rem 2rem;color:#555;">
-      <div style="font-size:3rem;margin-bottom:1rem;">🖋️</div>
-      <p>Aucun tatoueur trouvé.</p>
-      <%= link_to "Réinitialiser la recherche", tatoueurs_path, style: "color:#F5C500;" %>
-    </div>
-  <% end %>
-</div>
 
-<%# ================================ %>
-<%# VUE CARTE %>
-<%# ================================ %>
-<div id="view-carte" style="display:none;">
-  <%= render "shared/map",
-      map_id: "tatoueurs-map",
-      height: "calc(100vh - 180px)",
-      tatoueurs_json: @tatoueurs_json,
-      shops_json: "[]" %>
+    <%# ── Vue Carte ── %>
+    <div id="view-carte" class="ts-map-wrap" style="display:none;">
+      <%= render "shared/map",
+          map_id: "tatoueurs-map",
+          height: "calc(100vh - 108px)",
+          tatoueurs_json: @tatoueurs_json,
+          shops_json: "[]" %>
+    </div>
+
+  </main>
 </div>
 
 <script>
+  let mapInitialized = false
+
   function switchView(view) {
     const grille = document.getElementById("view-grille")
     const carte  = document.getElementById("view-carte")
@@ -177,12 +294,19 @@
     const btnC   = document.getElementById("btn-carte")
     if (view === "grille") {
       grille.style.display = "block"; carte.style.display = "none"
-      btnG.style.background = "#F5C500"; btnG.style.color = "#000"; btnG.style.border = "none"
-      btnC.style.background = "transparent"; btnC.style.color = "#888"; btnC.style.border = "1px solid #2A2A2A"
+      btnG.classList.add("active"); btnC.classList.remove("active")
     } else {
       grille.style.display = "none"; carte.style.display = "block"
-      btnC.style.background = "#F5C500"; btnC.style.color = "#000"; btnC.style.border = "none"
-      btnG.style.background = "transparent"; btnG.style.color = "#888"; btnG.style.border = "1px solid #2A2A2A"
+      btnC.classList.add("active"); btnG.classList.remove("active")
+      setTimeout(function() {
+        const map = window["map_tatoueurs_map"]
+        if (map) {
+          map.invalidateSize()
+        } else if (!mapInitialized) {
+          mapInitialized = true
+          document.dispatchEvent(new Event("tatoueurs:map:init"))
+        }
+      }, 50)
     }
   }
 </script>

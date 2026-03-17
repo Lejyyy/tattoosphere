@@ -1,142 +1,301 @@
-<%# ================================ %>
-<%# HEADER %>
-<%# ================================ %>
-<section class="section pb-0">
-  <div class="container">
-    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
-      <h1 class="section-title mb-0">Shops</h1>
+<style>
+/* ── Layout ── */
+.ts-page { display: flex; min-height: calc(100vh - 60px); }
+
+/* ── Sidebar ── */
+.ts-sidebar {
+  width: 240px; flex-shrink: 0;
+  background: #0d0d0d;
+  border-right: 1px solid rgba(255,255,255,0.06);
+  padding: 1.5rem 1.25rem;
+  display: flex; flex-direction: column; gap: 1.5rem;
+  position: sticky; top: 0; height: calc(100vh - 60px); overflow-y: auto;
+}
+.ts-sidebar-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem; letter-spacing: 0.07em; color: #fff; margin: 0; }
+.ts-filter-section { display: flex; flex-direction: column; gap: 0.6rem; }
+.ts-filter-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #555; }
+.ts-filter-input {
+  background: #1a1a1a; border: 1px solid #2a2a2a; color: #fff;
+  padding: 0.6rem 0.85rem; font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.9rem; outline: none; border-radius: 3px; transition: border-color .2s; width: 100%;
+}
+.ts-filter-input:focus { border-color: #F5C500; }
+.ts-filter-divider { border: none; border-top: 1px solid rgba(255,255,255,0.06); margin: 0; }
+.ts-filter-btn {
+  font-family: 'Bebas Neue', sans-serif; font-size: 0.88rem; letter-spacing: 0.07em;
+  padding: 0.6rem 1rem; border: none; cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  text-decoration: none; border-radius: 3px; transition: opacity .15s; width: 100%;
+}
+.ts-filter-btn:hover { opacity: .85; }
+.ts-filter-btn--primary { background: #F5C500; color: #000; }
+.ts-filter-btn--ghost { background: transparent; color: #555; border: 1px solid rgba(255,255,255,0.1); }
+.ts-filter-btn--ghost:hover { color: #fff; border-color: rgba(255,255,255,0.3); opacity: 1; }
+
+/* ── Main ── */
+.ts-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+
+/* ── Topbar ── */
+.ts-topbar {
+  padding: 0.85rem 1.5rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+  display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
+  background: #0d0d0d; position: sticky; top: 0; z-index: 10; flex-wrap: wrap;
+}
+.ts-topbar-left { display: flex; align-items: baseline; gap: 0.75rem; }
+.ts-topbar-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; letter-spacing: 0.05em; color: #fff; margin: 0; }
+.ts-topbar-count { font-size: 12px; color: #555; }
+.ts-topbar-count strong { color: #F5C500; }
+
+.ts-active-filters { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; }
+.ts-filter-pill {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: rgba(245,197,0,0.1); border: 1px solid rgba(245,197,0,0.3);
+  color: #F5C500; font-size: 11px; padding: 3px 8px; border-radius: 2px;
+}
+.ts-filter-pill a { color: #F5C500; text-decoration: none; font-weight: 700; margin-left: 2px; }
+
+.ts-view-toggle { display: flex; gap: 0.3rem; }
+.ts-view-btn {
+  background: transparent; border: 1px solid #2a2a2a; color: #555;
+  padding: 0.4rem 0.85rem; cursor: pointer; border-radius: 3px;
+  font-family: 'Bebas Neue', sans-serif; font-size: 0.85rem; letter-spacing: 0.06em;
+  transition: all .15s;
+}
+.ts-view-btn:hover, .ts-view-btn.active { border-color: #F5C500; color: #F5C500; }
+.ts-view-btn.active { background: rgba(245,197,0,0.08); }
+
+/* ── Grid ── */
+.ts-grid-wrap { padding: 1.5rem; flex: 1; }
+.ts-map-wrap { flex: 1; }
+
+/* ── Shop cards ── */
+.shop-card-link { text-decoration: none; display: block; height: 100%; }
+.shop-card {
+  display: flex; flex-direction: column; height: 100%;
+  background: #1A1A1A; overflow: hidden; transition: border-color 0.2s;
+}
+.shop-card:hover { border-color: #F5C500 !important; }
+.shop-card__thumb { position: relative; height: 220px; overflow: hidden; background: #111; flex-shrink: 0; }
+.shop-card__img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform 0.3s; }
+.shop-card:hover .shop-card__img { transform: scale(1.03); }
+.shop-card__placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 3.5rem; color: #333; }
+.shop-card__featured { position: absolute; top: 0.6rem; right: 0.6rem; width: 28px; height: 28px; background: #8B5CF6; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; z-index: 2; }
+.shop-card__count { position: absolute; bottom: 0.5rem; right: 0.75rem; background: rgba(0,0,0,0.65); color: #fff; font-size: 11px; padding: 2px 8px; border-radius: 2px; }
+.shop-card__body { padding: 1rem; display: flex; flex-direction: column; gap: 0.3rem; flex: 1; }
+.shop-card__name { font-family: 'Bebas Neue', sans-serif; font-size: 1.2rem; color: #fff; letter-spacing: 0.03em; }
+.shop-card__meta { font-size: 12px; color: #888; display: flex; align-items: center; gap: 4px; }
+.shop-card__desc { font-size: 12px; color: #666; line-height: 1.55; margin-top: 2px; }
+.shop-card__tatoueurs { display: flex; flex-wrap: wrap; gap: 0.25rem; margin-top: 0.25rem; }
+.shop-card__tatoueur-tag { background: rgba(245,197,0,0.1); color: #F5C500; font-size: 10px; padding: 2px 7px; text-transform: uppercase; letter-spacing: 0.05em; border-radius: 2px; }
+.shop-card__footer { display: flex; justify-content: space-between; align-items: center; margin-top: auto; padding-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.06); }
+.shop-card__link { font-family: 'Bebas Neue', sans-serif; font-size: 0.88rem; letter-spacing: 0.06em; color: #F5C500; text-decoration: none; }
+.shop-card__link:hover { text-decoration: underline; }
+
+@media (max-width: 700px) { .ts-sidebar { display: none; } }
+</style>
+
+<div class="ts-page">
+
+  <%# ── Sidebar ── %>
+  <aside class="ts-sidebar">
+    <%= form_with url: shops_path, method: :get, id: "ts-shops-form" do |f| %>
+
+      <div class="ts-sidebar-title">Filtrer</div>
+
+      <%# Ville %>
+      <div class="ts-filter-section">
+        <label class="ts-filter-label">Ville</label>
+        <div style="position:relative;">
+          <svg style="position:absolute;left:0.7rem;top:50%;transform:translateY(-50%);color:#555;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <%= f.text_field :location, value: params[:location], placeholder: "Paris, Lyon…",
+              class: "ts-filter-input", style: "padding-left:2.1rem;" %>
+        </div>
+      </div>
+
+      <hr class="ts-filter-divider">
+
+      <button type="submit" class="ts-filter-btn ts-filter-btn--primary">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        Rechercher
+      </button>
+
+      <% if params[:location].present? %>
+        <%= link_to shops_path, class: "ts-filter-btn ts-filter-btn--ghost" do %>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          Réinitialiser
+        <% end %>
+      <% end %>
+
+      <hr class="ts-filter-divider">
+
+      <%# Ajouter son shop %>
       <% if user_signed_in? && current_user.shop_owner? && current_user.shop.nil? %>
-        <%= link_to "Ajouter mon shop", new_shop_path, class: "hero-cta" %>
+        <%= link_to new_shop_path, class: "ts-filter-btn ts-filter-btn--primary" do %>
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Ajouter mon shop
+        <% end %>
+      <% end %>
+
+    <% end %>
+  </aside>
+
+  <%# ── Zone principale ── %>
+  <main class="ts-main">
+
+    <%# Topbar %>
+    <div class="ts-topbar">
+      <div class="ts-topbar-left">
+        <h1 class="ts-topbar-title">Shops</h1>
+        <span class="ts-topbar-count">
+          <strong><%= @shops.count %></strong> shop<%= @shops.count > 1 ? "s" : "" %>
+        </span>
+      </div>
+      <div style="display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;">
+        <div class="ts-active-filters">
+          <% if params[:location].present? %>
+            <span class="ts-filter-pill">
+              📍 <%= params[:location] %>
+              <%= link_to "×", shops_path %>
+            </span>
+          <% end %>
+        </div>
+        <div class="ts-view-toggle">
+          <button class="ts-view-btn active" id="btn-grille" onclick="switchShopView('grille')">⊞ Grille</button>
+          <button class="ts-view-btn" id="btn-carte" onclick="switchShopView('carte')">🗺 Carte</button>
+        </div>
+      </div>
+    </div>
+
+    <%# ── Vue Grille ── %>
+    <div id="shop-view-grille" class="ts-grid-wrap">
+      <% if @shops.any? %>
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-3">
+          <% @shops.each do |shop| %>
+            <div class="col">
+              <div class="shop-card" style="border:1px solid <%= shop.featured? ? '#8B5CF6' : '#2A2A2A' %>;">
+
+                <%# Thumb %>
+                <div class="shop-card__thumb">
+                  <% photos = shop.photos.first(5) %>
+                  <% if shop.cover.attached? || photos.any? %>
+                    <div id="carousel-shop-<%= shop.id %>" class="carousel slide" data-bs-ride="false">
+                      <div class="carousel-inner">
+                        <% if shop.cover.attached? %>
+                          <div class="carousel-item active">
+                            <%= image_tag shop.cover, class: "shop-card__img", alt: shop.name %>
+                          </div>
+                        <% end %>
+                        <% photos.each_with_index do |photo, i| %>
+                          <div class="carousel-item <%= 'active' if i == 0 && !shop.cover.attached? %>">
+                            <%= image_tag photo, class: "shop-card__img", alt: shop.name %>
+                          </div>
+                        <% end %>
+                      </div>
+                      <% total = (shop.cover.attached? ? 1 : 0) + photos.size %>
+                      <% if total > 1 %>
+                        <button class="carousel-control-prev" type="button"
+                                data-bs-target="#carousel-shop-<%= shop.id %>" data-bs-slide="prev">
+                          <span class="carousel-control-prev-icon"></span>
+                        </button>
+                        <button class="carousel-control-next" type="button"
+                                data-bs-target="#carousel-shop-<%= shop.id %>" data-bs-slide="next">
+                          <span class="carousel-control-next-icon"></span>
+                        </button>
+                      <% end %>
+                    </div>
+                  <% else %>
+                    <div class="shop-card__placeholder">🏠</div>
+                  <% end %>
+                  <% if shop.featured? %>
+                    <div class="shop-card__featured">⭐</div>
+                  <% end %>
+                  <span class="shop-card__count"><%= shop.tatoueurs.count %> tatoueur(s)</span>
+                </div>
+
+                <%# Body %>
+                <div class="shop-card__body">
+                  <div class="shop-card__name"><%= shop.name %></div>
+                  <% city = shop.address&.split(",")&.first %>
+                  <% if city.present? %>
+                    <div class="shop-card__meta">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                      <%= city.strip %>
+                    </div>
+                  <% end %>
+                  <% if shop.open_hours.present? %>
+                    <div class="shop-card__meta">
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                      <%= shop.open_hours %>
+                    </div>
+                  <% end %>
+                  <% if shop.description.present? %>
+                    <p class="shop-card__desc"><%= shop.description.truncate(90) %></p>
+                  <% end %>
+                  <% if shop.tatoueurs.any? %>
+                    <div class="shop-card__tatoueurs">
+                      <% shop.tatoueurs.first(3).each do |t| %>
+                        <span class="shop-card__tatoueur-tag">🖋 <%= t.nickname %></span>
+                      <% end %>
+                      <% if shop.tatoueurs.count > 3 %>
+                        <span class="shop-card__tatoueur-tag">+<%= shop.tatoueurs.count - 3 %></span>
+                      <% end %>
+                    </div>
+                  <% end %>
+                  <div class="shop-card__footer">
+                    <%= link_to "Voir le shop →", shop_path(shop), class: "shop-card__link" %>
+                    <%= render "favorites/button", favoritable: shop %>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <div style="text-align:center;padding:4rem 2rem;color:#555;">
+          <div style="font-size:3rem;margin-bottom:1rem;">🏠</div>
+          <p>Aucun shop trouvé.</p>
+          <%= link_to "Réinitialiser la recherche", shops_path, style: "color:#F5C500;" %>
+        </div>
       <% end %>
     </div>
 
-    <%= form_with url: shops_path, method: :get, class: "d-flex flex-wrap gap-2 mb-4" do |f| %>
-      <%= f.text_field :location,
-          value: params[:location],
-          placeholder: "Ville ou code postal...",
-          class: "form-control form-control-sm",
-          style: "width:220px;" %>
-      <%= f.submit "Filtrer", class: "btn btn-outline-primary btn-sm" %>
-      <% if params[:location].present? %>
-        <%= link_to "Réinitialiser", shops_path, class: "btn btn-outline-secondary btn-sm" %>
-      <% end %>
-    <% end %>
-  </div>
-</section>
+    <%# ── Vue Carte ── %>
+    <div id="shop-view-carte" class="ts-map-wrap" style="display:none;">
+      <%= render "shared/map",
+          map_id: "shops-map",
+          height: "calc(100vh - 108px)",
+          tatoueurs_json: "[]",
+          shops_json: @shops_json %>
+    </div>
 
-<%# ================================ %>
-<%# GRILLE SHOPS %>
-<%# ================================ %>
-<section class="section pt-3">
-  <div class="container">
-    <% if @shops.any? %>
-      <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-        <% @shops.each do |shop| %>
-          <div class="col">
-            <div class="card-dark h-100 d-flex flex-column"
-                 style="border-color:<%= shop.featured? ? '#8B5CF6' : '#2A2A2A' %>;">
+  </main>
+</div>
 
-              <%# PHOTOS %>
-              <div style="position:relative;">
-                <% photos = shop.photos.first(5) %>
-                <% if shop.cover.attached? || photos.any? %>
-                  <div id="carousel-shop-<%= shop.id %>" class="carousel slide" data-bs-ride="false">
-                    <div class="carousel-inner">
-                      <% if shop.cover.attached? %>
-                        <div class="carousel-item active">
-                          <%= image_tag shop.cover,
-                              style: "width:100%;height:220px;object-fit:cover;", alt: shop.name %>
-                        </div>
-                      <% end %>
-                      <% photos.each_with_index do |photo, i| %>
-                        <div class="carousel-item <%= 'active' if i == 0 && !shop.cover.attached? %>">
-                          <%= image_tag photo,
-                              style: "width:100%;height:220px;object-fit:cover;", alt: shop.name %>
-                        </div>
-                      <% end %>
-                    </div>
-                    <% total = (shop.cover.attached? ? 1 : 0) + photos.size %>
-                    <% if total > 1 %>
-                      <button class="carousel-control-prev" type="button"
-                              data-bs-target="#carousel-shop-<%= shop.id %>" data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon"></span>
-                      </button>
-                      <button class="carousel-control-next" type="button"
-                              data-bs-target="#carousel-shop-<%= shop.id %>" data-bs-slide="next">
-                        <span class="carousel-control-next-icon"></span>
-                      </button>
-                    <% end %>
-                    <span style="position:absolute;bottom:0.5rem;right:0.75rem;background:rgba(0,0,0,0.6);color:#fff;font-size:0.75rem;padding:0.2rem 0.5rem;">
-                      <%= shop.tatoueurs.count %> tatoueur(s)
-                    </span>
-                  </div>
-                <% else %>
-                  <div class="card-img-placeholder">🏠</div>
-                <% end %>
+<script>
+  let shopMapInitialized = false
 
-                <%# Badge featured ⭐ %>
-                <% if shop.featured? %>
-                  <div style="position:absolute;top:0.6rem;right:0.6rem;
-                              width:28px;height:28px;background:#8B5CF6;border-radius:50%;
-                              display:flex;align-items:center;justify-content:center;
-                              font-size:0.85rem;box-shadow:0 2px 8px rgba(139,92,246,0.6);
-                              z-index:10;">
-                    ⭐
-                  </div>
-                <% end %>
-              </div>
-
-              <%# CONTENU %>
-              <div class="card-body d-flex flex-column flex-grow-1">
-                <div class="card-name mb-2"><%= shop.name %></div>
-                <% city = shop.address&.split(",")&.first %>
-                <% if city.present? %>
-                  <p class="card-meta mb-2">📍 <%= city.strip %></p>
-                <% end %>
-                <% if shop.open_hours.present? %>
-                  <p class="card-meta mb-2">🕐 <%= shop.open_hours %></p>
-                <% end %>
-                <% if shop.description.present? %>
-                  <p class="text-secondary mb-3" style="font-size:0.85rem;line-height:1.6;">
-                    <%= shop.description.truncate(100) %>
-                  </p>
-                <% end %>
-                <% if shop.tatoueurs.any? %>
-                  <div class="d-flex flex-wrap gap-1 mb-3">
-                    <% shop.tatoueurs.first(3).each do |t| %>
-                      <span class="card-badge">🖋️ <%= t.nickname %></span>
-                    <% end %>
-                    <% if shop.tatoueurs.count > 3 %>
-                      <span class="card-badge">+<%= shop.tatoueurs.count - 3 %></span>
-                    <% end %>
-                  </div>
-                <% end %>
-                <div class="d-flex justify-content-between align-items-center mt-auto">
-                  <%= link_to "Voir le shop →", shop_path(shop), class: "card-link mb-0" %>
-                  <%= render "favorites/button", favoritable: shop %>
-                </div>
-              </div>
-
-            </div>
-          </div>
-        <% end %>
-      </div>
-    <% else %>
-      <p class="text-secondary">Aucun shop trouvé.</p>
-    <% end %>
-  </div>
-</section>
-
-<%# ================================ %>
-<%# CARTE %>
-<%# ================================ %>
-<section class="section pt-0">
-  <div class="container">
-    <h2 class="section-title mb-4">Carte des shops</h2>
-    <%= render "shared/map",
-        map_id: "shops-map",
-        height: "400px",
-        tatoueurs_json: "[]",
-        shops_json: @shops_json %>
-  </div>
-</section>
+  function switchShopView(view) {
+    const grille = document.getElementById("shop-view-grille")
+    const carte  = document.getElementById("shop-view-carte")
+    const btnG   = document.getElementById("btn-grille")
+    const btnC   = document.getElementById("btn-carte")
+    if (view === "grille") {
+      grille.style.display = "block"; carte.style.display = "none"
+      btnG.classList.add("active"); btnC.classList.remove("active")
+    } else {
+      grille.style.display = "none"; carte.style.display = "block"
+      btnC.classList.add("active"); btnG.classList.remove("active")
+      setTimeout(function() {
+        const map = window["map_shops_map"]
+        if (map) {
+          map.invalidateSize()
+        } else if (!shopMapInitialized) {
+          shopMapInitialized = true
+          document.dispatchEvent(new Event("shops:map:init"))
+        }
+      }, 50)
+    }
+  }
+</script>

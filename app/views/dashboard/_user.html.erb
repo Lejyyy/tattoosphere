@@ -1,75 +1,149 @@
-<div class="row g-4">
+<%
+  now = Time.current.beginning_of_day
+  upcoming = current_user.bookings
+    .includes(:tatoueur, :shop)
+    .where("date >= ?", now)
+    .where.not(status: %w[done cancelled])
+    .order(date: :asc)
+    .limit(5)
+  past = current_user.bookings
+    .includes(:tatoueur, :shop)
+    .where("date < ? OR status IN (?)", now, %w[done cancelled])
+    .order(date: :desc)
+    .limit(5)
+  status_styles = {
+    "confirmed" => { label: "Confirmé",   bg: "rgba(39,174,96,0.15)",   color: "#2ecc71",  border: "rgba(39,174,96,0.3)"  },
+    "pending"   => { label: "En attente", bg: "rgba(245,197,0,0.12)",   color: "#F5C500",  border: "rgba(200,168,75,0.3)" },
+    "cancelled" => { label: "Annulé",     bg: "rgba(229,62,62,0.12)",   color: "#e53e3e",  border: "rgba(229,62,62,0.3)"  },
+    "done"      => { label: "Terminé",    bg: "rgba(255,255,255,0.04)", color: "#555",     border: "rgba(255,255,255,0.1)"}
+  }
+%>
 
-  <%# Colonne principale %>
-  <div class="col-lg-8">
+<style>
+.db-grid { display: grid; grid-template-columns: 1fr 280px; gap: 1.5rem; }
+@media (max-width: 768px) { .db-grid { grid-template-columns: 1fr; } }
 
-    <h2 class="section-title mb-3">Réservations à venir</h2>
-    <% upcoming = current_user.bookings.where("date >= ?", Date.today).order(date: :asc).limit(5) %>
+.db-section-title {
+  font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; letter-spacing: 0.05em;
+  color: #fff; border-left: 3px solid #F5C500; padding-left: 0.65rem;
+  margin-bottom: 1.1rem;
+}
+
+.db-booking {
+  background: #111; border: 1px solid #2a2a2a;
+  padding: 0.9rem 1.1rem; margin-bottom: 0.5rem; border-radius: 2px;
+  display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+  transition: border-color .2s;
+}
+.db-booking:hover { border-color: #3a3a3a; }
+.db-booking--upcoming { border-left: 3px solid #F5C500; }
+.db-booking--past    { border-left: 3px solid #2a2a2a; }
+.db-booking__date {
+  font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; color: #fff; margin-bottom: 1px;
+}
+.db-booking__date--past { color: #555; }
+.db-booking__sub { font-size: 0.8rem; color: #555; }
+.db-booking__right { display: flex; align-items: center; gap: 0.65rem; flex-shrink: 0; }
+
+.db-status {
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.07em;
+  padding: 3px 8px; border-radius: 2px; border: 1px solid;
+  white-space: nowrap;
+}
+
+.db-link {
+  font-family: 'Bebas Neue', sans-serif; font-size: 0.85rem; letter-spacing: 0.05em;
+  color: #F5C500; text-decoration: none; border: 1px solid rgba(200,168,75,0.3);
+  padding: 3px 10px; border-radius: 2px; transition: background .15s, color .15s;
+}
+.db-link:hover { background: #F5C500; color: #000; }
+
+.db-empty { font-size: 13px; color: #444; margin-bottom: 1.5rem; }
+
+/* Sidebar card */
+.ts-sidebar-card { background: #111; border: 1px solid #1e1e1e; border-radius: 8px; padding: 1rem 1.1rem; margin-bottom: 1rem; }
+.ts-sidebar-title { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #555; margin-bottom: 0.75rem; }
+.ts-btn {
+  font-family: 'Bebas Neue', sans-serif; font-size: 0.85rem; letter-spacing: 0.07em;
+  padding: 0.45rem 1rem; border: none; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px; justify-content: center;
+  text-decoration: none; border-radius: 2px; transition: opacity .15s; width: 100%; margin-bottom: 0.4rem;
+}
+.ts-btn:hover { opacity: .85; }
+.ts-btn--primary { background: #F5C500; color: #000; }
+.ts-btn--outline { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.15); }
+.ts-btn--outline:hover { border-color: rgba(255,255,255,0.4); opacity: 1; }
+</style>
+
+<div class="db-grid">
+
+  <%# ── Colonne gauche : réservations ── %>
+  <div>
+    <h2 class="db-section-title">Réservations à venir</h2>
     <% if upcoming.any? %>
       <% upcoming.each do |booking| %>
-        <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-left:4px solid #F5C500;padding:1rem 1.5rem;margin-bottom:0.75rem;">
-          <div class="d-flex justify-content-between align-items-center">
-            <div>
-              <div style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;">
-                <%= booking.date&.strftime("%d %B %Y") %>
-                <% if booking.start_time %>· <%= booking.start_time.strftime("%Hh%M") %><% end %>
-              </div>
-              <div class="text-secondary" style="font-size:0.85rem;">
-                <%= booking.tatoueur.nickname %> · <%= booking.shop.name %>
-              </div>
+        <% s = status_styles[booking.status] || status_styles["done"] %>
+        <div class="db-booking db-booking--upcoming">
+          <div>
+            <div class="db-booking__date">
+              <%= booking.date&.strftime("%d %B %Y") %>
+              <% if booking.respond_to?(:start_time) && booking.start_time %>
+                · <%= booking.start_time.strftime("%Hh%M") %>
+              <% end %>
             </div>
-            <div class="d-flex align-items-center gap-2">
-              <% status_colors = { "confirmed" => "bg-success", "pending" => "bg-warning", "cancelled" => "bg-danger", "done" => "bg-secondary" } %>
-              <span class="badge <%= status_colors[booking.status] || 'bg-secondary' %>">
-                <%= booking.status %>
-              </span>
-              <%= link_to "Voir →", booking_path(booking), class: "card-link mb-0 mt-0" %>
+            <div class="db-booking__sub">
+              <%= booking.tatoueur&.nickname %> · <%= booking.shop&.name %>
             </div>
+          </div>
+          <div class="db-booking__right">
+            <span class="db-status"
+                  style="background:<%= s[:bg] %>;color:<%= s[:color] %>;border-color:<%= s[:border] %>;">
+              <%= s[:label] %>
+            </span>
+            <%= link_to "Voir →", booking_path(booking), class: "db-link" %>
           </div>
         </div>
       <% end %>
     <% else %>
-      <p class="text-secondary">Aucune réservation à venir.</p>
+      <p class="db-empty">Aucune réservation à venir.</p>
     <% end %>
 
-    <h2 class="section-title mb-3 mt-4">Réservations passées</h2>
-    <% past = current_user.bookings.where("date < ?", Date.today).order(date: :desc).limit(5) %>
+    <h2 class="db-section-title" style="margin-top:2rem;">Réservations passées</h2>
     <% if past.any? %>
       <% past.each do |booking| %>
-        <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-left:4px solid #2A2A2A;padding:1rem 1.5rem;margin-bottom:0.75rem;">
-          <div class="d-flex justify-content-between align-items-center">
-            <div>
-              <div style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:#888;">
-                <%= booking.date&.strftime("%d %B %Y") %>
-              </div>
-              <div class="text-secondary" style="font-size:0.85rem;">
-                <%= booking.tatoueur.nickname %> · <%= booking.shop.name %>
-              </div>
+        <% s = status_styles[booking.status] || status_styles["done"] %>
+        <div class="db-booking db-booking--past">
+          <div>
+            <div class="db-booking__date db-booking__date--past">
+              <%= booking.date&.strftime("%d %B %Y") %>
             </div>
-            <%= link_to "Voir →", booking_path(booking), class: "card-link mb-0 mt-0" %>
+            <div class="db-booking__sub">
+              <%= booking.tatoueur&.nickname %> · <%= booking.shop&.name %>
+            </div>
+          </div>
+          <div class="db-booking__right">
+            <span class="db-status"
+                  style="background:<%= s[:bg] %>;color:<%= s[:color] %>;border-color:<%= s[:border] %>;">
+              <%= s[:label] %>
+            </span>
+            <%= link_to "Voir →", booking_path(booking), class: "db-link" %>
           </div>
         </div>
       <% end %>
     <% else %>
-      <p class="text-secondary">Aucune réservation passée.</p>
+      <p class="db-empty">Aucune réservation passée.</p>
     <% end %>
-
   </div>
 
-  <%# Colonne droite %>
-  <div class="col-lg-4">
-
-    <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1.5rem;margin-bottom:1.5rem;">
-      <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.5rem;color:#F5C500;border-left:4px solid #F5C500;padding-left:0.75rem;">
-        Mon compte
-      </h3>
-      <div class="d-flex flex-column gap-2 mt-3">
-        <%= link_to "❤️ Mes favoris", favorites_path, class: "btn btn-outline-primary btn-sm w-100" %>
-        <%= link_to "🔍 Explorer les tatoueurs", tatoueurs_path, class: "hero-cta w-100 text-center mt-2" %>
-      </div>
+  <%# ── Colonne droite ── %>
+  <div>
+    <div class="ts-sidebar-card">
+      <div class="ts-sidebar-title">Mon compte</div>
+      <%= link_to "❤️ Mes favoris", favorites_path, class: "ts-btn ts-btn--outline" %>
+      <%= link_to "🔍 Explorer les tatoueurs", tatoueurs_path, class: "ts-btn ts-btn--primary" %>
     </div>
 
     <%= render "dashboard/messages" %>
-
   </div>
+
 </div>

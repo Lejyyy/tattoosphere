@@ -1,0 +1,168 @@
+<%# À inclure une seule fois dans le layout, avant </body> %>
+<% if user_signed_in? %>
+
+<div id="share-modal" style="display:none;position:fixed;inset:0;z-index:2000;align-items:center;justify-content:center;">
+  <div onclick="closeShareModal()" style="position:absolute;inset:0;background:rgba(0,0,0,0.7);"></div>
+  <div style="position:relative;background:#111;border:1px solid #222;border-radius:12px;width:420px;max-width:95vw;box-shadow:0 16px 48px rgba(0,0,0,.8);overflow:hidden;">
+
+    <%# Header %>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:.9rem 1rem;border-bottom:1px solid #1e1e1e;">
+      <span style="font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:.05em;color:#F5C500;">Partager</span>
+      <button onclick="closeShareModal()" style="background:transparent;border:none;color:#666;cursor:pointer;font-size:1rem;">✕</button>
+    </div>
+
+    <%# Carte du profil à partager %>
+    <div style="padding:.9rem 1rem;border-bottom:1px solid #1e1e1e;">
+      <div style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#555;margin-bottom:.3rem;">Vous partagez</div>
+      <div id="share-modal-card" style="display:flex;align-items:center;gap:.65rem;padding:.5rem .75rem;background:#1a1a1a;border:1px solid rgba(245,197,0,0.2);border-left:3px solid #F5C500;border-radius:2px;">
+        <div id="share-modal-icon" style="font-size:1.2rem;flex-shrink:0;"></div>
+        <div>
+          <div id="share-modal-type" style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#F5C500;"></div>
+          <div id="share-modal-name" style="font-family:'Bebas Neue',sans-serif;font-size:1rem;color:#fff;"></div>
+        </div>
+      </div>
+    </div>
+
+    <%# Recherche destinataire %>
+    <div style="padding:.9rem 1rem;">
+      <div style="font-size:9px;text-transform:uppercase;letter-spacing:.08em;color:#555;margin-bottom:.5rem;">Envoyer à</div>
+      <div style="position:relative;margin-bottom:.6rem;">
+        <svg style="position:absolute;left:.65rem;top:50%;transform:translateY(-50%);color:#555;pointer-events:none;" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input id="share-modal-search"
+               type="text"
+               placeholder="Rechercher un tatoueur ou shop…"
+               oninput="shareModalSearch(this.value)"
+               autocomplete="off"
+               style="width:100%;background:#1a1a1a;border:1px solid #2a2a2a;color:#fff;padding:.5rem .75rem .5rem 2rem;font-size:.85rem;outline:none;border-radius:3px;transition:border-color .2s;"
+               onfocus="this.style.borderColor='#F5C500'"
+               onblur="this.style.borderColor='#2a2a2a'" />
+      </div>
+      <div id="share-modal-results" style="max-height:220px;overflow-y:auto;"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  let shareModalType = '', shareModalId = 0, shareModalName = ''
+  let shareModalTimeout = null
+  const shareIcons = { Tatoueur: '🖋', Shop: '🏠', Event: '🎪' }
+  const shareLabels = { Tatoueur: 'Tatoueur', Shop: 'Shop', Event: 'Événement' }
+
+  function openShareModal(type, id, name) {
+    shareModalType = type
+    shareModalId   = id
+    shareModalName = name
+    document.getElementById('share-modal-icon').textContent = shareIcons[type] || '📎'
+    document.getElementById('share-modal-type').textContent = shareLabels[type] || type
+    document.getElementById('share-modal-name').textContent = name
+    document.getElementById('share-modal-search').value = ''
+    document.getElementById('share-modal-results').innerHTML = ''
+    document.getElementById('share-modal').style.display = 'flex'
+    setTimeout(() => document.getElementById('share-modal-search').focus(), 50)
+  }
+
+  function closeShareModal() {
+    document.getElementById('share-modal').style.display = 'none'
+  }
+
+  function shareModalSearch(q) {
+    const box = document.getElementById('share-modal-results')
+    clearTimeout(shareModalTimeout)
+    if (q.length < 2) { box.innerHTML = ''; return }
+
+    shareModalTimeout = setTimeout(() => {
+      fetch(`/conversations/search_recipients?q=${encodeURIComponent(q)}`, {
+        headers: { 'Accept': 'application/json' }
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (!data.length) {
+          box.innerHTML = '<div style="font-size:12px;color:#555;padding:.5rem 0;text-align:center;">Aucun résultat</div>'
+          return
+        }
+        box.innerHTML = data.map(r => `
+          <button type="button"
+                  onclick="sendSharedProfile('${r.type}', ${r.id})"
+                  style="display:flex;align-items:center;gap:.65rem;width:100%;padding:.5rem .6rem;background:transparent;border:none;border-bottom:1px solid #1a1a1a;cursor:pointer;text-align:left;transition:background .12s;border-radius:2px;"
+                  onmouseover="this.style.background='#1a1a1a'"
+                  onmouseout="this.style.background='transparent'">
+            ${r.avatar
+              ? `<img src="${r.avatar}" style="width:30px;height:30px;border-radius:50%;object-fit:cover;flex-shrink:0;">`
+              : `<span style="width:30px;height:30px;background:#2a2a2a;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;">${r.type === 'Tatoueur' ? '🖋' : '🏠'}</span>`}
+            <div style="min-width:0;">
+              <div style="font-size:13px;color:#fff;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${r.name}</div>
+              <div style="font-size:11px;color:#666;">${r.subtitle}</div>
+            </div>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#F5C500" stroke-width="2" style="flex-shrink:0;margin-left:auto;"><path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+          </button>
+        `).join('')
+      })
+    }, 280)
+  }
+
+  function sendSharedProfile(recipientType, recipientId) {
+    // 1. Créer/trouver la conversation
+    const param = recipientType === 'Tatoueur' ? 'tatoueur_id'
+                : recipientType === 'Shop'     ? 'shop_id'
+                : 'user_id'
+
+    const formData = new FormData()
+    formData.append(param, recipientId)
+    formData.append('authenticity_token', document.querySelector('meta[name="csrf-token"]').content)
+
+    fetch('/conversations', {
+      method: 'POST',
+      headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+      body: formData
+    })
+    .then(r => {
+      // Rails redirige vers la conversation — on récupère l'id depuis le header Location
+      const location = r.url || r.headers?.get('Location') || ''
+      const match = location.match(/\/conversations\/(\d+)/)
+      if (match) return parseInt(match[1])
+      // Fallback : chercher dans l'URL finale
+      return r.text().then(html => {
+        const m = html.match(/conversation[_-](\d+)|\/conversations\/(\d+)/)
+        return m ? parseInt(m[1] || m[2]) : null
+      })
+    })
+    .then(convId => {
+      if (!convId) { alert('Impossible de trouver la conversation.'); return }
+      return sendMessageWithProfile(convId)
+    })
+    .catch(() => alert('Une erreur est survenue.'))
+  }
+
+  function sendMessageWithProfile(convId) {
+    const token = document.querySelector('meta[name="csrf-token"]').content
+    const formData = new FormData()
+    formData.append('authenticity_token', token)
+    formData.append('message[shared_profile_type]', shareModalType)
+    formData.append('message[shared_profile_id]',   shareModalId)
+    formData.append('message[content]', '')
+
+    return fetch(`/conversations/${convId}/messages`, {
+      method: 'POST',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      body: formData
+    })
+    .then(() => {
+      closeShareModal()
+      // Ouvrir la bulle sur cette conversation
+      if (typeof toggleChat === 'function') {
+        const win = document.getElementById('chat-window')
+        if (win && win.style.display === 'none') toggleChat()
+        if (typeof loadConversation === 'function') loadConversation(convId)
+      } else {
+        window.location.href = `/conversations/${convId}`
+      }
+    })
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeShareModal()
+  })
+</script>
+
+<% end %>

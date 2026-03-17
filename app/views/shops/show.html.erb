@@ -1,339 +1,615 @@
 <% content_for :title, @shop.name %>
 
-<%# ================================ %>
-<%# HERO %>
-<%# ================================ %>
-<% bg_style = if @shop.cover.attached?
-    "background-image:url('#{url_for(@shop.cover)}');background-size:cover;background-position:center;"
-  elsif @shop.cover_color.present?
-    "background-color:#{@shop.cover_color};"
-  else
-    "background:linear-gradient(135deg,#1A1A1A 0%,#0D0D0D 100%);"
-  end %>
+<style>
+.ts-profile { max-width: 960px; margin: 0 auto; padding: 0 0 4rem; }
 
-<section style="position:relative;min-height:480px;display:flex;align-items:flex-end;overflow:hidden;">
+/* ── Cover ── */
+.ts-cover {
+  height: 260px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 0 0 12px 12px;
+  background: #0d0d0d;
+}
+.ts-cover__img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ts-cover__pattern {
+  position: absolute; inset: 0;
+  background-image:
+    repeating-linear-gradient(45deg, #1a1a1a 0px, #1a1a1a 1px, transparent 1px, transparent 12px),
+    repeating-linear-gradient(-45deg, #1a1a1a 0px, #1a1a1a 1px, transparent 1px, transparent 12px);
+  background-color: #0d0d0d;
+}
+.ts-cover__overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(13,13,13,0.85) 100%);
+}
+.ts-cover__edit { position: absolute; top: 1rem; right: 1rem; z-index: 10; }
+/* ── Identity ── */
+.ts-identity {
+  display: flex; align-items: flex-end; gap: 1.5rem;
+  padding: 0 1.5rem;
+  margin-top: -52px;
+  margin-bottom: 0;
+  position: relative; z-index: 2;
+}
 
-  <%# Fond %>
-  <div style="position:absolute;top:0;left:0;right:0;bottom:0;<%= bg_style %>"></div>
-  <div style="position:absolute;top:0;left:0;right:0;bottom:0;
-              background:linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(13,13,13,0.98) 100%);"></div>
+.ts-identity__info {
+  padding-bottom: 0.25rem; flex: 1; min-width: 0;
+  display: flex; flex-direction: column;
+}
 
-  <div class="container position-relative py-5">
-    <div class="row align-items-end g-4">
+.ts-avatar-wrap { position: relative; flex-shrink: 0; }
+.ts-avatar {
+  width: 104px; height: 104px;
+  border-radius: 50%;
+  border: 3px solid #f5c500;
+  background: #1a1a1a;
+  object-fit: cover;
+  display: block;
+}
+.ts-avatar--placeholder {
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.5rem; color: #444;
+}
+.ts-avatar__ring {
+  position: absolute; inset: -5px;
+  border-radius: 50%;
+  border: 1px solid rgba(200,168,75,0.25);
+  pointer-events: none;
+}
+.ts-avatar__verified {
+  position: absolute; bottom: 4px; right: 4px;
+  width: 22px; height: 22px;
+  background: #f5c500; border-radius: 50%;
+  border: 2px solid #0d0d0d;
+  display: flex; align-items: center; justify-content: center;
+}
+.ts-avatar__verified svg { width: 10px; height: 10px; stroke: #000; }
 
-      <%# Avatar / Logo %>
-      <div class="col-auto">
-        <% profile_photo = @shop.photos.first %>
-        <% if profile_photo %>
-          <%= image_tag profile_photo,
-              style: "width:130px;height:130px;object-fit:cover;
-                      border:3px solid #F5C500;box-shadow:0 4px 24px rgba(0,0,0,0.6);" %>
-        <% elsif @shop.cover.attached? %>
-          <%= image_tag @shop.cover,
-              style: "width:130px;height:130px;object-fit:cover;
-                      border:3px solid #F5C500;box-shadow:0 4px 24px rgba(0,0,0,0.6);" %>
-        <% else %>
-          <div style="width:130px;height:130px;background:#1A1A1A;border:3px solid #2A2A2A;
-                      display:flex;align-items:center;justify-content:center;font-size:3rem;
-                      box-shadow:0 4px 24px rgba(0,0,0,0.6);">🏠</div>
-        <% end %>
+.ts-identity__info { padding-bottom: 0.25rem; flex: 1; min-width: 0; }
+
+.ts-name-row { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.3rem; margin-top: 0.75rem; }
+.ts-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2.4rem; letter-spacing: 0.04em; line-height: 1; color: #fff;
+}
+.ts-featured-pill {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 2px;
+  background: rgba(139,92,246,0.2); color: #a78bfa; border: 1px solid rgba(139,92,246,0.3);
+}
+
+.ts-meta { display: flex; gap: 1.25rem; flex-wrap: wrap; font-size: 13px; color: #888; }
+.ts-meta__item { display: flex; align-items: center; gap: 5px; }
+.ts-meta__item a { color: #f5c500; text-decoration: none; }
+.ts-meta__item a:hover { text-decoration: underline; }
+
+
+/* ── Stats strip ── */
+.ts-stats {
+  display: flex; padding: 0 2rem; margin: 1.5rem 0;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.ts-stat { flex: 1; padding: 1rem 0; text-align: center; border-right: 1px solid rgba(255,255,255,0.06); }
+.ts-stat:last-child { border-right: none; }
+.ts-stat__val { display: block; font-family: 'Bebas Neue', sans-serif; font-size: 2rem; color: #f5c500; line-height: 1; }
+.ts-stat__label { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #555; margin-top: 3px; }
+
+/* ── Body ── */
+.ts-body { display: grid; grid-template-columns: 1fr 260px; gap: 1.5rem; padding: 0 2rem; }
+
+/* ── Bio ── */
+.ts-bio {
+  font-size: 14px; line-height: 1.8; color: #888;
+  margin-bottom: 1.25rem; padding-bottom: 1.25rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+/* ── Actions ── */
+.ts-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1.75rem; }
+.ts-btn {
+  font-family: 'Bebas Neue', sans-serif; font-size: 0.9rem; letter-spacing: 0.07em;
+  padding: 0.5rem 1.2rem; border: none; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+  text-decoration: none; border-radius: 2px; transition: opacity .15s;
+}
+.ts-btn:hover { opacity: .85; }
+.ts-btn--primary { background: #f5c500; color: #000; }
+.ts-btn--outline { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.2); }
+.ts-btn--outline:hover { border-color: rgba(255,255,255,0.5); opacity: 1; }
+.ts-btn--ghost { background: transparent; color: #666; border: 1px solid rgba(255,255,255,0.1); }
+.ts-btn--ghost:hover { color: #fff; border-color: rgba(255,255,255,0.3); opacity: 1; }
+.ts-btn--danger { background: transparent; color: #e53e3e; border: 1px solid rgba(229,62,62,0.3); }
+.ts-btn--sm { font-size: 0.78rem; padding: 0.35rem 0.85rem; }
+
+/* ── Tabs ── */
+.ts-tabs {
+  display: flex; border-bottom: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 1.5rem;
+  overflow: visible;
+  flex-wrap: wrap;
+  gap: 0;
+}
+.ts-tab {
+  font-family: 'Bebas Neue', sans-serif; font-size: 0.95rem; letter-spacing: 0.06em;
+  padding: 0.6rem 1.2rem; background: transparent; border: none; cursor: pointer;
+  color: #555; border-bottom: 2px solid transparent; margin-bottom: -1px;
+  transition: color .2s; white-space: nowrap;
+}
+.ts-tab:hover { color: #aaa; }
+.ts-tab--active { color: #f5c500; border-bottom-color: #f5c500; }
+.ts-tab__count { font-size: 10px; color: #444; margin-left: 3px; }
+
+
+/* ── Section title ── */
+.ts-section-title {
+  font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; letter-spacing: 0.05em;
+  color: #fff; border-left: 3px solid #f5c500; padding-left: 0.65rem; margin-bottom: 1.25rem;
+}
+
+/* ── Masonry galerie ── */
+.ts-photo-grid { columns: 2; column-gap: 0.6rem; }
+@media (max-width: 500px) { .ts-photo-grid { columns: 1; } }
+.ts-photo-item { break-inside: avoid; margin-bottom: 0.6rem; overflow: hidden; border-radius: 2px; cursor: zoom-in; }
+.ts-photo-img { width: 100%; display: block; transition: transform .35s; }
+.ts-photo-item:hover .ts-photo-img { transform: scale(1.04); filter: brightness(.85); }
+
+/* ── Tatoueur cards ── */
+.ts-tatoueur-card {
+  display: block; text-decoration: none;
+  background: #111; border: 1px solid #2a2a2a;
+  overflow: hidden; border-radius: 2px; transition: border-color .2s;
+  height: 100%;
+}
+.ts-tatoueur-card:hover { border-color: #f5c500; }
+.ts-tatoueur-card__thumb { position: relative; overflow: hidden; height: 200px; background: #0d0d0d; }
+.ts-tatoueur-card__img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s; }
+.ts-tatoueur-card:hover .ts-tatoueur-card__img { transform: scale(1.04); }
+.ts-tatoueur-card__placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: #333; }
+.ts-tatoueur-card__verified {
+  position: absolute; top: 0.5rem; right: 0.5rem;
+  background: rgba(39,174,96,0.9); color: #fff;
+  font-size: 10px; padding: 2px 6px; text-transform: uppercase; letter-spacing: 0.05em;
+  border-radius: 2px;
+}
+.ts-tatoueur-card__info { padding: 0.85rem 1rem; }
+.ts-tatoueur-card__name { display: block; font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; color: #fff; }
+.ts-tatoueur-card__styles { display: block; font-size: 12px; color: #555; margin-top: 2px; }
+
+/* ── Event cards ── */
+.ts-event-card {
+  display: block; text-decoration: none;
+  background: #111; border: 1px solid #2a2a2a;
+  overflow: hidden; border-radius: 2px; transition: border-color .2s;
+  height: 100%;
+}
+.ts-event-card:hover { border-color: #f5c500; }
+.ts-event-card__thumb { overflow: hidden; height: 180px; background: #0d0d0d; }
+.ts-event-card__img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s; }
+.ts-event-card:hover .ts-event-card__img { transform: scale(1.04); }
+.ts-event-card__placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: #333; }
+.ts-event-card__info { padding: 0.85rem 1rem; }
+.ts-event-card__date { font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: #f5c500; margin-bottom: 0.3rem; }
+.ts-event-card__name { font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; color: #fff; letter-spacing: 0.04em; margin-bottom: 0.2rem; }
+.ts-event-card__loc { font-size: 12px; color: #555; }
+.ts-event-card__desc { font-size: 12px; color: #555; line-height: 1.5; margin-top: 0.4rem; }
+
+/* ── Sidebar ── */
+.ts-sidebar { display: flex; flex-direction: column; gap: 1rem; }
+.ts-sidebar-card { background: #111; border: 1px solid #1e1e1e; border-radius: 8px; padding: 1rem 1.1rem; }
+.ts-sidebar-title { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #555; margin-bottom: 0.75rem; }
+
+.ts-info-row { display: flex; align-items: flex-start; gap: 0.65rem; padding: 0.45rem 0; border-bottom: 1px solid #1a1a1a; font-size: 13px; }
+.ts-info-row:last-child { border-bottom: none; }
+.ts-info-row svg { flex-shrink: 0; margin-top: 2px; color: #555; }
+.ts-info-row__label { color: #555; font-size: 11px; }
+.ts-info-row__val { color: #ccc; }
+
+.ts-tatoueur-mini { display: flex; align-items: center; gap: 0.65rem; padding: 0.5rem 0; border-bottom: 1px solid #1a1a1a; text-decoration: none; transition: opacity .15s; }
+.ts-tatoueur-mini:last-child { border-bottom: none; }
+.ts-tatoueur-mini:hover { opacity: .8; }
+.ts-tatoueur-mini__avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid #2a2a2a; flex-shrink: 0; background: #1a1a1a; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #444; overflow: hidden; }
+.ts-tatoueur-mini__name { font-size: 13px; font-weight: 500; color: #ddd; }
+.ts-tatoueur-mini__style { font-size: 11px; color: #555; }
+
+/* ── Map ── */
+.ts-map-wrap { border-radius: 8px; overflow: hidden; border: 1px solid #1e1e1e; }
+
+/* ── Lightbox ── */
+.ts-lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 9999; align-items: center; justify-content: center; }
+.ts-lightbox.open { display: flex; }
+.ts-lightbox__img { max-width: 90vw; max-height: 90vh; object-fit: contain; border-radius: 2px; }
+.ts-lightbox__nav { position: fixed; top: 50%; transform: translateY(-50%); background: none; border: none; color: #fff; font-size: 3rem; cursor: pointer; opacity: 0.35; transition: opacity .2s; padding: 0 1.25rem; line-height: 1; }
+.ts-lightbox__nav:hover { opacity: 1; }
+.ts-lightbox__prev { left: 0; }
+.ts-lightbox__next { right: 0; }
+.ts-lightbox__close { position: fixed; top: 1rem; right: 1.5rem; background: none; border: none; color: #fff; font-size: 1.75rem; cursor: pointer; opacity: 0.4; transition: opacity .2s; }
+.ts-lightbox__close:hover { opacity: 1; }
+
+.ts-empty { color: #444; font-size: 13px; }
+
+@media (max-width: 700px) {
+  .ts-body { grid-template-columns: 1fr; }
+  .ts-sidebar { display: none; }
+  .ts-identity, .ts-stats, .ts-body { padding: 0 1rem; }
+}
+</style>
+
+<div class="ts-profile">
+
+  <%# ── Cover ── %>
+  <div class="ts-cover">
+    <% if @shop.cover.attached? %>
+      <%= image_tag url_for(@shop.cover), class: "ts-cover__img" %>
+    <% elsif @shop.cover_color.present? %>
+      <div class="ts-cover__img" style="background:<%= @shop.cover_color %>;width:100%;height:100%;"></div>
+    <% else %>
+      <div class="ts-cover__pattern"></div>
+    <% end %>
+    <div class="ts-cover__overlay"></div>
+    <div class="ts-cover__accent"></div>
+    <% if user_signed_in? && policy(@shop).update? %>
+      <div class="ts-cover__edit">
+        <%= render "shared/cover_editor", record: @shop, update_path: shop_path(@shop), param_name: "shop" %>
       </div>
-
-      <%# Infos %>
-      <div class="col">
-        <h1 style="font-family:'Bebas Neue',sans-serif;font-size:3.5rem;letter-spacing:0.04em;
-                   text-shadow:0 2px 12px rgba(0,0,0,0.8);margin-bottom:0.5rem;">
-          <%= @shop.name %>
-        </h1>
-
-        <%# Méta %>
-        <div class="d-flex flex-wrap gap-3 mb-3" style="color:#bbb;font-size:0.9rem;">
-          <% if @shop.address.present? %>
-            <span>📍 <%= @shop.address %></span>
-          <% end %>
-          <% if @shop.phone.present? %>
-            <span>📞 <%= @shop.phone %></span>
-          <% end %>
-          <% if @shop.email.present? %>
-            <span>✉️ <%= @shop.email %></span>
-          <% end %>
-          <% if @shop.open_hours.present? %>
-            <span>🕐 <%= @shop.open_hours %></span>
-          <% end %>
-        </div>
-
-        <%# Stats %>
-        <div class="d-flex gap-4 mb-4">
-          <div class="text-center">
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:2.2rem;color:#F5C500;line-height:1;">
-              <%= @shop.tatoueurs.count %>
-            </div>
-            <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em;color:#888;">
-              Tatoueurs
-            </div>
-          </div>
-          <div style="width:1px;background:#2A2A2A;margin:0.2rem 0;"></div>
-          <div class="text-center">
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:2.2rem;color:#F5C500;line-height:1;">
-              <%= @shop.bookings.count %>
-            </div>
-            <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em;color:#888;">
-              Réservations
-            </div>
-          </div>
-          <div style="width:1px;background:#2A2A2A;margin:0.2rem 0;"></div>
-          <div class="text-center">
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:2.2rem;color:#F5C500;line-height:1;">
-              <%= @shop.events.where("start_date >= ?", Time.current).count %>
-            </div>
-            <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em;color:#888;">
-              Événements
-            </div>
-          </div>
-        </div>
-
-        <%# Actions %>
-        <div class="d-flex flex-wrap gap-2 align-items-center">
-          <% if user_signed_in? %>
-            <% unless current_user.shop == @shop %>
-              <%= link_to "✉️ Contacter",
-                  conversations_path(shop_id: @shop.id),
-                  data: { turbo_method: :post },
-                  class: "hero-cta" %>
-              <%= link_to "📅 Réserver", new_shop_booking_path(@shop), class: "hero-cta-outline" %>
-            <% end %>
-          <% else %>
-            <%= link_to "Connectez-vous pour réserver", new_user_session_path, class: "hero-cta" %>
-          <% end %>
-
-          <% unless current_user&.shop == @shop %>
-            <%= render "favorites/button", favoritable: @shop %>
-          <% end %>
-
-          <% if user_signed_in? && policy(@shop).update? %>
-            <%= link_to "✏️ Modifier", edit_shop_path(@shop), class: "btn btn-outline-primary btn-sm" %>
-            <%= link_to "🖼️ Créer un portfolio", new_shop_portfolio_path(@shop), class: "btn btn-outline-primary btn-sm" %>
-          <% end %>
-
-          <% if user_signed_in? && policy(@shop).destroy? %>
-            <%= link_to "Supprimer", @shop,
-                data: { turbo_method: :delete, turbo_confirm: "Supprimer ce shop ?" },
-                class: "btn btn-outline-danger btn-sm" %>
-          <% end %>
-        </div>
-
-        <% if @shop.description.present? %>
-          <div class="mt-4 pt-4" style="border-top:1px solid rgba(255,255,255,0.08);">
-            <p style="max-width:700px;line-height:1.8;color:#bbb;"><%= @shop.description %></p>
-          </div>
-        <% end %>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<%# Éditeur de fond %>
-<% if user_signed_in? && policy(@shop).update? %>
-  <%= render "shared/cover_editor",
-      record:      @shop,
-      update_path: shop_path(@shop),
-      param_name:  "shop" %>
-<% end %>
-
-<hr style="border-color:#2A2A2A;margin:0;">
-
-<%# ================================ %>
-<%# TABS %>
-<%# ================================ %>
-<div class="container">
-
-  <div style="display:flex;border-bottom:1px solid #2A2A2A;margin-bottom:2rem;">
-    <% shop_tabs = [] %>
-    <% shop_tabs << { key: "galerie",    label: "Galerie",    count: nil } if @shop.photos.count > 1 %>
-    <% shop_tabs << { key: "tatoueurs",  label: "Tatoueurs",  count: @shop.tatoueurs.count } if @shop.tatoueurs.any? %>
-    <% shop_tabs << { key: "evenements", label: "Événements", count: @shop.events.where("start_date >= ?", Time.current).count } if @shop.events.where("start_date >= ?", Time.current).any? %>
-    <% shop_tabs << { key: "carte",      label: "Carte",      count: nil } if @shop.coordinates_valid? %>
-
-    <% shop_tabs.each_with_index do |tab, i| %>
-      <button onclick="showShopTab('<%= tab[:key] %>')"
-              id="shop-tab-btn-<%= tab[:key] %>"
-              style="background:transparent;border:none;
-                     color:<%= i == 0 ? '#F5C500' : '#888' %>;
-                     font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:0.05em;
-                     padding:1rem 1.5rem;cursor:pointer;
-                     border-bottom:<%= i == 0 ? '2px solid #F5C500' : '2px solid transparent' %>;
-                     margin-bottom:-1px;transition:all 0.2s;">
-        <%= tab[:label] %>
-        <% if tab[:count].present? && tab[:count] > 0 %>
-          <span style="font-size:0.8rem;color:#555;margin-left:0.25rem;">(<%= tab[:count] %>)</span>
-        <% end %>
-      </button>
     <% end %>
   </div>
 
-  <%# ── Galerie ── %>
-  <% if @shop.photos.count > 1 %>
-    <div id="shop-tab-galerie" class="shop-tab-content">
-      <div class="row row-cols-2 row-cols-md-4 g-3">
-        <% @shop.photos.drop(1).each do |photo| %>
-          <div class="col" style="overflow:hidden;">
-            <%= image_tag photo,
-                style: "width:100%;height:220px;object-fit:cover;border:1px solid #2A2A2A;
-                        transition:transform 0.3s,border-color 0.2s;display:block;",
-                onmouseover: "this.style.transform='scale(1.04)';this.style.borderColor='#F5C500'",
-                onmouseout:  "this.style.transform='scale(1)';this.style.borderColor='#2A2A2A'" %>
-          </div>
+  <%# ── Identity ── %>
+  <div class="ts-identity">
+    <div class="ts-avatar-wrap">
+      <% profile_photo = @shop.photos.first %>
+      <% if profile_photo %>
+        <%= image_tag profile_photo, class: "ts-avatar" %>
+      <% elsif @shop.cover.attached? %>
+        <%= image_tag @shop.cover, class: "ts-avatar" %>
+      <% else %>
+        <div class="ts-avatar ts-avatar--placeholder">🏠</div>
+      <% end %>
+      <div class="ts-avatar__ring"></div>
+    </div>
+    <div class="ts-identity__info">
+      <div class="ts-name-row">
+        <h1 class="ts-name"><%= @shop.name %></h1>
+        <% if @shop.try(:featured?) %>
+          <span class="ts-featured-pill">⭐ Featured</span>
+        <% end %>
+      </div>
+      <div class="ts-meta">
+        <% if @shop.address.present? %>
+          <span class="ts-meta__item">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <%= @shop.address %>
+          </span>
+        <% end %>
+        <% if @shop.phone.present? %>
+          <span class="ts-meta__item">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8a19.79 19.79 0 01-3.07-8.67A2 2 0 012 .84h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 8.18a16 16 0 006.29 6.29l1.42-1.42a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+            <%= @shop.phone %>
+          </span>
+        <% end %>
+        <% if @shop.open_hours.present? %>
+          <span class="ts-meta__item">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <%= @shop.open_hours %>
+          </span>
         <% end %>
       </div>
     </div>
-  <% end %>
+  </div>
 
-  <%# ── Tatoueurs ── %>
-  <% if @shop.tatoueurs.any? %>
-    <div id="shop-tab-tatoueurs" class="shop-tab-content" style="<%= @shop.photos.count > 1 ? 'display:none;' : '' %>">
-      <div class="row g-4">
-        <% @shop.tatoueurs.each do |tatoueur| %>
-          <div class="col-md-4">
-            <%= link_to tatoueur_path(tatoueur), style: "text-decoration:none;" do %>
-              <div style="background:#1A1A1A;border:1px solid #2A2A2A;
-                          overflow:hidden;transition:border-color 0.2s;"
-                   onmouseover="this.style.borderColor='#F5C500'"
-                   onmouseout="this.style.borderColor='#2A2A2A'">
+  <%# ── Stats ── %>
+  <div class="ts-stats">
+    <div class="ts-stat">
+      <span class="ts-stat__val"><%= @shop.tatoueurs.count %></span>
+      <span class="ts-stat__label">Tatoueurs</span>
+    </div>
+    <div class="ts-stat">
+      <span class="ts-stat__val"><%= @shop.bookings.count %></span>
+      <span class="ts-stat__label">Réservations</span>
+    </div>
+    <div class="ts-stat">
+      <span class="ts-stat__val"><%= @shop.events.where("start_date >= ?", Time.current).count %></span>
+      <span class="ts-stat__label">Événements</span>
+    </div>
+    <div class="ts-stat">
+      <span class="ts-stat__val"><%= @shop.photos.count %></span>
+      <span class="ts-stat__label">Photos</span>
+    </div>
+  </div>
+
+  <%# ── Body ── %>
+  <div class="ts-body">
+
+    <%# ── Main ── %>
+    <div>
+
+      <% if @shop.description.present? %>
+        <p class="ts-bio"><%= @shop.description %></p>
+      <% end %>
+
+      <%# Actions %>
+      <div class="ts-actions">
+        <% if user_signed_in? %>
+          <% unless current_user.shop == @shop %>
+            <%= link_to conversations_path(shop_id: @shop.id),
+                  data: { turbo_method: :post }, class: "ts-btn ts-btn--primary" do %>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+              Contacter
+            <% end %>
+            <%= link_to new_shop_booking_path(@shop), class: "ts-btn ts-btn--outline" do %>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              Réserver
+            <% end %>
+          <% end %>
+        <% else %>
+          <%= link_to new_user_session_path, class: "ts-btn ts-btn--primary" do %>
+            Connectez-vous pour réserver
+          <% end %>
+        <% end %>
+        <% unless current_user&.shop == @shop %>
+          <%= render "favorites/button", favoritable: @shop %>
+          <%= render "shared/share_button",
+              record: @shop,
+              record_type: "Shop",
+              record_name: @shop.name %>
+        <% end %>
+        <% if user_signed_in? && policy(@shop).update? %>
+          <%= link_to edit_shop_path(@shop), class: "ts-btn ts-btn--ghost ts-btn--sm" do %>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Modifier
+          <% end %>
+          <%= link_to new_shop_portfolio_path(@shop), class: "ts-btn ts-btn--ghost ts-btn--sm" do %>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+            Créer un portfolio
+          <% end %>
+        <% end %>
+        <% if user_signed_in? && policy(@shop).destroy? %>
+          <%= link_to @shop, data: { turbo_method: :delete, turbo_confirm: "Supprimer ce shop ?" }, class: "ts-btn ts-btn--danger ts-btn--sm" do %>
+            Supprimer
+          <% end %>
+        <% end %>
+      </div>
+
+      <%# Tabs %>
+      <% shop_tabs = [] %>
+      <% shop_tabs << { key: "galerie",    label: "Galerie",    count: @shop.photos.count } if @shop.photos.count > 1 %>
+      <% shop_tabs << { key: "tatoueurs",  label: "Tatoueurs",  count: @shop.tatoueurs.count } if @shop.tatoueurs.any? %>
+      <% shop_events = @shop.events.where("start_date >= ?", Time.current).order(start_date: :asc) %>
+      <% shop_tabs << { key: "evenements", label: "Événements", count: shop_events.count } if shop_events.any? %>
+      <% shop_tabs << { key: "carte",      label: "Carte",      count: nil } if @shop.coordinates_valid? %>
+
+      <div class="ts-tabs">
+        <% shop_tabs.each_with_index do |tab, i| %>
+          <button class="ts-tab <%= i == 0 ? 'ts-tab--active' : '' %>"
+                  id="shop-tab-btn-<%= tab[:key] %>"
+                  onclick="showShopTab('<%= tab[:key] %>')">
+            <%= tab[:label] %>
+            <% if tab[:count].present? && tab[:count] > 0 %>
+              <span class="ts-tab__count">(<%= tab[:count] %>)</span>
+            <% end %>
+          </button>
+        <% end %>
+      </div>
+
+      <%# ── Tab : Galerie ── %>
+      <% if @shop.photos.count > 1 %>
+        <div id="shop-tab-galerie" class="shop-tab-content">
+          <div class="ts-photo-grid">
+            <% @shop.photos.drop(1).each_with_index do |photo, idx| %>
+              <div class="ts-photo-item">
+                <img src="<%= url_for(photo) %>"
+                     class="ts-photo-img"
+                     data-lightbox="true"
+                     data-src="<%= url_for(photo) %>"
+                     data-caption="Photo <%= idx + 2 %>"
+                     onclick="openLightbox(this)" />
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+
+      <%# ── Tab : Tatoueurs ── %>
+      <% if @shop.tatoueurs.any? %>
+        <% first_visible = @shop.photos.count > 1 %>
+        <div id="shop-tab-tatoueurs" class="shop-tab-content" style="<%= first_visible ? 'display:none;' : '' %>">
+          <div class="row g-3">
+            <% @shop.tatoueurs.each do |tatoueur| %>
+              <div class="col-md-4">
+                <%= link_to tatoueur_path(tatoueur), class: "ts-tatoueur-card" do %>
+                  <div class="ts-tatoueur-card__thumb">
+                    <% if tatoueur.avatar.attached? %>
+                      <%= image_tag tatoueur.avatar, class: "ts-tatoueur-card__img" %>
+                    <% else %>
+                      <div class="ts-tatoueur-card__placeholder">🖋️</div>
+                    <% end %>
+                    <% if tatoueur.verified? %>
+                      <span class="ts-tatoueur-card__verified">✓ Vérifié</span>
+                    <% end %>
+                  </div>
+                  <div class="ts-tatoueur-card__info">
+                    <span class="ts-tatoueur-card__name"><%= tatoueur.nickname %></span>
+                    <span class="ts-tatoueur-card__styles"><%= tatoueur.tattoo_styles.map(&:name).join(", ").presence || "Style non renseigné" %></span>
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+
+      <%# ── Tab : Événements ── %>
+      <% if shop_events.any? %>
+        <div id="shop-tab-evenements" class="shop-tab-content" style="display:none;">
+          <div class="row g-3">
+            <% shop_events.each do |event| %>
+              <div class="col-md-4">
+                <%= link_to event_path(event), class: "ts-event-card" do %>
+                  <div class="ts-event-card__thumb">
+                    <% if event.banner.attached? %>
+                      <%= image_tag event.banner, class: "ts-event-card__img" %>
+                    <% else %>
+                      <div class="ts-event-card__placeholder">🎪</div>
+                    <% end %>
+                  </div>
+                  <div class="ts-event-card__info">
+                    <div class="ts-event-card__date"><%= event.start_date&.strftime("%d %b %Y — %Hh%M") %></div>
+                    <div class="ts-event-card__name"><%= event.name %></div>
+                    <% if event.location.present? %>
+                      <div class="ts-event-card__loc">📍 <%= event.location %></div>
+                    <% end %>
+                    <% if event.description.present? %>
+                      <p class="ts-event-card__desc"><%= event.description.truncate(80) %></p>
+                    <% end %>
+                  </div>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
+
+      <%# ── Tab : Carte ── %>
+      <% if @shop.coordinates_valid? %>
+        <div id="shop-tab-carte" class="shop-tab-content" style="display:none;">
+          <div class="ts-map-wrap">
+            <%= render "shared/map",
+                map_id:         "shop-map-#{@shop.id}",
+                height:         "400px",
+                tatoueurs_json: "[]",
+                shops_json:     [{ id: @shop.id, name: @shop.name, lat: @shop.latitude,
+                                   lng: @shop.longitude, url: shop_path(@shop),
+                                   address: @shop.address, type: "shop" }].to_json %>
+          </div>
+        </div>
+      <% end %>
+
+    </div>
+
+    <%# ── Sidebar ── %>
+    <div class="ts-sidebar">
+
+      <%# Infos de contact %>
+      <div class="ts-sidebar-card">
+        <div class="ts-sidebar-title">Informations</div>
+        <% if @shop.address.present? %>
+          <div class="ts-info-row">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            <div><div class="ts-info-row__label">Adresse</div><div class="ts-info-row__val"><%= @shop.address %></div></div>
+          </div>
+        <% end %>
+        <% if @shop.phone.present? %>
+          <div class="ts-info-row">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.8a19.79 19.79 0 01-3.07-8.67A2 2 0 012 .84h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 8.18a16 16 0 006.29 6.29l1.42-1.42a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/></svg>
+            <div><div class="ts-info-row__label">Téléphone</div><div class="ts-info-row__val"><%= @shop.phone %></div></div>
+          </div>
+        <% end %>
+        <% if @shop.email.present? %>
+          <div class="ts-info-row">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <div><div class="ts-info-row__label">Email</div><div class="ts-info-row__val"><%= @shop.email %></div></div>
+          </div>
+        <% end %>
+        <% if @shop.open_hours.present? %>
+          <div class="ts-info-row">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            <div><div class="ts-info-row__label">Horaires</div><div class="ts-info-row__val"><%= @shop.open_hours %></div></div>
+          </div>
+        <% end %>
+      </div>
+
+      <%# Tatoueurs du shop %>
+      <% if @shop.tatoueurs.any? %>
+        <div class="ts-sidebar-card">
+          <div class="ts-sidebar-title">L'équipe (<%= @shop.tatoueurs.count %>)</div>
+          <% @shop.tatoueurs.first(4).each do |tatoueur| %>
+            <%= link_to tatoueur_path(tatoueur), class: "ts-tatoueur-mini" do %>
+              <div class="ts-tatoueur-mini__avatar">
                 <% if tatoueur.avatar.attached? %>
-                  <div style="overflow:hidden;">
-                    <%= image_tag tatoueur.avatar,
-                        style: "width:100%;height:200px;object-fit:cover;
-                                transition:transform 0.3s;display:block;",
-                        onmouseover: "this.style.transform='scale(1.04)'",
-                        onmouseout:  "this.style.transform='scale(1)'" %>
-                  </div>
+                  <%= image_tag tatoueur.avatar, style: "width:100%;height:100%;object-fit:cover;" %>
                 <% else %>
-                  <div style="width:100%;height:200px;background:#2A2A2A;
-                              display:flex;align-items:center;justify-content:center;font-size:3rem;">🖋️</div>
+                  🖋️
                 <% end %>
-                <% if tatoueur.verified? %>
-                  <span style="position:absolute;top:0.75rem;right:0.75rem;
-                               background:rgba(39,174,96,0.9);color:#fff;
-                               font-size:0.7rem;padding:0.2rem 0.5rem;text-transform:uppercase;">
-                    ✅ Vérifié
-                  </span>
-                <% end %>
-                <div style="padding:1rem;">
-                  <div style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;
-                              color:#fff;margin-bottom:0.2rem;">
-                    <%= tatoueur.nickname %>
-                  </div>
-                  <div style="color:#666;font-size:0.8rem;">
-                    <%= tatoueur.tattoo_styles.map(&:name).join(", ").presence || "Style non renseigné" %>
-                  </div>
-                </div>
+              </div>
+              <div>
+                <div class="ts-tatoueur-mini__name"><%= tatoueur.nickname %></div>
+                <div class="ts-tatoueur-mini__style"><%= tatoueur.tattoo_styles.first&.name || "Tatoueur" %></div>
               </div>
             <% end %>
-          </div>
-        <% end %>
-      </div>
-    </div>
-  <% end %>
+          <% end %>
+          <% if @shop.tatoueurs.count > 4 %>
+            <div style="font-size:11px;color:#444;padding-top:0.4rem;">+<%= @shop.tatoueurs.count - 4 %> autres</div>
+          <% end %>
+        </div>
+      <% end %>
 
-  <%# ── Événements ── %>
-  <% shop_events = @shop.events.where("start_date >= ?", Time.current).order(start_date: :asc) %>
-  <% if shop_events.any? %>
-    <div id="shop-tab-evenements" class="shop-tab-content" style="display:none;">
-      <div class="row g-4">
-        <% shop_events.each do |event| %>
-          <div class="col-md-4">
-            <%= link_to event_path(event), style: "text-decoration:none;" do %>
-              <div style="background:#1A1A1A;border:1px solid #2A2A2A;overflow:hidden;
-                          transition:border-color 0.2s;"
-                   onmouseover="this.style.borderColor='#F5C500'"
-                   onmouseout="this.style.borderColor='#2A2A2A'">
-
-                <%# Banner %>
-                <% if event.banner.attached? %>
-                  <div style="overflow:hidden;">
-                    <%= image_tag event.banner,
-                        style: "width:100%;height:180px;object-fit:cover;
-                                transition:transform 0.3s;display:block;",
-                        onmouseover: "this.style.transform='scale(1.04)'",
-                        onmouseout:  "this.style.transform='scale(1)'" %>
-                  </div>
-                <% else %>
-                  <div style="width:100%;height:180px;background:#111;
-                              display:flex;align-items:center;justify-content:center;font-size:3rem;">
-                    🎪
-                  </div>
-                <% end %>
-
-                <div style="padding:1rem;">
-                  <%# Date %>
-                  <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em;
-                              color:#F5C500;margin-bottom:0.4rem;">
-                    <%= event.start_date&.strftime("%d %b %Y — %Hh%M") %>
-                  </div>
-
-                  <%# Nom %>
-                  <div style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;
-                              color:#fff;letter-spacing:0.04em;margin-bottom:0.3rem;">
-                    <%= event.name %>
-                  </div>
-
-                  <%# Lieu %>
-                  <% if event.location.present? %>
-                    <div style="font-size:0.8rem;color:#666;">
-                      📍 <%= event.location %>
-                    </div>
-                  <% end %>
-
-                  <%# Description %>
-                  <% if event.description.present? %>
-                    <p style="font-size:0.85rem;color:#888;margin-top:0.5rem;margin-bottom:0;
-                              line-height:1.5;">
-                      <%= event.description.truncate(80) %>
-                    </p>
-                  <% end %>
-                </div>
-
-              </div>
+      <%# Prochain événement %>
+      <% next_event = @shop.events.where("start_date >= ?", Time.current).order(start_date: :asc).first %>
+      <% if next_event %>
+        <div class="ts-sidebar-card">
+          <div class="ts-sidebar-title">Prochain événement</div>
+          <%= link_to event_path(next_event), style: "text-decoration:none;" do %>
+            <div style="font-size:11px;text-transform:uppercase;letter-spacing:0.07em;color:#f5c500;margin-bottom:4px;">
+              <%= next_event.start_date&.strftime("%d %b %Y") %>
+            </div>
+            <div style="font-family:'Bebas Neue',sans-serif;font-size:1.05rem;color:#fff;"><%= next_event.name %></div>
+            <% if next_event.location.present? %>
+              <div style="font-size:11px;color:#555;margin-top:2px;">📍 <%= next_event.location %></div>
             <% end %>
-          </div>
-        <% end %>
-      </div>
-    </div>
-  <% end %>
+          <% end %>
+        </div>
+      <% end %>
 
-  <%# ── Carte ── %>
-  <% if @shop.coordinates_valid? %>
-    <div id="shop-tab-carte" class="shop-tab-content" style="display:none;">
-      <%= render "shared/map",
-          map_id:         "shop-map-#{@shop.id}",
-          height:         "400px",
-          tatoueurs_json: "[]",
-          shops_json:     [{ id: @shop.id, name: @shop.name, lat: @shop.latitude,
-                             lng: @shop.longitude, url: shop_path(@shop),
-                             address: @shop.address, type: "shop" }].to_json %>
     </div>
-  <% end %>
+  </div>
+</div>
 
+<%# ── Lightbox ── %>
+<div id="lightbox" onclick="if(event.target===this) closeLightbox()" class="ts-lightbox">
+  <button onclick="shiftLightbox(-1)" class="ts-lightbox__nav ts-lightbox__prev">&#8249;</button>
+  <button onclick="shiftLightbox(1)"  class="ts-lightbox__nav ts-lightbox__next">&#8250;</button>
+  <button onclick="closeLightbox()"   class="ts-lightbox__close">✕</button>
+  <img id="lightbox-img" class="ts-lightbox__img" src="" alt="">
 </div>
 
 <script>
-  const shopTabs = ["galerie", "tatoueurs", "evenements", "carte"]
+  const shopAllTabs = ["galerie", "tatoueurs", "evenements", "carte"]
 
   function showShopTab(key) {
-    shopTabs.forEach(t => {
+    shopAllTabs.forEach(t => {
       const content = document.getElementById(`shop-tab-${t}`)
       const btn     = document.getElementById(`shop-tab-btn-${t}`)
       if (!content || !btn) return
-      if (t === key) {
-        content.style.display = "block"
-        btn.style.color        = "#F5C500"
-        btn.style.borderBottom = "2px solid #F5C500"
-      } else {
-        content.style.display = "none"
-        btn.style.color        = "#888"
-        btn.style.borderBottom = "2px solid transparent"
-      }
+      const active = t === key
+      content.style.display = active ? "block" : "none"
+      btn.classList.toggle("ts-tab--active", active)
     })
   }
+
+  let allImgs = [], currentIdx = 0
+  function buildIndex() { allImgs = Array.from(document.querySelectorAll("[data-lightbox]")) }
+  function openLightbox(el) {
+    buildIndex(); currentIdx = allImgs.indexOf(el); showAt(currentIdx)
+    document.getElementById("lightbox").classList.add("open")
+    document.body.style.overflow = "hidden"
+  }
+  function showAt(idx) {
+    const el = allImgs[idx]
+    document.getElementById("lightbox-img").src = el.dataset.src
+  }
+  function shiftLightbox(dir) { currentIdx = (currentIdx + dir + allImgs.length) % allImgs.length; showAt(currentIdx) }
+  function closeLightbox() {
+    document.getElementById("lightbox").classList.remove("open")
+    document.getElementById("lightbox-img").src = ""
+    document.body.style.overflow = ""
+  }
+  document.addEventListener("keydown", e => {
+    const lb = document.getElementById("lightbox")
+    if (!lb || !lb.classList.contains("open")) return
+    if (e.key === "Escape")     closeLightbox()
+    if (e.key === "ArrowRight") shiftLightbox(1)
+    if (e.key === "ArrowLeft")  shiftLightbox(-1)
+  })
 </script>

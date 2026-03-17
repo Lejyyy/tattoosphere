@@ -28,6 +28,8 @@ class Event < ApplicationRecord
   # ================================
   def featured? = featured == true
 
+  after_create_commit :notify_followers
+
   private
 
   def must_have_owner
@@ -37,5 +39,9 @@ class Event < ApplicationRecord
   def end_after_start
     return unless start_date && end_date
     errors.add(:end_date, "doit être après la date de début") if end_date <= start_date
+  end
+
+  def notify_followers
+    NotificationService.new_event(self)
   end
 end

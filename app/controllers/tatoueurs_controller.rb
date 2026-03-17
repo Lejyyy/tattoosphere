@@ -80,14 +80,27 @@ class TatoueursController < ApplicationController
 
   # PATCH /tatoueurs/:id
   def update
-  authorize @tatoueur
-  @tatoueur.cover.purge if params[:tatoueur][:remove_cover] == "1"
-  if @tatoueur.update(tatoueur_params)
-    redirect_to @tatoueur, notice: "Profil mis à jour."
-  else
-    render :edit, status: :unprocessable_entity
+    authorize @tatoueur
+    @tatoueur.cover.purge if params[:tatoueur][:remove_cover] == "1" || params[:preset_cover_url].present?
+
+    if params[:preset_cover_url].present?
+      filename  = File.basename(params[:preset_cover_url])
+      file_path = Rails.root.join("public/covers", filename)
+      if File.exist?(file_path)
+        @tatoueur.cover.attach(
+          io: File.open(file_path),
+          filename: filename,
+          content_type: Marcel::MimeType.for(Pathname.new(file_path))
+        )
+      end
+    end
+
+    if @tatoueur.update(tatoueur_params)
+      redirect_to @tatoueur, notice: "Profil mis à jour."
+    else
+      render :edit, status: :unprocessable_entity
+    end
   end
-end
 
   # DELETE /tatoueurs/:id
   def destroy
@@ -180,27 +193,26 @@ end
     "&merchantId=#{tatoueur.id}"
   end
 
- def tatoueur_params
-  params.require(:tatoueur).permit(
-    :nickname, :first_name, :last_name,
-    :email, :phone, :description,
-    :address, :deposit_amount,
-    :cover,  :remove_cover,
-    :iban, :bic, :bank_name,
-    :avatar, :cover, :cover_color, :remove_cover,
-    :identity_document, :hygiene_certificate, :siren,
-    tattoo_style_ids: []
-  )
-end
+  def tatoueur_params
+    params.require(:tatoueur).permit(
+      :nickname, :first_name, :last_name,
+      :email, :phone, :description,
+      :address, :deposit_amount,
+      :avatar, :cover, :cover_color, :remove_cover, :remove_avatar,
+      :iban, :bic, :bank_name,
+      :identity_document, :hygiene_certificate, :siren,
+      tattoo_style_ids: []
+    )
+  end
 
   def verification_params
-  params.require(:tatoueur).permit(
-    :first_name, :last_name,
-    :identity_document,
-    :identity_selfie,
-    :hygiene_certificate,
-    :siren,
-    :iban, :bic, :bank_name
-  )
-end
+    params.require(:tatoueur).permit(
+      :first_name, :last_name,
+      :identity_document,
+      :identity_selfie,
+      :hygiene_certificate,
+      :siren,
+      :iban, :bic, :bank_name
+    )
+  end
 end

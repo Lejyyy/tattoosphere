@@ -65,11 +65,20 @@ class ShopsController < ApplicationController
   # PATCH /shops/:id
   def update
     authorize @shop
+    @@tatoueur.cover.purge if params[:tatoueur][:remove_cover] == "1" || params[:preset_cover_url].present?
 
-    # Suppression de la cover
-    @shop.cover.purge if params[:shop][:remove_cover] == "1"
+    if params[:preset_cover_url].present?
+      filename  = File.basename(params[:preset_cover_url])
+      file_path = Rails.root.join("public/covers", filename)
+      if File.exist?(file_path)
+        @shop.cover.attach(
+          io: File.open(file_path),
+          filename: filename,
+          content_type: Marcel::MimeType.for(Pathname.new(file_path))
+        )
+      end
+    end
 
-    # Upload photo de profil — attach sans écraser les existantes
     if params[:shop][:photos].present?
       @shop.photos.attach(params[:shop][:photos])
     end
@@ -141,7 +150,6 @@ class ShopsController < ApplicationController
       :name, :address, :description,
       :email, :phone, :open_hours,
       :cover, :cover_color, :remove_cover
-      # :photos géré manuellement dans update via attach
     )
   end
 end

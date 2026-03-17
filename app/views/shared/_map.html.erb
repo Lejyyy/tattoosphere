@@ -1,13 +1,13 @@
 <%# ─── Map container ──────────────────────────────────────────────────── %>
-<div style="position:relative;">
+<div style="position:relative; height:<%= height %>; width:100%;">
 
   <div id="<%= map_id %>"
-       style="height:<%= height %>; width:100%; border-radius:0; border:1px solid #2A2A2A;"
+       style="height:100%; width:100%; border-radius:0; border:1px solid #2A2A2A;"
        data-tatoueurs="<%= tatoueurs_json %>"
        data-shops="<%= shops_json %>">
   </div>
 
-  <%# ─── Localisation button (HTML, outside <script>) ──────────────────── %>
+  <%# ─── Localisation button ──────────────────────────────────────────── %>
   <div style="position:absolute; top:1rem; right:1rem; z-index:500;">
     <button onclick="locateUser_<%= map_id.gsub('-','_') %>()"
             style="background:#fff; color:#000; border:none; padding:0.5rem 1rem;
@@ -21,26 +21,21 @@
 
 <script>
 (function() {
-  // ── Unique identifiers for this map instance ──────────────────────────
-  var MAP_ID      = "<%= map_id %>";
-  var MAP_KEY     = "map_<%= map_id.gsub('-','_') %>";
-  var LOCATE_KEY  = "locateUser_<%= map_id.gsub('-','_') %>";
-  var MARKER_KEY  = "userMarker_<%= map_id.gsub('-','_') %>";
+  var MAP_ID     = "<%= map_id %>";
+  var MAP_KEY    = "map_<%= map_id.gsub('-','_') %>";
+  var LOCATE_KEY = "locateUser_<%= map_id.gsub('-','_') %>";
+  var MARKER_KEY = "userMarker_<%= map_id.gsub('-','_') %>";
 
-  // ── Init ──────────────────────────────────────────────────────────────
   function initMap() {
     var el = document.getElementById(MAP_ID);
     if (!el) return;
-    if (el._leaflet_id) return; // already initialised
+    if (el._leaflet_id) return;
 
     var tatoueurs = JSON.parse(el.dataset.tatoueurs || "[]");
     var shops     = JSON.parse(el.dataset.shops     || "[]");
     var allPoints = tatoueurs.concat(shops);
 
-    var map = L.map(MAP_ID, {
-      center: [46.603354, 1.888334],
-      zoom:   6
-    });
+    var map = L.map(MAP_ID, { center: [46.603354, 1.888334], zoom: 6 });
     window[MAP_KEY] = map;
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -48,18 +43,17 @@
       maxZoom: 18
     }).addTo(map);
 
+    // Force Leaflet à recalculer la taille après rendu
+    setTimeout(function() { map.invalidateSize(); }, 100);
+
     var tatoueurIcon = L.divIcon({
       html: '<div style="background:#F5C500;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;border:2px solid #000;">💉</div>',
-      className:  "",
-      iconSize:   [32, 32],
-      iconAnchor: [16, 16]
+      className: "", iconSize: [32, 32], iconAnchor: [16, 16]
     });
 
     var shopIcon = L.divIcon({
       html: '<div style="background:#1A1A1A;width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;border:2px solid #F5C500;">🏪</div>',
-      className:  "",
-      iconSize:   [32, 32],
-      iconAnchor: [16, 16]
+      className: "", iconSize: [32, 32], iconAnchor: [16, 16]
     });
 
     allPoints.forEach(function(point) {
@@ -68,14 +62,13 @@
       var icon   = point.type === "tatoueur" ? tatoueurIcon : shopIcon;
       var marker = L.marker([point.lat, point.lng], { icon: icon }).addTo(map);
 
-      var stylesHtml  = point.styles  ? '<div style="margin-top:4px;font-size:0.75rem;color:#F5C500;">'  + point.styles  + '</div>' : "";
+      var stylesHtml  = point.styles  ? '<div style="margin-top:4px;font-size:0.75rem;color:#F5C500;">' + point.styles + '</div>' : "";
       var addressHtml = point.address ? '<div style="margin-top:4px;font-size:0.75rem;color:#888;">📍 ' + point.address + '</div>' : "";
 
       marker.bindPopup(
         '<div style="background:#1A1A1A;color:#fff;padding:0.75rem;min-width:150px;">' +
           '<div style="font-weight:700;font-size:0.95rem;">' + point.name + '</div>' +
-          stylesHtml +
-          addressHtml +
+          stylesHtml + addressHtml +
           '<a href="' + point.url + '" style="display:inline-block;margin-top:0.5rem;color:#F5C500;font-size:0.8rem;font-weight:600;">Voir le profil →</a>' +
         '</div>',
         { className: "custom-popup" }
@@ -89,37 +82,29 @@
     }
   }
 
-  // ── Geolocation ───────────────────────────────────────────────────────
   window[MARKER_KEY] = null;
 
   window[LOCATE_KEY] = function() {
-    if (!navigator.geolocation) {
-      alert("Géolocalisation non supportée.");
-      return;
-    }
+    if (!navigator.geolocation) { alert("Géolocalisation non supportée."); return; }
     navigator.geolocation.getCurrentPosition(
       function(pos) {
         var lat = pos.coords.latitude;
         var lng = pos.coords.longitude;
         var map = window[MAP_KEY];
         if (!map) return;
-
         if (window[MARKER_KEY]) window[MARKER_KEY].remove();
         window[MARKER_KEY] = L.circleMarker([lat, lng], {
-          radius: 10, fillColor: "#3B82F6", color: "#fff",
-          weight: 2,  fillOpacity: 0.9
+          radius: 10, fillColor: "#3B82F6", color: "#fff", weight: 2, fillOpacity: 0.9
         }).addTo(map).bindPopup("Vous êtes ici").openPopup();
-
         map.setView([lat, lng], 12);
       },
-      function() {
-        alert("Impossible de vous localiser.");
-      }
+      function() { alert("Impossible de vous localiser."); }
     );
   };
 
-  // ── Bootstrap (Turbo + classic DOMContentLoaded) ──────────────────────
-  document.addEventListener("turbo:load",       initMap);
-  document.addEventListener("DOMContentLoaded", initMap);
+  document.addEventListener("turbo:load",          initMap);
+  document.addEventListener("DOMContentLoaded",    initMap);
+  document.addEventListener("tatoueurs:map:init",  initMap);
+  document.addEventListener("shops:map:init",      initMap);
 })();
 </script>

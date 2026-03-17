@@ -1,406 +1,719 @@
 <% content_for :title, @tatoueur.nickname %>
 
-<%# ================================ %>
-<%# HERO %>
-<%# ================================ %>
-<% bg_style = if @tatoueur.cover.attached?
-    "background-image:url('#{url_for(@tatoueur.cover)}');background-size:cover;background-position:center;"
-  elsif @tatoueur.cover_color.present?
-    "background-color:#{@tatoueur.cover_color};"
-  else
-    "background:linear-gradient(135deg,#1A1A1A 0%,#0D0D0D 100%);"
-  end %>
+<style>
+.ts-profile { max-width: 960px; margin: 0 auto; padding: 0 0 4rem; }
 
-<section style="position:relative;min-height:480px;display:flex;align-items:flex-end;overflow:hidden;">
+/* ── Cover ── */
+.ts-cover {
+  height: 260px;
+  position: relative;
+  overflow: hidden;
+  border-radius: 0 0 12px 12px;
+  background: #0d0d0d;
+}
+.ts-cover__img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.ts-cover__pattern {
+  position: absolute; inset: 0;
+  background-image:
+    repeating-linear-gradient(45deg, #1a1a1a 0px, #1a1a1a 1px, transparent 1px, transparent 12px),
+    repeating-linear-gradient(-45deg, #1a1a1a 0px, #1a1a1a 1px, transparent 1px, transparent 12px);
+  background-color: #0d0d0d;
+}
+.ts-cover__overlay {
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(13,13,13,0.85) 100%);
+}
+.ts-cover__edit { position: absolute; top: 1rem; right: 1rem; z-index: 10; }
+/* ── Identity ── */
+.ts-identity {
+  display: flex; align-items: flex-end; gap: 1.5rem;
+  padding: 0 1.5rem;
+  margin-top: -52px;
+  margin-bottom: 0;
+  position: relative; z-index: 2;
+}
 
-  <div style="position:absolute;top:0;left:0;right:0;bottom:0;<%= bg_style %>"></div>
-  <div style="position:absolute;top:0;left:0;right:0;bottom:0;
-              background:linear-gradient(to bottom, rgba(0,0,0,0.15) 0%, rgba(13,13,13,0.98) 100%);"></div>
+.ts-identity__info {
+  padding-bottom: 0.25rem; flex: 1; min-width: 0;
+  display: flex; flex-direction: column;
+}
 
-  <div class="container position-relative py-5">
-    <div class="row align-items-end g-4">
+.ts-avatar-wrap { position: relative; flex-shrink: 0; }
+.ts-avatar {
+  width: 104px; height: 104px;
+  border-radius: 50%;
+  border: 3px solid #f5c500;
+  background: #1a1a1a;
+  object-fit: cover;
+  display: block;
+}
+.ts-avatar--placeholder {
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.5rem; color: #444;
+}
+.ts-avatar__ring {
+  position: absolute; inset: -5px;
+  border-radius: 50%;
+  border: 1px solid rgba(200,168,75,0.25);
+  pointer-events: none;
+}
+.ts-avatar__verified {
+  position: absolute; bottom: 4px; right: 4px;
+  width: 22px; height: 22px;
+  background: #f5c500; border-radius: 50%;
+  border: 2px solid #0d0d0d;
+  display: flex; align-items: center; justify-content: center;
+}
+.ts-avatar__verified svg { width: 10px; height: 10px; stroke: #000; }
 
-      <%# Avatar %>
-      <div class="col-auto">
-        <% if @tatoueur.avatar.attached? %>
-          <%= image_tag @tatoueur.avatar,
-              style: "width:130px;height:130px;object-fit:cover;
-                      border:3px solid #F5C500;box-shadow:0 4px 24px rgba(0,0,0,0.6);" %>
-        <% else %>
-          <div style="width:130px;height:130px;background:#1A1A1A;border:3px solid #2A2A2A;
-                      display:flex;align-items:center;justify-content:center;font-size:3rem;
-                      box-shadow:0 4px 24px rgba(0,0,0,0.6);">🖋️</div>
-        <% end %>
+.ts-identity__info { padding-bottom: 0.25rem; flex: 1; min-width: 0; }
+
+.ts-name-row { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.3rem; margin-top: 0.75rem; }
+.ts-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2.4rem; letter-spacing: 0.04em; line-height: 1; color: #fff;
+}
+.ts-featured-pill {
+  font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 2px;
+  background: rgba(139,92,246,0.2); color: #a78bfa; border: 1px solid rgba(139,92,246,0.3);
+}
+
+.ts-meta { display: flex; gap: 1.25rem; flex-wrap: wrap; font-size: 13px; color: #888; }
+.ts-meta__item { display: flex; align-items: center; gap: 5px; }
+.ts-meta__item a { color: #f5c500; text-decoration: none; }
+.ts-meta__item a:hover { text-decoration: underline; }
+
+/* ── Stats strip ── */
+.ts-stats {
+  display: flex;
+  padding: 0 1.5rem;
+  margin: 1.5rem 0;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.ts-stat { flex: 1; padding: 1rem 0; text-align: center; border-right: 1px solid rgba(255,255,255,0.06); }
+.ts-stat:last-child { border-right: none; }
+.ts-stat__val {
+  display: block; font-family: 'Bebas Neue', sans-serif;
+  font-size: 2rem; color: #f5c500; line-height: 1;
+}
+.ts-stat__label {
+  display: block; font-size: 10px; text-transform: uppercase;
+  letter-spacing: 0.1em; color: #555; margin-top: 3px;
+}
+
+/* ── Body ── */
+.ts-body {
+  display: grid;
+  grid-template-columns: 1fr 240px;
+  gap: 1.5rem;
+  padding: 0 1.5rem;
+}
+
+/* ── Style tags ── */
+.ts-styles { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-bottom: 1.25rem; }
+.ts-style-tag {
+  font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em;
+  padding: 4px 10px; border-radius: 2px;
+  border: 1px solid rgba(200,168,75,0.3);
+  color: #f5c500; background: rgba(200,168,75,0.06);
+}
+
+/* ── Bio ── */
+.ts-bio {
+  font-size: 14px; line-height: 1.8; color: #888;
+  margin-bottom: 1.25rem; padding-bottom: 1.25rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+/* ── Actions ── */
+.ts-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1.75rem; }
+.ts-btn {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 0.9rem; letter-spacing: 0.07em;
+  padding: 0.5rem 1.2rem; border: none; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+  text-decoration: none; border-radius: 2px; transition: opacity .15s;
+}
+.ts-btn:hover { opacity: .85; }
+.ts-btn--primary { background: #f5c500; color: #000; }
+.ts-btn--outline { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.2); }
+.ts-btn--outline:hover { border-color: rgba(255,255,255,0.5); opacity: 1; }
+.ts-btn--ghost  { background: transparent; color: #666; border: 1px solid rgba(255,255,255,0.1); }
+.ts-btn--ghost:hover { color: #fff; border-color: rgba(255,255,255,0.3); opacity: 1; }
+.ts-btn--disabled { background: #1a1a1a; color: #333; border: 1px solid rgba(255,255,255,0.06); cursor: default; }
+.ts-btn--sm { font-size: 0.78rem; padding: 0.35rem 0.85rem; }
+.ts-badge-success {
+  font-size: 11px; padding: 4px 10px; border-radius: 2px;
+  background: rgba(39,174,96,0.12); color: #2ecc71; border: 1px solid rgba(39,174,96,0.25);
+}
+
+/* ── Tabs ── */
+.ts-tabs {
+  display: flex; border-bottom: 1px solid rgba(255,255,255,0.08);
+  margin-bottom: 1.5rem;
+  overflow: visible;
+  flex-wrap: wrap;
+  gap: 0;
+}
+.ts-tab {
+  font-family: 'Bebas Neue', sans-serif; font-size: 0.95rem; letter-spacing: 0.06em;
+  padding: 0.6rem 1.2rem; background: transparent; border: none; cursor: pointer;
+  color: #555; border-bottom: 2px solid transparent; margin-bottom: -1px;
+  transition: color .2s; white-space: nowrap;
+}
+.ts-tab:hover { color: #aaa; }
+.ts-tab--active { color: #f5c500; border-bottom-color: #f5c500; }
+.ts-tab__count { font-size: 10px; color: #444; margin-left: 3px; }
+
+/* ── Section title ── */
+.ts-section-title {
+  font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; letter-spacing: 0.05em;
+  color: #fff; border-left: 3px solid #f5c500; padding-left: 0.65rem;
+  margin-bottom: 1.25rem;
+}
+.ts-section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; }
+
+/* ── Masonry grid ── */
+.ts-photo-grid { columns: 2; column-gap: 0.6rem; }
+@media (max-width: 500px) { .ts-photo-grid { columns: 1; } }
+
+.ts-photo-item {
+  break-inside: avoid; margin-bottom: 0.6rem;
+  overflow: hidden; position: relative; border-radius: 2px; cursor: zoom-in;
+}
+.ts-photo-img { width: 100%; display: block; transition: transform .35s; }
+.ts-photo-item:hover .ts-photo-img { transform: scale(1.04); filter: brightness(.85); }
+.ts-photo-del {
+  position: absolute; top: 0.5rem; right: 0.5rem;
+  background: rgba(0,0,0,.75); color: #fff;
+  width: 24px; height: 24px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 0.7rem; text-decoration: none; cursor: pointer;
+  opacity: 0; transition: opacity .2s;
+}
+.ts-photo-item:hover .ts-photo-del { opacity: 1; }
+
+/* ── Upload form ── */
+.ts-upload-form {
+  background: #111; border: 1px solid #2a2a2a; border-top: 3px solid #f5c500;
+  padding: 1.25rem; margin-bottom: 1.5rem; border-radius: 2px;
+}
+
+/* ── Portfolio cards ── */
+.ts-portfolio-card {
+  display: block; text-decoration: none;
+  background: #111; border: 1px solid #2a2a2a;
+  overflow: hidden; border-radius: 2px; transition: border-color .2s;
+}
+.ts-portfolio-card:hover { border-color: #f5c500; }
+.ts-portfolio-card__thumb { overflow: hidden; }
+.ts-portfolio-card__img { width: 100%; height: 200px; object-fit: cover; display: block; transition: transform .3s; }
+.ts-portfolio-card:hover .ts-portfolio-card__img { transform: scale(1.04); }
+.ts-portfolio-card__empty {
+  width: 100%; height: 200px; background: #0d0d0d;
+  display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: #333;
+}
+.ts-portfolio-card__info { padding: 0.85rem 1rem; }
+.ts-portfolio-card__name { display: block; font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; color: #fff; }
+.ts-portfolio-card__count { display: block; font-size: 12px; color: #555; margin-top: 2px; }
+
+/* ── Events ── */
+.ts-event {
+  display: flex; gap: 1.25rem; align-items: flex-start;
+  padding: 1rem 1.25rem; background: #111;
+  border: 1px solid #2a2a2a; border-left: 3px solid #f5c500;
+  margin-bottom: 0.75rem; border-radius: 0 2px 2px 0;
+}
+.ts-event__date { font-family: 'Bebas Neue', sans-serif; font-size: 0.95rem; color: #f5c500; white-space: nowrap; min-width: 100px; }
+.ts-event__name { font-weight: 600; color: #fff; margin-bottom: 2px; font-size: 14px; }
+.ts-event__loc { font-size: 12px; color: #666; }
+.ts-event__desc { font-size: 13px; color: #555; margin-top: 4px; }
+
+/* ── Reviews ── */
+.ts-rating-summary { display: flex; align-items: center; gap: 1.25rem; margin-bottom: 1.5rem; }
+.ts-rating-big { font-family: 'Bebas Neue', sans-serif; font-size: 3.5rem; color: #f5c500; line-height: 1; }
+.ts-stars { display: flex; gap: 2px; }
+.ts-stars svg { width: 14px; height: 14px; }
+.ts-review-card { background: #111; border: 1px solid #2a2a2a; padding: 1.1rem 1.25rem; border-radius: 2px; transition: border-color .2s; }
+.ts-review-card:hover { border-color: #2e2e2e; }
+.ts-review-card__header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.4rem; }
+.ts-review-card__author { font-family: 'Bebas Neue', sans-serif; font-size: 1rem; color: #f5c500; }
+.ts-review-card__date { font-size: 11px; color: #444; }
+.ts-review-card__comment { font-size: 13px; color: #777; line-height: 1.65; margin: 0; }
+
+/* ── Sidebar ── */
+.ts-sidebar { display: flex; flex-direction: column; gap: 1rem; overflow: hidden; }
+.ts-sidebar-card { background: #111; border: 1px solid #1e1e1e; border-radius: 8px; padding: 1rem 1.1rem; }
+.ts-sidebar-title { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #555; margin-bottom: 0.75rem; }
+
+.ts-shop-row { display: flex; align-items: center; gap: 0.65rem; padding: 0.5rem 0; border-bottom: 1px solid #1a1a1a; }
+.ts-shop-row:last-child { border-bottom: none; }
+.ts-shop-icon {
+  width: 34px; height: 34px; background: rgba(200,168,75,0.08);
+  border: 1px solid rgba(200,168,75,0.15); border-radius: 6px;
+  display: flex; align-items: center; justify-content: center; font-size: 14px; flex-shrink: 0;
+}
+.ts-shop-name { font-size: 13px; font-weight: 500; color: #ddd; }
+.ts-shop-loc { font-size: 11px; color: #555; }
+
+.ts-avail-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; margin-bottom: 4px; }
+.ts-avail-day-label { font-size: 9px; color: #444; text-align: center; }
+.ts-avail-slots { display: flex; flex-direction: column; gap: 3px; }
+.ts-avail-slot { height: 8px; border-radius: 1px; }
+.ts-avail-slot--free { background: rgba(200,168,75,0.55); }
+.ts-avail-slot--busy { background: rgba(255,255,255,0.05); }
+.ts-avail-legend { display: flex; gap: 0.75rem; margin-top: 0.6rem; font-size: 10px; color: #555; }
+.ts-avail-legend span { display: flex; align-items: center; gap: 4px; }
+.ts-avail-legend-dot { width: 8px; height: 8px; border-radius: 1px; display: inline-block; }
+
+.ts-review-mini { padding: 0.55rem 0; border-bottom: 1px solid #1a1a1a; }
+.ts-review-mini:last-child { border-bottom: none; }
+.ts-review-mini__header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px; }
+.ts-review-mini__author { font-size: 12px; font-weight: 500; color: #ccc; }
+.ts-review-mini__text { font-size: 11px; color: #555; line-height: 1.5; }
+.ts-stars-sm { display: flex; gap: 1px; }
+.ts-stars-sm svg { width: 9px; height: 9px; }
+
+/* ── Lightbox ── */
+.ts-lightbox {
+  display: none; position: fixed; inset: 0;
+  background: rgba(0,0,0,0.95); z-index: 9999;
+  align-items: center; justify-content: center;
+}
+.ts-lightbox.open { display: flex; }
+.ts-lightbox__img { max-width: 90vw; max-height: 90vh; object-fit: contain; border-radius: 2px; }
+.ts-lightbox__nav {
+  position: fixed; top: 50%; transform: translateY(-50%);
+  background: none; border: none; color: #fff; font-size: 3rem;
+  cursor: pointer; opacity: 0.35; transition: opacity .2s; padding: 0 1.25rem; line-height: 1;
+}
+.ts-lightbox__nav:hover { opacity: 1; }
+.ts-lightbox__prev { left: 0; }
+.ts-lightbox__next { right: 0; }
+.ts-lightbox__close {
+  position: fixed; top: 1rem; right: 1.5rem;
+  background: none; border: none; color: #fff; font-size: 1.75rem;
+  cursor: pointer; opacity: 0.4; transition: opacity .2s;
+}
+.ts-lightbox__close:hover { opacity: 1; }
+.ts-lightbox__caption {
+  position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%);
+  color: #555; font-size: 12px; letter-spacing: 0.05em; white-space: nowrap;
+}
+
+.ts-empty { color: #444; font-size: 13px; }
+
+@media (max-width: 700px) {
+  .ts-body { grid-template-columns: 1fr; }
+  .ts-sidebar { display: none; }
+  .ts-identity { padding: 0 1rem; }
+  .ts-stats { padding: 0 1rem; }
+  .ts-body { padding: 0 1rem; }}
+</style>
+
+<div class="ts-profile">
+
+  <%# ── Cover ── %>
+  <div class="ts-cover">
+    <% if @tatoueur.cover.attached? %>
+      <%= image_tag url_for(@tatoueur.cover), class: "ts-cover__img" %>
+    <% elsif @tatoueur.cover_color.present? %>
+      <div class="ts-cover__img" style="background:<%= @tatoueur.cover_color %>;width:100%;height:100%;"></div>
+    <% else %>
+      <div class="ts-cover__pattern"></div>
+    <% end %>
+    <div class="ts-cover__overlay"></div>
+    <div class="ts-cover__accent"></div>
+    <% if user_signed_in? && current_user.tatoueur == @tatoueur %>
+      <div class="ts-cover__edit">
+        <%= render "shared/cover_editor", record: @tatoueur, update_path: tatoueur_path(@tatoueur), param_name: "tatoueur" %>
       </div>
-
-      <%# Infos %>
-      <div class="col">
-        <div class="d-flex align-items-center gap-3 flex-wrap mb-1">
-          <h1 style="font-family:'Bebas Neue',sans-serif;font-size:3.5rem;letter-spacing:0.04em;
-                     text-shadow:0 2px 12px rgba(0,0,0,0.8);margin-bottom:0;">
-            <%= @tatoueur.nickname %>
-          </h1>
-          <%= render "verified_badge", tatoueur: @tatoueur %>
-        </div>
-
-        <%# Méta %>
-        <div class="d-flex flex-wrap gap-3 mb-3" style="color:#bbb;font-size:0.9rem;">
-          <% if @tatoueur.address.present? %>
-            <span>📍 <%= @tatoueur.address %></span>
-          <% elsif @tatoueur.shops.any? %>
-            <span>📍 <%= @tatoueur.shops.first.address %></span>
-          <% else %>
-            <span style="color:#555;">📍 Localisation non renseignée</span>
-          <% end %>
-          <% if @tatoueur.shops.any? %>
-            <span>
-              🏠
-              <% @tatoueur.shops.each do |shop| %>
-                <%= link_to shop.name, shop_path(shop),
-                    style: "color:#F5C500;font-weight:700;text-decoration:none;" %>
-              <% end %>
-            </span>
-          <% else %>
-            <span style="color:#555;">🏠 Indépendant</span>
-          <% end %>
-        </div>
-
-        <%# Stats %>
-        <div class="d-flex gap-4 mb-4">
-          <div class="text-center">
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:2.2rem;color:#F5C500;line-height:1;">
-              <%= @tatoueur.portfolio_items.count %>
-            </div>
-            <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em;color:#888;">
-              Réalisations
-            </div>
-          </div>
-          <div style="width:1px;background:#2A2A2A;margin:0.2rem 0;"></div>
-          <div class="text-center">
-            <div style="font-family:'Bebas Neue',sans-serif;font-size:2.2rem;color:#F5C500;line-height:1;">
-              <%= @reviews.count %>
-            </div>
-            <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em;color:#888;">
-              Avis
-            </div>
-          </div>
-          <% if @reviews.any? %>
-            <div style="width:1px;background:#2A2A2A;margin:0.2rem 0;"></div>
-            <div class="text-center">
-              <div style="font-family:'Bebas Neue',sans-serif;font-size:2.2rem;color:#F5C500;line-height:1;">
-                <%= number_with_precision(@reviews.average(:rating), precision: 1) %>
-              </div>
-              <div style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em;color:#888;">
-                Note / 5
-              </div>
-            </div>
-          <% end %>
-        </div>
-
-        <%# Styles %>
-        <div class="d-flex flex-wrap gap-2 mb-3">
-          <% @tatoueur.tattoo_styles.each do |style| %>
-            <span class="card-badge"><%= style.name %></span>
-          <% end %>
-        </div>
-
-        <%# Actions %>
-        <div class="d-flex flex-wrap gap-2 align-items-center">
-          <% if user_signed_in? %>
-            <% unless current_user.tatoueur == @tatoueur %>
-              <%= link_to "✉️ Contacter",
-                  conversations_path(tatoueur_id: @tatoueur.id),
-                  data: { turbo_method: :post },
-                  class: "hero-cta" %>
-              <% if @tatoueur.shops.any? %>
-                <%= link_to "📅 Réserver",
-                    new_shop_booking_path(@tatoueur.shops.first),
-                    class: "hero-cta-outline" %>
-              <% else %>
-                <span class="hero-cta disabled">Réservation indisponible</span>
-              <% end %>
-            <% end %>
-          <% else %>
-            <%= link_to "Connectez-vous pour contacter", new_user_session_path, class: "hero-cta" %>
-          <% end %>
-
-          <% unless current_user&.tatoueur == @tatoueur %>
-            <%= render "favorites/button", favoritable: @tatoueur %>
-          <% end %>
-
-          <% if user_signed_in? && policy(@tatoueur).update? %>
-            <%= link_to "✏️ Modifier", edit_tatoueur_path(@tatoueur), class: "btn btn-outline-primary btn-sm" %>
-          <% end %>
-          <% if current_user&.tatoueur == @tatoueur && !@tatoueur.verified? %>
-            <%= link_to "Faire vérifier mon profil", verification_tatoueur_path(@tatoueur),
-                class: "btn btn-outline-warning btn-sm" %>
-          <% end %>
-          <% if current_user&.tatoueur == @tatoueur %>
-            <% if @tatoueur.paypal_onboarded? %>
-              <span class="badge bg-success">✅ PayPal connecté</span>
-            <% else %>
-              <%= link_to "Connecter PayPal", connect_paypal_tatoueur_path(@tatoueur),
-                  class: "btn btn-warning btn-sm" %>
-            <% end %>
-          <% end %>
-        </div>
-
-        <% if @tatoueur.description.present? %>
-          <div class="mt-4 pt-4" style="border-top:1px solid rgba(255,255,255,0.08);">
-            <p style="max-width:700px;line-height:1.8;color:#bbb;">
-              <%= @tatoueur.description %>
-            </p>
-          </div>
-        <% end %>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<%# Éditeur de fond %>
-<% if user_signed_in? && current_user.tatoueur == @tatoueur %>
-  <%= render "shared/cover_editor",
-      record:      @tatoueur,
-      update_path: tatoueur_path(@tatoueur),
-      param_name:  "tatoueur" %>
-<% end %>
-
-<hr style="border-color:#2A2A2A;margin:0;">
-
-<%# ================================ %>
-<%# TABS %>
-<%# ================================ %>
-<div class="container">
-
-  <div style="display:flex;border-bottom:1px solid #2A2A2A;margin-bottom:2rem;">
-    <% tabs = [] %>
-    <% tabs << { key: "portfolio", label: "Portfolio", count: @tatoueur.portfolio_items.count } if @portfolios.any? || @tatoueur.photos.attached? %>
-    <% tabs << { key: "disponibilites", label: "Disponibilités", count: nil } %>
-    <% tabs << { key: "evenements", label: "Événements", count: @events.count } if @events.any? %>
-    <% tabs << { key: "avis", label: "Avis", count: @reviews.count } %>
-
-    <% tabs.each_with_index do |tab, i| %>
-      <button onclick="showTab('<%= tab[:key] %>')"
-              id="tab-btn-<%= tab[:key] %>"
-              style="background:transparent;border:none;
-                     color:<%= i == 0 ? '#F5C500' : '#888' %>;
-                     font-family:'Bebas Neue',sans-serif;font-size:1.1rem;letter-spacing:0.05em;
-                     padding:1rem 1.5rem;cursor:pointer;
-                     border-bottom:<%= i == 0 ? '2px solid #F5C500' : '2px solid transparent' %>;
-                     margin-bottom:-1px;transition:all 0.2s;">
-        <%= tab[:label] %>
-        <% if tab[:count].present? && tab[:count] > 0 %>
-          <span style="font-size:0.8rem;color:#555;margin-left:0.25rem;">(<%= tab[:count] %>)</span>
-        <% end %>
-      </button>
     <% end %>
   </div>
 
-  <%# ======= TAB PORTFOLIO ======= %>
-  <% if @portfolios.any? || @tatoueur.photos.attached? %>
-    <div id="tab-portfolio" class="tab-content">
+  <%# ── Identity ── %>
+  <div class="ts-identity">
+    <div class="ts-avatar-wrap">
+      <% if @tatoueur.avatar.attached? %>
+        <%= image_tag @tatoueur.avatar, class: "ts-avatar" %>
+      <% else %>
+        <div class="ts-avatar ts-avatar--placeholder">🖋️</div>
+      <% end %>
+      <div class="ts-avatar__ring"></div>
+      <% if @tatoueur.verified? %>
+        <div class="ts-avatar__verified">
+          <svg viewBox="0 0 12 12" fill="none" stroke="#000" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="2,6 5,9 10,3"/>
+          </svg>
+        </div>
+      <% end %>
+    </div>
+    <div class="ts-identity__info">
+      <div class="ts-name-row">
+        <h1 class="ts-name"><%= @tatoueur.nickname %></h1>
+        <% if @tatoueur.featured? %>
+          <span class="ts-featured-pill">⭐ Featured</span>
+        <% end %>
+      </div>
+      <div class="ts-meta">
+        <span class="ts-meta__item">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          <% if @tatoueur.address.present? %>
+            <%= @tatoueur.address %>
+          <% elsif @tatoueur.shops.any? %>
+            <%= @tatoueur.shops.first.address %>
+          <% else %>
+            <span style="color:#444;">Localisation non renseignée</span>
+          <% end %>
+        </span>
+        <span class="ts-meta__item">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>
+          <% if @tatoueur.shops.any? %>
+            <% @tatoueur.shops.each do |shop| %>
+              <%= link_to shop.name, shop_path(shop) %>
+            <% end %>
+          <% else %>
+            <span style="color:#444;">Indépendant</span>
+          <% end %>
+        </span>
+      </div>
+    </div>
+  </div>
 
-      <%# ── Portfolios ── %>
-      <% if @portfolios.any? %>
-        <h2 class="section-title mb-4">Portfolios</h2>
-        <div class="row g-4 mb-5">
-          <% @portfolios.each do |portfolio| %>
-            <div class="col-md-4">
-              <%= link_to tatoueur_portfolio_path(@tatoueur, portfolio), style: "text-decoration:none;" do %>
-                <div style="background:#1A1A1A;border:1px solid #2A2A2A;
-                            overflow:hidden;transition:border-color 0.2s;"
-                     onmouseover="this.style.borderColor='#F5C500'"
-                     onmouseout="this.style.borderColor='#2A2A2A'">
-                  <% first_item = portfolio.portfolio_items.first %>
-                  <% if first_item&.images&.attached? %>
-                    <div style="overflow:hidden;">
-                      <%= image_tag first_item.images.first,
-                          style: "width:100%;height:220px;object-fit:cover;
-                                  transition:transform 0.3s;display:block;",
-                          onmouseover: "this.style.transform='scale(1.05)'",
-                          onmouseout:  "this.style.transform='scale(1)'" %>
+  <%# ── Stats ── %>
+  <div class="ts-stats">
+    <div class="ts-stat">
+      <span class="ts-stat__val"><%= @tatoueur.portfolio_items.count %></span>
+      <span class="ts-stat__label">Réalisations</span>
+    </div>
+    <% if @reviews.any? %>
+      <div class="ts-stat">
+        <span class="ts-stat__val"><%= number_with_precision(@reviews.average(:rating), precision: 1) %></span>
+        <span class="ts-stat__label">Note</span>
+      </div>
+    <% end %>
+    <div class="ts-stat">
+      <span class="ts-stat__val"><%= @reviews.count %></span>
+      <span class="ts-stat__label">Avis</span>
+    </div>
+    <div class="ts-stat">
+      <span class="ts-stat__val"><%= @tatoueur.portfolios.count %></span>
+      <span class="ts-stat__label">Portfolios</span>
+    </div>
+  </div>
+
+  <%# ── Body ── %>
+  <div class="ts-body">
+
+    <%# ── Main ── %>
+    <div>
+      <% if @tatoueur.tattoo_styles.any? %>
+        <div class="ts-styles">
+          <% @tatoueur.tattoo_styles.each do |style| %>
+            <span class="ts-style-tag"><%= style.name %></span>
+          <% end %>
+        </div>
+      <% end %>
+
+      <% if @tatoueur.description.present? %>
+        <p class="ts-bio"><%= @tatoueur.description %></p>
+      <% end %>
+
+      <%# Actions %>
+      <div class="ts-actions">
+        <% if user_signed_in? %>
+          <% unless current_user.tatoueur == @tatoueur %>
+            <%= link_to conversations_path(tatoueur_id: @tatoueur.id),
+                  data: { turbo_method: :post }, class: "ts-btn ts-btn--primary" do %>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+              Contacter
+            <% end %>
+            <% if @tatoueur.shops.any? %>
+              <%= link_to new_shop_booking_path(@tatoueur.shops.first), class: "ts-btn ts-btn--outline" do %>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                Réserver
+              <% end %>
+            <% else %>
+              <span class="ts-btn ts-btn--disabled">Réservation indisponible</span>
+            <% end %>
+          <% end %>
+        <% else %>
+          <%= link_to new_user_session_path, class: "ts-btn ts-btn--primary" do %>
+            Connectez-vous pour contacter
+          <% end %>
+        <% end %>
+        <% unless current_user&.tatoueur == @tatoueur %>
+          <%= render "favorites/button", favoritable: @tatoueur %>
+          <%= render "shared/share_button",
+              record: @tatoueur,
+              record_type: "Tatoueur",
+              record_name: @tatoueur.nickname %>
+        <% end %>
+        <% if user_signed_in? && policy(@tatoueur).update? %>
+          <%= link_to edit_tatoueur_path(@tatoueur), class: "ts-btn ts-btn--ghost ts-btn--sm" do %>
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Modifier
+          <% end %>
+        <% end %>
+        <% if current_user&.tatoueur == @tatoueur %>
+          <% unless @tatoueur.verified? %>
+            <%= link_to verification_tatoueur_path(@tatoueur), class: "ts-btn ts-btn--ghost ts-btn--sm" do %>
+              Faire vérifier mon profil
+            <% end %>
+          <% end %>
+          <% if @tatoueur.paypal_onboarded? %>
+            <span class="ts-badge-success">✓ PayPal connecté</span>
+          <% else %>
+            <%= link_to connect_paypal_tatoueur_path(@tatoueur), class: "ts-btn ts-btn--ghost ts-btn--sm" do %>
+              Connecter PayPal
+            <% end %>
+          <% end %>
+        <% end %>
+      </div>
+
+      <%# Tabs %>
+      <div class="ts-tabs">
+        <% tabs = [] %>
+        <% tabs << { key: "portfolio",      label: "Portfolio",      count: @tatoueur.portfolio_items.count } if @portfolios.any? || @tatoueur.photos.attached? %>
+        <% tabs << { key: "disponibilites", label: "Disponibilités", count: nil } %>
+        <% tabs << { key: "evenements",     label: "Événements",     count: @events.count } if @events.any? %>
+        <% tabs << { key: "avis",           label: "Avis",           count: @reviews.count } %>
+        <% tabs.each_with_index do |tab, i| %>
+          <button class="ts-tab <%= i == 0 ? 'ts-tab--active' : '' %>"
+                  id="tab-btn-<%= tab[:key] %>"
+                  onclick="showTab('<%= tab[:key] %>')">
+            <%= tab[:label] %>
+            <% if tab[:count].present? && tab[:count] > 0 %>
+              <span class="ts-tab__count">(<%= tab[:count] %>)</span>
+            <% end %>
+          </button>
+        <% end %>
+      </div>
+
+      <%# ── Tab : Portfolio ── %>
+      <% if @portfolios.any? || @tatoueur.photos.attached? %>
+        <div id="tab-portfolio" class="tab-content">
+          <% if @portfolios.any? %>
+            <h2 class="ts-section-title">Portfolios</h2>
+            <div class="row g-3 mb-4">
+              <% @portfolios.each do |portfolio| %>
+                <div class="col-md-4">
+                  <%= link_to tatoueur_portfolio_path(@tatoueur, portfolio), class: "ts-portfolio-card" do %>
+                    <div class="ts-portfolio-card__thumb">
+                      <% first_item = portfolio.portfolio_items.first %>
+                      <% if first_item&.images&.attached? %>
+                        <%= image_tag first_item.images.first, class: "ts-portfolio-card__img" %>
+                      <% else %>
+                        <div class="ts-portfolio-card__empty">🖼️</div>
+                      <% end %>
                     </div>
-                  <% else %>
-                    <div style="width:100%;height:220px;background:#111;
-                                display:flex;align-items:center;justify-content:center;font-size:3rem;">🖼️</div>
+                    <div class="ts-portfolio-card__info">
+                      <span class="ts-portfolio-card__name"><%= portfolio.name %></span>
+                      <span class="ts-portfolio-card__count"><%= portfolio.portfolio_items.count %> réalisation(s)</span>
+                    </div>
                   <% end %>
-                  <div style="padding:1rem;">
-                    <div style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:#fff;">
-                      <%= portfolio.name %>
-                    </div>
-                    <div style="color:#555;font-size:0.85rem;">
-                      <%= portfolio.portfolio_items.count %> réalisation(s)
-                    </div>
-                  </div>
                 </div>
               <% end %>
+            </div>
+          <% end %>
+
+          <% if @tatoueur.photos.attached? || (user_signed_in? && current_user.tatoueur == @tatoueur) %>
+            <div class="ts-section-header">
+              <h2 class="ts-section-title mb-0">Réalisations</h2>
+              <% if user_signed_in? && current_user.tatoueur == @tatoueur %>
+                <button onclick="toggleUploadForm()" class="ts-btn ts-btn--ghost ts-btn--sm">➕ Ajouter</button>
+              <% end %>
+            </div>
+
+            <% if user_signed_in? && current_user.tatoueur == @tatoueur %>
+              <div id="upload-form" class="ts-upload-form" style="display:none;">
+                <%= form_with url: update_photos_tatoueur_path(@tatoueur), method: :patch, html: { enctype: "multipart/form-data" } do |f| %>
+                  <p style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#555;margin-bottom:0.6rem;">Sélectionne une ou plusieurs photos</p>
+                  <%= f.file_field :photos, multiple: true, accept: "image/*", style: "color:#888;width:100%;margin-bottom:0.75rem;" %>
+                  <%= f.submit "Uploader", class: "ts-btn ts-btn--primary" %>
+                <% end %>
+              </div>
+            <% end %>
+
+            <% if @tatoueur.photos.attached? %>
+              <div class="ts-photo-grid">
+                <% @tatoueur.photos.each_with_index do |photo, idx| %>
+                  <div class="ts-photo-item"
+                       onmouseover="this.querySelector('.ts-photo-del') && (this.querySelector('.ts-photo-del').style.opacity='1')"
+                       onmouseout="this.querySelector('.ts-photo-del') && (this.querySelector('.ts-photo-del').style.opacity='0')">
+                    <img src="<%= url_for(photo) %>"
+                         class="ts-photo-img"
+                         data-lightbox="true"
+                         data-src="<%= url_for(photo) %>"
+                         data-caption="Réalisation <%= idx + 1 %>"
+                         onclick="openLightbox(this)" />
+                    <% if user_signed_in? && current_user.tatoueur == @tatoueur %>
+                      <%= link_to "✕",
+                          delete_photo_tatoueur_path(@tatoueur, photo_id: photo.id),
+                          data: { turbo_method: :delete, turbo_confirm: "Supprimer cette photo ?" },
+                          class: "ts-photo-del" %>
+                    <% end %>
+                  </div>
+                <% end %>
+              </div>
+            <% else %>
+              <p class="ts-empty">Aucune réalisation pour le moment.</p>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+
+      <%# ── Tab : Disponibilités ── %>
+      <div id="tab-disponibilites" class="tab-content" style="display:none;">
+        <h2 class="ts-section-title">Disponibilités</h2>
+        <%= render "tatoueurs/calendar", tatoueur: @tatoueur %>
+      </div>
+
+      <%# ── Tab : Événements ── %>
+      <% if @events.any? %>
+        <div id="tab-evenements" class="tab-content" style="display:none;">
+          <h2 class="ts-section-title">Événements à venir</h2>
+          <% @events.each do |event| %>
+            <div class="ts-event">
+              <div class="ts-event__date"><%= event.start_date&.strftime("%d %b %Y") %></div>
+              <div>
+                <div class="ts-event__name"><%= event.name %></div>
+                <div class="ts-event__loc">📍 <%= event.location %></div>
+                <% if event.description.present? %>
+                  <p class="ts-event__desc"><%= event.description.truncate(120) %></p>
+                <% end %>
+              </div>
             </div>
           <% end %>
         </div>
       <% end %>
 
-      <%# ── Réalisations libres ── %>
-      <% if @tatoueur.photos.attached? || (user_signed_in? && current_user.tatoueur == @tatoueur) %>
-        <div class="d-flex justify-content-between align-items-center mb-4">
-          <h2 class="section-title mb-0">Réalisations</h2>
-          <% if user_signed_in? && current_user.tatoueur == @tatoueur %>
-            <button onclick="toggleUploadForm()"
-                    style="background:transparent;border:1px solid #F5C500;color:#F5C500;
-                           font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:0.05em;
-                           padding:0.4rem 1rem;cursor:pointer;">
-              ➕ Ajouter des photos
-            </button>
-          <% end %>
-        </div>
-
-        <% if user_signed_in? && current_user.tatoueur == @tatoueur %>
-          <div id="upload-form"
-               style="display:none;background:#1A1A1A;border:1px solid #2A2A2A;
-                      border-top:3px solid #F5C500;padding:1.5rem;margin-bottom:2rem;">
-            <%= form_with url: update_photos_tatoueur_path(@tatoueur),
-                          method: :patch,
-                          html: { enctype: "multipart/form-data" } do |f| %>
-              <p style="font-size:0.8rem;text-transform:uppercase;letter-spacing:0.08em;
-                        color:#888;margin-bottom:0.75rem;">
-                Sélectionne une ou plusieurs photos
-              </p>
-              <%= f.file_field :photos, multiple: true, accept: "image/*",
-                  style: "color:#fff;font-family:'Barlow Condensed',sans-serif;
-                          width:100%;margin-bottom:1rem;" %>
-              <%= f.submit "Uploader",
-                  style: "background:#F5C500;color:#000;border:none;
-                          font-family:'Bebas Neue',sans-serif;font-size:1.1rem;
-                          letter-spacing:0.08em;padding:0.6rem 2rem;cursor:pointer;",
-                  onmouseover: "this.style.background='#d4a800'",
-                  onmouseout:  "this.style.background='#F5C500'" %>
-            <% end %>
-          </div>
-        <% end %>
-
-        <% if @tatoueur.photos.attached? %>
-          <div class="row row-cols-1 row-cols-md-3 g-3">
-            <% @tatoueur.photos.each_with_index do |photo, idx| %>
-              <div class="col">
-                <div style="position:relative;overflow:hidden;"
-                     onmouseover="this.querySelector('.del-btn') && (this.querySelector('.del-btn').style.opacity='1')"
-                     onmouseout="this.querySelector('.del-btn') && (this.querySelector('.del-btn').style.opacity='0')">
-                  <%= image_tag photo,
-                      style: "width:100%;height:280px;object-fit:cover;border:1px solid #2A2A2A;
-                              cursor:zoom-in;transition:transform 0.3s,border-color 0.2s;display:block;",
-                      data: { lightbox: true, src: url_for(photo), caption: "Réalisation #{idx + 1}" },
-                      onclick: "openLightbox(this)",
-                      onmouseover: "this.style.transform='scale(1.03)';this.style.borderColor='#F5C500'",
-                      onmouseout:  "this.style.transform='scale(1)';this.style.borderColor='#2A2A2A'" %>
-                  <% if user_signed_in? && current_user.tatoueur == @tatoueur %>
-                    <%= link_to "✕",
-                        delete_photo_tatoueur_path(@tatoueur, photo_id: photo.id),
-                        data: { turbo_method: :delete, turbo_confirm: "Supprimer cette photo ?" },
-                        class: "del-btn",
-                        style: "position:absolute;top:0.5rem;right:0.5rem;background:rgba(0,0,0,0.75);
-                                color:#fff;width:28px;height:28px;display:flex;align-items:center;
-                                justify-content:center;font-size:0.8rem;text-decoration:none;
-                                cursor:pointer;opacity:0;transition:opacity 0.2s;" %>
-                  <% end %>
-                </div>
+      <%# ── Tab : Avis ── %>
+      <div id="tab-avis" class="tab-content" style="display:none;">
+        <% if @reviews.any? %>
+          <div class="ts-rating-summary">
+            <span class="ts-rating-big"><%= number_with_precision(@reviews.average(:rating), precision: 1) %></span>
+            <div>
+              <div class="ts-stars">
+                <% avg = @reviews.average(:rating).to_f %>
+                <% 5.times do |i| %>
+                  <svg viewBox="0 0 24 24" fill="<%= i < avg ? '#f5c500' : 'none' %>" stroke="#f5c500" stroke-width="2">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                  </svg>
+                <% end %>
               </div>
-            <% end %>
+              <span style="font-size:11px;color:#444;"><%= @reviews.count %> avis</span>
+            </div>
           </div>
-        <% else %>
-          <p style="color:#555;">Aucune réalisation pour le moment.</p>
-        <% end %>
-      <% end %>
-
-    </div>
-  <% end %>
-
-  <%# ======= TAB DISPONIBILITÉS ======= %>
-  <div id="tab-disponibilites" class="tab-content" style="display:none;">
-    <h2 class="section-title mb-4">Disponibilités</h2>
-    <%= render "tatoueurs/calendar", tatoueur: @tatoueur %>
-  </div>
-
-  <%# ======= TAB ÉVÉNEMENTS ======= %>
-  <% if @events.any? %>
-    <div id="tab-evenements" class="tab-content" style="display:none;">
-      <h2 class="section-title mb-4">Événements à venir</h2>
-      <% @events.each do |event| %>
-        <div class="event-item">
-          <div class="event-date"><%= event.start_date&.strftime("%d %B %Y") %></div>
-          <div class="event-name"><%= event.name %></div>
-          <div class="event-location">📍 <%= event.location %></div>
-          <% if event.description.present? %>
-            <p style="color:#888;margin-top:0.5rem;margin-bottom:0;font-size:0.9rem;">
-              <%= event.description.truncate(120) %>
-            </p>
-          <% end %>
-        </div>
-      <% end %>
-    </div>
-  <% end %>
-
-  <%# ======= TAB AVIS ======= %>
-  <div id="tab-avis" class="tab-content" style="display:none;">
-    <% if @reviews.any? %>
-      <div class="d-flex align-items-center gap-3 mb-4">
-        <div style="font-family:'Bebas Neue',sans-serif;font-size:3rem;color:#F5C500;line-height:1;">
-          <%= number_with_precision(@reviews.average(:rating), precision: 1) %>
-        </div>
-        <div>
-          <div style="display:flex;gap:0.2rem;margin-bottom:0.25rem;">
-            <% avg = @reviews.average(:rating).to_f %>
-            <% 5.times do |i| %>
-              <svg width="18" height="18" viewBox="0 0 24 24"
-                   fill="<%= i < avg.floor ? '#F5C500' : (i < avg ? 'url(#half)' : 'none') %>"
-                   stroke="#F5C500" stroke-width="2">
-                <defs>
-                  <linearGradient id="half">
-                    <stop offset="50%" stop-color="#F5C500"/>
-                    <stop offset="50%" stop-color="transparent"/>
-                  </linearGradient>
-                </defs>
-                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-              </svg>
-            <% end %>
-          </div>
-          <div style="color:#888;font-size:0.85rem;"><%= @reviews.count %> avis</div>
-        </div>
-      </div>
-
-      <div class="row g-4">
-        <% @reviews.each do |review| %>
-          <div class="col-md-6">
-            <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1.5rem;">
-              <div class="d-flex justify-content-between align-items-start mb-2">
-                <div>
-                  <span style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:#F5C500;">
-                    <%= review.user.nickname %>
-                  </span>
-                  <div style="display:flex;gap:0.15rem;margin-top:0.25rem;">
+          <div class="row g-3">
+            <% @reviews.each do |review| %>
+              <div class="col-md-6">
+                <div class="ts-review-card">
+                  <div class="ts-review-card__header">
+                    <span class="ts-review-card__author"><%= review.user.nickname %></span>
+                    <span class="ts-review-card__date"><%= review.created_at.strftime("%d/%m/%Y") %></span>
+                  </div>
+                  <div class="ts-stars" style="margin-bottom:0.5rem;">
                     <% 5.times do |i| %>
-                      <svg width="14" height="14" viewBox="0 0 24 24"
-                           fill="<%= i < review.rating ? '#F5C500' : 'none' %>"
-                           stroke="<%= i < review.rating ? '#F5C500' : '#444' %>"
-                           stroke-width="2">
+                      <svg viewBox="0 0 24 24" fill="<%= i < review.rating ? '#f5c500' : 'none' %>" stroke="<%= i < review.rating ? '#f5c500' : '#333' %>" stroke-width="2">
                         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
                       </svg>
                     <% end %>
                   </div>
+                  <p class="ts-review-card__comment"><%= review.comment %></p>
                 </div>
-                <span style="color:#555;font-size:0.8rem;">
-                  <%= review.created_at.strftime("%d/%m/%Y") %>
-                </span>
               </div>
-              <p style="color:#888;margin-bottom:0;line-height:1.6;"><%= review.comment %></p>
-            </div>
+            <% end %>
           </div>
+        <% else %>
+          <p class="ts-empty">Aucun avis pour le moment.</p>
         <% end %>
       </div>
-    <% else %>
-      <p style="color:#555;">Aucun avis pour le moment.</p>
-    <% end %>
-  </div>
 
+    </div>
+
+    <%# ── Sidebar ── %>
+    <div class="ts-sidebar">
+
+      <%# Shop %>
+      <% if @tatoueur.shops.any? %>
+        <div class="ts-sidebar-card">
+          <div class="ts-sidebar-title">Studio</div>
+          <% @tatoueur.shops.each do |shop| %>
+            <%= link_to shop_path(shop), style: "text-decoration:none;" do %>
+              <div class="ts-shop-row">
+                <div class="ts-shop-icon">🏠</div>
+                <div>
+                  <div class="ts-shop-name"><%= shop.name %></div>
+                  <div class="ts-shop-loc"><%= shop.address&.truncate(35) %></div>
+                </div>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+
+      <%# Disponibilités compactes %>
+      <div class="ts-sidebar-card">
+        <div class="ts-sidebar-title">Disponibilités cette semaine</div>
+        <% days = %w[L M M J V S D] %>
+        <div class="ts-avail-days">
+          <% days.each do |d| %>
+            <div class="ts-avail-day-label"><%= d %></div>
+          <% end %>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:3px;">
+          <% availabilities_by_day = @tatoueur.availabilities.group_by { |a| a.date.wday } rescue {} %>
+          <% [1,2,3,4,5,6,0].each do |wday| %>
+            <div class="ts-avail-slots">
+              <% 3.times do |slot| %>
+                <% free = availabilities_by_day[wday]&.any? rescue false %>
+                <div class="ts-avail-slot <%= free ? 'ts-avail-slot--free' : 'ts-avail-slot--busy' %>"></div>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+        <div class="ts-avail-legend">
+          <span><span class="ts-avail-legend-dot" style="background:rgba(200,168,75,0.55);"></span>Dispo</span>
+          <span><span class="ts-avail-legend-dot" style="background:rgba(255,255,255,0.05);"></span>Occupé</span>
+        </div>
+      </div>
+
+      <%# Derniers avis %>
+      <% if @reviews.any? %>
+        <div class="ts-sidebar-card">
+          <div class="ts-sidebar-title">Derniers avis</div>
+          <% @reviews.last(3).each do |review| %>
+            <div class="ts-review-mini">
+              <div class="ts-review-mini__header">
+                <span class="ts-review-mini__author"><%= review.user.nickname %></span>
+                <div class="ts-stars-sm">
+                  <% 5.times do |i| %>
+                    <svg viewBox="0 0 24 24" fill="<%= i < review.rating ? '#f5c500' : 'none' %>" stroke="<%= i < review.rating ? '#f5c500' : '#333' %>" stroke-width="2">
+                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                    </svg>
+                  <% end %>
+                </div>
+              </div>
+              <p class="ts-review-mini__text"><%= review.comment&.truncate(70) %></p>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+
+    </div>
+  </div>
+</div>
+
+<%# ── Lightbox ── %>
+<div id="lightbox" onclick="if(event.target===this) closeLightbox()" class="ts-lightbox">
+  <button onclick="shiftLightbox(-1)" class="ts-lightbox__nav ts-lightbox__prev">&#8249;</button>
+  <button onclick="shiftLightbox(1)"  class="ts-lightbox__nav ts-lightbox__next">&#8250;</button>
+  <button onclick="closeLightbox()"   class="ts-lightbox__close">✕</button>
+  <img id="lightbox-img" class="ts-lightbox__img" src="" alt="">
+  <div id="lightbox-caption" class="ts-lightbox__caption"></div>
 </div>
 
 <script>
@@ -411,85 +724,40 @@
       const content = document.getElementById(`tab-${t}`)
       const btn     = document.getElementById(`tab-btn-${t}`)
       if (!content || !btn) return
-      if (t === key) {
-        content.style.display = "block"
-        btn.style.color        = "#F5C500"
-        btn.style.borderBottom = "2px solid #F5C500"
-      } else {
-        content.style.display = "none"
-        btn.style.color        = "#888"
-        btn.style.borderBottom = "2px solid transparent"
-      }
+      const active = t === key
+      content.style.display = active ? "block" : "none"
+      btn.classList.toggle("ts-tab--active", active)
     })
   }
 
   function toggleUploadForm() {
-    const f = document.getElementById('upload-form')
-    if (f) f.style.display = f.style.display === 'none' ? 'block' : 'none'
+    const f = document.getElementById("upload-form")
+    if (f) f.style.display = f.style.display === "none" ? "block" : "none"
   }
 
-  let allImgs    = []
-  let currentIdx = 0
-
-  function buildIndex() {
-    allImgs = Array.from(document.querySelectorAll('[data-lightbox]'))
-  }
-
+  let allImgs = [], currentIdx = 0
+  function buildIndex() { allImgs = Array.from(document.querySelectorAll("[data-lightbox]")) }
   function openLightbox(el) {
-    buildIndex()
-    currentIdx = allImgs.indexOf(el)
-    showAt(currentIdx)
-    document.getElementById('lightbox').style.display = 'flex'
-    document.body.style.overflow = 'hidden'
+    buildIndex(); currentIdx = allImgs.indexOf(el); showAt(currentIdx)
+    document.getElementById("lightbox").classList.add("open")
+    document.body.style.overflow = "hidden"
   }
-
   function showAt(idx) {
     const el = allImgs[idx]
-    document.getElementById('lightbox-img').src            = el.dataset.src
-    document.getElementById('lightbox-caption').textContent = el.dataset.caption || ''
+    document.getElementById("lightbox-img").src             = el.dataset.src
+    document.getElementById("lightbox-caption").textContent = el.dataset.caption || ""
   }
-
-  function shiftLightbox(dir) {
-    currentIdx = (currentIdx + dir + allImgs.length) % allImgs.length
-    showAt(currentIdx)
-  }
-
+  function shiftLightbox(dir) { currentIdx = (currentIdx + dir + allImgs.length) % allImgs.length; showAt(currentIdx) }
   function closeLightbox() {
-    document.getElementById('lightbox').style.display = 'none'
-    document.getElementById('lightbox-img').src       = ''
-    document.body.style.overflow = ''
+    document.getElementById("lightbox").classList.remove("open")
+    document.getElementById("lightbox-img").src = ""
+    document.body.style.overflow = ""
   }
-
-  document.addEventListener('keydown', (e) => {
-    const lb = document.getElementById('lightbox')
-    if (!lb || lb.style.display === 'none') return
-    if (e.key === 'Escape')     closeLightbox()
-    if (e.key === 'ArrowRight') shiftLightbox(1)
-    if (e.key === 'ArrowLeft')  shiftLightbox(-1)
+  document.addEventListener("keydown", e => {
+    const lb = document.getElementById("lightbox")
+    if (!lb || !lb.classList.contains("open")) return
+    if (e.key === "Escape")     closeLightbox()
+    if (e.key === "ArrowRight") shiftLightbox(1)
+    if (e.key === "ArrowLeft")  shiftLightbox(-1)
   })
 </script>
-
-<div id="lightbox"
-     onclick="if(event.target===this) closeLightbox()"
-     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.93);
-            z-index:9999;align-items:center;justify-content:center;">
-  <button onclick="shiftLightbox(-1)"
-          style="position:fixed;left:1.5rem;top:50%;transform:translateY(-50%);
-                 background:none;border:none;color:#fff;font-size:2.5rem;cursor:pointer;opacity:0.6;"
-          onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">&#8249;</button>
-  <button onclick="shiftLightbox(1)"
-          style="position:fixed;right:1.5rem;top:50%;transform:translateY(-50%);
-                 background:none;border:none;color:#fff;font-size:2.5rem;cursor:pointer;opacity:0.6;"
-          onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">&#8250;</button>
-  <button onclick="closeLightbox()"
-          style="position:fixed;top:1.25rem;right:1.5rem;background:none;border:none;
-                 color:#fff;font-size:1.75rem;cursor:pointer;opacity:0.6;"
-          onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">✕</button>
-  <img id="lightbox-img"
-       style="max-width:90vw;max-height:90vh;object-fit:contain;
-              box-shadow:0 0 60px rgba(0,0,0,0.8);" src="" alt="">
-  <div id="lightbox-caption"
-       style="position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);
-              color:#666;font-family:'Barlow Condensed',sans-serif;font-size:0.95rem;
-              letter-spacing:0.05em;white-space:nowrap;"></div>
-</div>

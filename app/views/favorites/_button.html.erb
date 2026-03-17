@@ -1,17 +1,57 @@
 <% favorited = user_signed_in? && current_user.favorited?(favoritable) %>
-
-<div id="favorite-<%= favoritable.class.name.downcase %>-<%= favoritable.id %>">
-  <% if user_signed_in? %>
+<% if user_signed_in? %>
+  <div id="favorite-<%= favoritable.class.name.downcase %>-<%= favoritable.id %>" class="ts-fav-wrap">
     <% if favorited %>
-      <%= button_to "❤️ Retirer des favoris",
-          favorite_path_for(favoritable),
-          method: :delete,
-          class: "btn btn-sm btn-outline-danger" %>
+      <%= button_to favorite_path_for(favoritable), method: :delete,
+            class: "ts-fav-btn ts-fav-btn--active",
+            title: "Retirer des favoris" do %>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+        </svg>
+        Favoris
+      <% end %>
     <% else %>
-      <%= button_to "🤍 Ajouter aux favoris",
-          favorite_path_for(favoritable),
-          method: :post,
-          class: "btn btn-sm btn-outline-secondary" %>
+      <%= button_to favorite_path_for(favoritable), method: :post,
+            class: "ts-fav-btn",
+            title: "Ajouter aux favoris" do %>
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
+        </svg>
+        Favoris
+      <% end %>
     <% end %>
-  <% end %>
-</div>
+  </div>
+
+  <style>
+    .ts-fav-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-family: 'Bebas Neue', sans-serif;
+      font-size: 0.9rem;
+      letter-spacing: 0.07em;
+      padding: 0.5rem 1rem;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.15);
+      color: #888;
+      border-radius: 2px;
+      cursor: pointer;
+      transition: color .15s, border-color .15s;
+    }
+    .ts-fav-btn:hover {
+      color: #e53e3e;
+      border-color: rgba(229,62,62,0.4);
+    }
+    .ts-fav-btn--active {
+      color: #e53e3e;
+      border-color: rgba(229,62,62,0.4);
+      background: rgba(229,62,62,0.08);
+    }
+    .ts-fav-btn--active:hover {
+      color: #888;
+      border-color: rgba(255,255,255,0.15);
+      background: transparent;
+    }
+    .ts-fav-wrap form { display: inline; }
+  </style>
+<% end %>
