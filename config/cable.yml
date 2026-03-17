@@ -1,10 +1,16 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  max_connections: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+
 development:
-  adapter: async
+  <<: *default
+  database: tattoosphere_development
 
 test:
-  adapter: test
+  <<: *default
+  database: tattoosphere_test
 
 production:
-  adapter: redis
-  url: <%= ENV["REDIS_URL"] %>
-  channel_prefix: tattoosphere_production
+  <<: *default
+  url: <%= ENV["DATABASE_URL"] %>
