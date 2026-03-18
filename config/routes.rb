@@ -209,4 +209,20 @@ Rails.application.routes.draw do
     patch :mark_as_read
   end
 end
+
+# À ajouter dans config/routes.rb
+
+# Webhook Stripe (pas d'auth, hors ressource)
+post "/stripe/webhooks", to: "stripe_webhooks#create"
+
+# Abonnements
+resource :subscription, only: [ :index ] do
+  collection do
+    get  :index
+    post :checkout
+    get  :success
+    delete :cancel
+    get :portal
+  end
+end
 end

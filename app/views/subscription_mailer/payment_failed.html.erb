@@ -1,0 +1,15 @@
+<h1>⚠️ Échec du paiement de votre abonnement</h1>
+<p>Bonjour <%= @user.first_name %>,</p>
+<p>Nous n'avons pas pu débiter votre moyen de paiement pour le renouvellement de votre abonnement <strong style="color:#ffc107;">Tattoosphere</strong>.</p>
+
+<div class="alert-box danger">
+  Si le paiement n'est pas régularisé rapidement, votre abonnement sera suspendu et votre profil ne sera plus visible sur la plateforme.
+</div>
+
+<p>Pour mettre à jour votre moyen de paiement ou régulariser la situation, accédez à votre portail de facturation :</p>
+
+<a href="<%= portal_subscription_url %>" class="btn">Mettre à jour mon paiement</a>
+
+<p style="margin-top:24px;font-size:13px;color:#666;">
+  Si vous pensez qu'il s'agit d'une erreur, contactez-nous à support@tattoosphere.com
+</p>

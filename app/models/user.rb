@@ -7,6 +7,7 @@ class User < ApplicationRecord
   # ================================
   has_one  :tatoueur
   has_one  :shop
+  has_one :subscription, dependent: :destroy
   has_many :bookings
   has_many :reviews
   has_many :messages
@@ -23,6 +24,7 @@ class User < ApplicationRecord
   has_many :reports, foreign_key: :reporter_id, dependent: :destroy
   has_many :admin_logs, foreign_key: :admin_user_id
   has_many :notifications, dependent: :destroy
+
 
   # ================================
   # SCOPES
@@ -48,10 +50,26 @@ class User < ApplicationRecord
   def admin?      = role == "admin"
   def banned?     = banned == true
   def active?     = !banned?
+  def subscribed?
+  subscription&.active?
+  end
+
+def subscription_plan
+  subscription&.plan
+end
+
+def can_create_event_free?
+  # Premier event toujours gratuit
+  return true if events.count.zero?
+  # Events gratuits inclus dans le plan
+  subscription&.free_events_remaining.to_i > 0
+end
 
   def favorited?(resource)
     favorites.exists?(favoritable: resource)
   end
+
+
 
   private
 

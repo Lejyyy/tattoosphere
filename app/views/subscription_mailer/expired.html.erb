@@ -1,0 +1,15 @@
+<h1>Votre abonnement a expiré</h1>
+<p>Bonjour <%= @user.first_name %>,</p>
+<p>Votre abonnement <strong style="color:#ffc107;">Tattoosphere</strong> est arrivé à expiration. Votre profil n'est plus visible sur la plateforme.</p>
+
+<div class="alert-box">
+  Toutes vos données sont conservées. Vous pouvez réactiver votre abonnement à tout moment pour retrouver votre profil tel que vous l'aviez laissé.
+</div>
+
+<p>Choisissez l'offre qui vous convient et reprenez là où vous vous étiez arrêté :</p>
+
+<a href="<%= subscriptions_url %>" class="btn">Réactiver mon abonnement</a>
+
+<p style="margin-top:24px;font-size:13px;color:#666;">
+  Merci d'avoir fait partie de la communauté Tattoosphere. On espère vous revoir bientôt !
+</p>

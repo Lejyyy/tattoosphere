@@ -1,0 +1,142 @@
+<div class="subscriptions-page">
+
+  <%# HEADER %>
+  <div class="subscriptions-hero">
+    <h1>Choisissez votre <span>offre</span></h1>
+    <p>Développez votre activité sur Tattoosphere. Sans engagement, résiliable à tout moment.</p>
+  </div>
+
+  <%# ABONNEMENT ACTIF %>
+  <% if @current_subscription&.active? %>
+    <div class="subscription-current">
+      <div class="subscription-current__info">
+        <span class="subscription-current__badge">Abonnement actif</span>
+        <strong>Offre <%= @current_subscription.plan.capitalize %></strong>
+        <% if @current_subscription.trialing? %>
+          <span>Essai gratuit — expire le <%= I18n.l(@current_subscription.trial_ends_at, format: :long) %></span>
+        <% else %>
+          <span>Prochain renouvellement le <%= I18n.l(@current_subscription.current_period_ends_at, format: :long) %></span>
+        <% end %>
+      </div>
+      <div class="subscription-current__actions">
+        <%= link_to "Gérer la facturation", portal_subscription_path, class: "btn-sub btn-sub--outline" %>
+        <%= button_to "Résilier", cancel_subscription_path,
+              method: :delete,
+              data: { turbo_confirm: "Confirmer la résiliation ? Votre accès reste actif jusqu'à la fin de la période en cours." },
+              class: "btn-sub btn-sub--danger" %>
+      </div>
+    </div>
+  <% end %>
+
+  <%# GRILLE DES OFFRES %>
+  <div class="pricing-grid">
+
+    <%# ESSENTIEL %>
+    <div class="pricing-card <%= 'pricing-card--current' if @current_subscription&.plan == 'essentiel' %>">
+      <div class="pricing-card__header">
+        <span class="pricing-card__name">Essentiel</span>
+        <div class="pricing-card__price">
+          <span class="pricing-card__amount">15€</span>
+          <span class="pricing-card__period">/mois</span>
+        </div>
+        <span class="pricing-card__trial">7 jours d'essai gratuit</span>
+      </div>
+      <ul class="pricing-card__features">
+        <li>✓ Profil visible sur la plateforme</li>
+        <li>✓ Gestion du portfolio</li>
+        <li>✓ Réservations en ligne</li>
+        <li>✓ Messagerie clients</li>
+        <li>✓ Agenda & disponibilités</li>
+        <li class="disabled">✗ Événements gratuits</li>
+        <li class="disabled">✗ Visibilité en avant</li>
+        <li class="disabled">✗ Badge vérifié</li>
+      </ul>
+      <% if @current_subscription&.plan == "essentiel" %>
+        <button class="btn-sub btn-sub--current" disabled>Offre actuelle</button>
+      <% else %>
+        <%= button_to "Démarrer l'essai gratuit", checkout_subscription_path(plan: "essentiel"),
+              method: :post, class: "btn-sub btn-sub--primary" %>
+      <% end %>
+    </div>
+
+    <%# PRO %>
+    <div class="pricing-card pricing-card--featured <%= 'pricing-card--current' if @current_subscription&.plan == 'pro' %>">
+      <div class="pricing-card__badge">Populaire</div>
+      <div class="pricing-card__header">
+        <span class="pricing-card__name">Pro</span>
+        <div class="pricing-card__price">
+          <span class="pricing-card__amount">20€</span>
+          <span class="pricing-card__period">/mois</span>
+        </div>
+        <span class="pricing-card__trial">14 jours de visibilité offerts</span>
+      </div>
+      <ul class="pricing-card__features">
+        <li>✓ Profil visible sur la plateforme</li>
+        <li>✓ Gestion du portfolio</li>
+        <li>✓ Réservations en ligne</li>
+        <li>✓ Messagerie clients</li>
+        <li>✓ Agenda & disponibilités</li>
+        <li>✓ <strong>1 événement gratuit / an</strong></li>
+        <li>✓ <strong>14 jours de visibilité en avant</strong></li>
+        <li class="disabled">✗ Badge vérifié</li>
+      </ul>
+      <% if @current_subscription&.plan == "pro" %>
+        <button class="btn-sub btn-sub--current" disabled>Offre actuelle</button>
+      <% else %>
+        <%= button_to "Choisir Pro", checkout_subscription_path(plan: "pro"),
+              method: :post, class: "btn-sub btn-sub--primary" %>
+      <% end %>
+    </div>
+
+    <%# MASTER %>
+    <div class="pricing-card <%= 'pricing-card--current' if @current_subscription&.plan == 'master' %>">
+      <div class="pricing-card__header">
+        <span class="pricing-card__name">Master</span>
+        <div class="pricing-card__price">
+          <span class="pricing-card__amount">39€</span>
+          <span class="pricing-card__period">/mois</span>
+        </div>
+        <span class="pricing-card__trial" style="color:#555;">Sans essai gratuit</span>
+      </div>
+      <ul class="pricing-card__features">
+        <li>✓ Profil visible sur la plateforme</li>
+        <li>✓ Gestion du portfolio</li>
+        <li>✓ Réservations en ligne</li>
+        <li>✓ Messagerie clients</li>
+        <li>✓ Agenda & disponibilités</li>
+        <li>✓ <strong>5 événements gratuits / an</strong></li>
+        <li>✓ <strong>Visibilité en avant 365j</strong></li>
+        <li>✓ <strong>Badge vérifié (validation admin)</strong></li>
+      </ul>
+      <% if @current_subscription&.plan == "master" %>
+        <button class="btn-sub btn-sub--current" disabled>Offre actuelle</button>
+      <% else %>
+        <%= button_to "Choisir Master", checkout_subscription_path(plan: "master"),
+              method: :post, class: "btn-sub btn-sub--primary" %>
+      <% end %>
+    </div>
+
+  </div>
+
+  <%# FAQ %>
+  <div class="pricing-faq">
+    <h2>Questions fréquentes</h2>
+    <div class="pricing-faq__item">
+      <strong>Puis-je changer d'offre ?</strong>
+      <p>Oui, vous pouvez upgrader ou downgrader à tout moment depuis votre portail de facturation.</p>
+    </div>
+    <div class="pricing-faq__item">
+      <strong>Comment fonctionne l'essai gratuit ?</strong>
+      <p>L'offre Essentiel inclut 7 jours d'essai. Vous recevrez un rappel la veille de la fin. Sans résiliation, l'abonnement démarre automatiquement.</p>
+    </div>
+    <div class="pricing-faq__item">
+      <strong>Que se passe-t-il si je résilie ?</strong>
+      <p>Votre profil reste actif jusqu'à la fin de la période payée, puis votre compte repasse en mode visiteur. Vos données sont conservées.</p>
+    </div>
+    <div class="pricing-faq__item">
+      <strong>Les événements gratuits se cumulent-ils ?</strong>
+      <p>Non, ils sont remis à zéro chaque année à la date anniversaire de votre abonnement.</p>
+    </div>
+  </div>
+
+</div>

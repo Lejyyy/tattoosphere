@@ -1,0 +1,27 @@
+<h1>Bienvenue sur l'offre <%= @plan.capitalize %> 🎉</h1>
+<p>Bonjour <%= @user.first_name %>,</p>
+<p>Votre abonnement <strong style="color:#ffc107;"><%= @plan.capitalize %></strong> est maintenant actif. Voici ce qui est inclus dans votre offre :</p>
+
+<% config = Subscription::PLANS[@plan] %>
+<table class="detail-table">
+  <tr><td>Offre</td><td><strong><%= @plan.capitalize %></strong></td></tr>
+  <tr><td>Prix</td><td><%= number_to_currency(config[:amount] / 100.0, unit: "€", format: "%n %u") %>/mois</td></tr>
+  <% if config[:trial_days] > 0 %>
+    <tr><td>Essai gratuit</td><td><%= config[:trial_days] %> jours</td></tr>
+  <% end %>
+  <% if config[:free_events] > 0 %>
+    <tr><td>Événements gratuits</td><td><%= config[:free_events] %> par an</td></tr>
+  <% end %>
+  <% if config[:featured_days] > 0 %>
+    <tr><td>Visibilité en avant</td><td><%= config[:featured_days] == 365 ? "365 jours / an" : "#{config[:featured_days]} jours offerts" %></td></tr>
+  <% end %>
+  <% if config[:verified] %>
+    <tr><td>Badge vérifié</td><td>En attente de validation admin</td></tr>
+  <% end %>
+</table>
+
+<div class="alert-box success">
+  Votre profil est maintenant visible sur la plateforme. Complétez-le pour maximiser votre visibilité !
+</div>
+
+<a href="<%= dashboard_url %>" class="btn">Accéder à mon dashboard</a>

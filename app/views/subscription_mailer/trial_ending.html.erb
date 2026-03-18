@@ -1,0 +1,16 @@
+<h1>Votre essai gratuit se termine demain ⏳</h1>
+<p>Bonjour <%= @user.first_name %>,</p>
+<p>Votre période d'essai gratuit de <strong>7 jours</strong> sur l'offre <strong style="color:#ffc107;">Essentiel</strong> se termine le <strong><%= I18n.l(@trial_ends_at, format: :long) %></strong>.</p>
+
+<div class="alert-box">
+  Si vous ne résiliez pas avant demain, votre abonnement sera automatiquement activé à <strong style="color:#ffc107;">15€/mois</strong>.
+</div>
+
+<p>Vous souhaitez continuer ? Rien à faire, votre abonnement démarre automatiquement.</p>
+<p>Vous souhaitez résilier ? Rendez-vous dans votre espace abonnement avant la fin de l'essai.</p>
+
+<a href="<%= subscriptions_url %>" class="btn">Gérer mon abonnement</a>
+
+<p style="margin-top:24px;font-size:13px;color:#666;">
+  En cas de résiliation, votre profil restera visible jusqu'à la fin de la période d'essai, puis votre compte repassera en mode visiteur.
+</p>
