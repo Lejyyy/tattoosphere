@@ -1,0 +1,79 @@
+<% sub = current_user.subscription %>
+
+<% if sub&.active? %>
+  <%# Abonnement actif %>
+  <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;padding:1.5rem;margin-bottom:1rem;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem;">
+
+      <div>
+        <div style="font-size:0.7rem;font-weight:700;text-transform:uppercase;letter-spacing:0.1em;color:#F5C500;margin-bottom:0.4rem;">
+          Abonnement actif
+        </div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:#fff;letter-spacing:0.05em;">
+          Offre <%= sub.plan.capitalize %>
+          <% if sub.plan == "master" && current_user.tatoueur&.verified? %>
+            <span style="font-size:0.75rem;background:#27AE60;color:#fff;padding:0.15rem 0.5rem;vertical-align:middle;">✓ Vérifié</span>
+          <% end %>
+        </div>
+
+        <% if sub.trialing? %>
+          <div style="font-size:0.8rem;color:#E67E22;margin-top:0.3rem;">
+            ⏳ Essai gratuit — expire le <%= I18n.l(sub.trial_ends_at, format: :long) %>
+          </div>
+        <% else %>
+          <div style="font-size:0.8rem;color:#666;margin-top:0.3rem;">
+            Renouvellement le <%= I18n.l(sub.current_period_ends_at, format: :long) %>
+          </div>
+        <% end %>
+
+        <%# Events restants %>
+        <% if sub.plan_config[:free_events] > 0 %>
+          <div style="font-size:0.78rem;color:#888;margin-top:0.25rem;">
+            🎟️ <%= sub.free_events_remaining %> événement<%= sub.free_events_remaining > 1 ? 's' : '' %> gratuit<%= sub.free_events_remaining > 1 ? 's' : '' %> restant<%= sub.free_events_remaining > 1 ? 's' : '' %>
+          </div>
+        <% end %>
+
+        <%# Featured %>
+        <% if sub.featured? %>
+          <div style="font-size:0.78rem;color:#F5C500;margin-top:0.25rem;">
+            ⭐ Visibilité en avant active jusqu'au <%= I18n.l(sub.featured_until, format: :long) %>
+          </div>
+        <% end %>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:0.5rem;align-items:flex-end;">
+        <%= link_to "Gérer la facturation", portal_subscription_path,
+              style: "font-family:'Bebas Neue',sans-serif;font-size:0.85rem;letter-spacing:0.08em;
+                      text-transform:uppercase;border:1px solid #2A2A2A;color:#888;
+                      padding:0.5rem 1rem;text-decoration:none;transition:all 0.15s;",
+              onmouseover: "this.style.borderColor='#F5C500';this.style.color='#F5C500'",
+              onmouseout:  "this.style.borderColor='#2A2A2A';this.style.color='#888'" %>
+        <%= link_to "Voir les offres", subscription_path,
+              style: "font-family:'Bebas Neue',sans-serif;font-size:0.85rem;letter-spacing:0.08em;
+                      text-transform:uppercase;border:1px solid #2A2A2A;color:#888;
+                      padding:0.5rem 1rem;text-decoration:none;transition:all 0.15s;",
+              onmouseover: "this.style.borderColor='#F5C500';this.style.color='#F5C500'",
+              onmouseout:  "this.style.borderColor='#2A2A2A';this.style.color='#888'" %>
+      </div>
+
+    </div>
+  </div>
+
+<% else %>
+  <%# Pas d'abonnement — CTA %>
+  <div style="background:#1A1A1A;border:1px dashed #2A2A2A;padding:1.5rem;margin-bottom:1rem;text-align:center;">
+    <div style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:#fff;margin-bottom:0.5rem;">
+      Votre profil n'est pas encore visible
+    </div>
+    <p style="font-size:0.85rem;color:#666;margin-bottom:1rem;">
+      Choisissez une offre pour apparaître sur la plateforme et commencer à recevoir des clients.
+    </p>
+    <%= link_to "Voir les offres →", subscription_path,
+          style: "display:inline-block;background:#F5C500;color:#000;
+                  font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:0.1em;
+                  text-transform:uppercase;padding:0.7rem 2rem;text-decoration:none;
+                  transition:background 0.2s;",
+          onmouseover: "this.style.background='#d4a800'",
+          onmouseout:  "this.style.background='#F5C500'" %>
+  </div>
+<% end %>

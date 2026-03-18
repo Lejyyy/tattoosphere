@@ -18,8 +18,8 @@ class SubscriptionsController < ApplicationController
       customer:   customer.id,
       mode:       "subscription",
       line_items: [ { price: config[:price_id], quantity: 1 } ],
-      success_url: subscription_success_url(plan: plan),
-      cancel_url:  subscriptions_url,
+      success_url: success_subscription_url(plan: plan),
+      cancel_url:  subscription_url,
       metadata:    { user_id: current_user.id, plan: plan }
     }
 

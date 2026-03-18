@@ -1,0 +1,133 @@
+<div class="container-fluid py-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1 style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:#F5C500;">Funnel Onboarding</h1>
+  </div>
+
+  <%# KPIs %>
+  <div class="row g-3 mb-4">
+    <% [
+      ["Démarrés",          @stats[:total],          "#F5C500"],
+      ["Formulaire ok",     @stats[:form_completed],  "#F5C500"],
+      ["Page abonnement",   @stats[:page_visited],    "#F5C500"],
+      ["Plan sélectionné",  @stats[:plan_selected],   "#F5C500"],
+      ["Abonnés ✓",         @stats[:subscribed],      "#27AE60"],
+    ].each do |label, val, color| %>
+      <div class="col-6 col-md">
+        <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid <%= color %>;padding:1rem;text-align:center;">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:<%= color %>;"><%= val %></div>
+          <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;color:#888;"><%= label %></div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+
+  <%# Plans sélectionnés %>
+  <% if @stats[:by_plan].any? %>
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1rem;margin-bottom:1.5rem;display:flex;gap:2rem;flex-wrap:wrap;">
+      <span style="font-size:0.75rem;text-transform:uppercase;letter-spacing:0.08em;color:#555;">Plans cliqués :</span>
+      <% @stats[:by_plan].each do |plan, count| %>
+        <span style="font-size:0.85rem;color:#F5C500;font-weight:700;">
+          <%= plan.capitalize %> — <span style="color:#fff;"><%= count %></span>
+        </span>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# Filtres %>
+  <%= form_with url: admin_onboarding_funnels_path, method: :get, local: true do %>
+    <div style="display:flex;gap:0.75rem;flex-wrap:wrap;margin-bottom:1.5rem;">
+      <select name="kind" style="background:#1A1A1A;border:1px solid #2A2A2A;color:#fff;padding:0.5rem 1rem;font-size:0.85rem;">
+        <option value="">Tous les types</option>
+        <option value="tatoueur" <%= "selected" if params[:kind] == "tatoueur" %>>Tatoueur</option>
+        <option value="shop" <%= "selected" if params[:kind] == "shop" %>>Shop</option>
+      </select>
+      <select name="step" style="background:#1A1A1A;border:1px solid #2A2A2A;color:#fff;padding:0.5rem 1rem;font-size:0.85rem;">
+        <option value="">Toutes les étapes</option>
+        <% OnboardingFunnel::STEPS.each do |s| %>
+          <option value="<%= s %>" <%= "selected" if params[:step] == s %>><%= s.humanize %></option>
+        <% end %>
+      </select>
+      <label style="display:flex;align-items:center;gap:0.5rem;color:#888;font-size:0.85rem;cursor:pointer;">
+        <input type="checkbox" name="not_subscribed" value="1" <%= "checked" if params[:not_subscribed] == "1" %>>
+        Non abonnés seulement
+      </label>
+      <button type="submit" style="background:#F5C500;color:#000;border:none;padding:0.5rem 1.25rem;font-family:'Bebas Neue',sans-serif;font-size:0.9rem;letter-spacing:0.08em;cursor:pointer;">
+        Filtrer
+      </button>
+      <%= link_to "Reset", admin_onboarding_funnels_path, style: "color:#555;font-size:0.8rem;align-self:center;" %>
+    </div>
+  <% end %>
+
+  <%# Tableau %>
+  <div style="background:#1A1A1A;border:1px solid #2A2A2A;overflow-x:auto;">
+    <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
+      <thead>
+        <tr style="border-bottom:2px solid #F5C500;">
+          <th style="padding:0.75rem 1rem;text-align:left;font-family:'Bebas Neue',sans-serif;color:#F5C500;letter-spacing:0.05em;">Utilisateur</th>
+          <th style="padding:0.75rem 1rem;text-align:left;font-family:'Bebas Neue',sans-serif;color:#F5C500;letter-spacing:0.05em;">Type</th>
+          <th style="padding:0.75rem 1rem;text-align:left;font-family:'Bebas Neue',sans-serif;color:#F5C500;letter-spacing:0.05em;">Étape</th>
+          <th style="padding:0.75rem 1rem;text-align:left;font-family:'Bebas Neue',sans-serif;color:#F5C500;letter-spacing:0.05em;">Plan</th>
+          <th style="padding:0.75rem 1rem;text-align:left;font-family:'Bebas Neue',sans-serif;color:#F5C500;letter-spacing:0.05em;">Relances</th>
+          <th style="padding:0.75rem 1rem;text-align:left;font-family:'Bebas Neue',sans-serif;color:#F5C500;letter-spacing:0.05em;">Démarré</th>
+          <th style="padding:0.75rem 1rem;text-align:center;font-family:'Bebas Neue',sans-serif;color:#F5C500;letter-spacing:0.05em;">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @funnels.each do |funnel| %>
+          <tr style="border-bottom:1px solid #2A2A2A;" onmouseover="this.style.background='#1E1E1E'" onmouseout="this.style.background='transparent'">
+            <td style="padding:0.75rem 1rem;">
+              <div style="color:#fff;font-weight:600;"><%= funnel.user.nickname %></div>
+              <div style="color:#555;font-size:0.78rem;"><%= funnel.user.email %></div>
+            </td>
+            <td style="padding:0.75rem 1rem;">
+              <span style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;
+                    color:<%= funnel.kind == 'tatoueur' ? '#F5C500' : '#5B8DEF' %>;">
+                <%= funnel.kind == "tatoueur" ? "🖋️ Tatoueur" : "🏪 Shop" %>
+              </span>
+            </td>
+            <td style="padding:0.75rem 1rem;">
+              <span style="font-size:0.75rem;padding:0.2rem 0.6rem;font-weight:700;
+                    background:<%= funnel.step == 'subscribed' ? 'rgba(39,174,96,0.15)' : 'rgba(245,197,0,0.1)' %>;
+                    color:<%= funnel.step == 'subscribed' ? '#27AE60' : '#F5C500' %>;">
+                <%= funnel.step_label %>
+              </span>
+            </td>
+            <td style="padding:0.75rem 1rem;color:#888;">
+              <%= funnel.plan_selected&.capitalize || "—" %>
+            </td>
+            <td style="padding:0.75rem 1rem;">
+              <div style="display:flex;gap:0.3rem;">
+                <span title="Relance 1h" style="width:20px;height:20px;border-radius:50%;background:<%= funnel.reminder_1_sent_at ? '#27AE60' : '#2A2A2A' %>;display:inline-block;"></span>
+                <span title="Relance 24h" style="width:20px;height:20px;border-radius:50%;background:<%= funnel.reminder_2_sent_at ? '#27AE60' : '#2A2A2A' %>;display:inline-block;"></span>
+                <span title="Relance 5j" style="width:20px;height:20px;border-radius:50%;background:<%= funnel.reminder_3_sent_at ? '#27AE60' : '#2A2A2A' %>;display:inline-block;"></span>
+              </div>
+            </td>
+            <td style="padding:0.75rem 1rem;color:#555;font-size:0.78rem;">
+              <%= time_ago_in_words(funnel.created_at) %>
+            </td>
+            <td style="padding:0.75rem 1rem;text-align:center;">
+              <% unless funnel.subscribed_at.present? %>
+                <%= button_to "Relancer", send_reminder_admin_onboarding_funnel_path(funnel),
+                      method: :post,
+                      style: "background:transparent;border:1px solid #F5C500;color:#F5C500;
+                              font-family:'Bebas Neue',sans-serif;font-size:0.8rem;letter-spacing:0.06em;
+                              padding:0.3rem 0.75rem;cursor:pointer;transition:all 0.15s;white-space:nowrap;",
+                      onmouseover: "this.style.background='rgba(245,197,0,0.1)'",
+                      onmouseout:  "this.style.background='transparent'" %>
+              <% else %>
+                <span style="color:#27AE60;font-size:0.8rem;">✓ Abonné</span>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+        <% if @funnels.empty? %>
+          <tr>
+            <td colspan="7" style="padding:2rem;text-align:center;color:#555;">Aucun résultat.</td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+</div>

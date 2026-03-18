@@ -1,3 +1,4 @@
+<%= render "shared/subscription_widget" %>
 <% content_for :title, "Mon espace shop" %>
 
 <%# ── KPIs ── %>
@@ -71,6 +72,7 @@
       </h3>
       <div style="display:flex;flex-direction:column;gap:0.5rem;">
         <% [
+          ["💳 Abonnement",      subscription_path],
           ["👁️ Voir mon shop",   shop_path(current_shop)],
           ["✏️ Modifier",        edit_shop_path(current_shop)],
           ["👥 Gérer l'équipe",  shop_panel_equipe_path],

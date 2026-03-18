@@ -15,4 +15,16 @@ module ApplicationHelper
       )
     end
   end
+  def style_icon(name)
+  {
+    "Réalisme"    => "🎨",
+    "Japonais"    => "🌸",
+    "Géométrique" => "🔷",
+    "Old School"  => "⚓",
+    "Blackwork"   => "⬛",
+    "Aquarelle"   => "💧",
+    "Tribal"      => "🌀",
+    "Minimaliste" => "✦"
+  }[name] || "🖋️"
+end
 end

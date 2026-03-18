@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_18_090319) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_18_104236) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -190,6 +190,24 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_18_090319) do
     t.index ["user_id"], name: "index_notifications_on_user_id"
   end
 
+  create_table "onboarding_funnels", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.datetime "form_completed_at"
+    t.string "kind", null: false
+    t.string "plan_selected"
+    t.datetime "plan_selected_at"
+    t.datetime "reminder_1_sent_at"
+    t.datetime "reminder_2_sent_at"
+    t.datetime "reminder_3_sent_at"
+    t.string "step", default: "clicked", null: false
+    t.datetime "subscribed_at"
+    t.datetime "subscription_page_visited_at"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id", "kind"], name: "index_onboarding_funnels_on_user_id_and_kind", unique: true
+    t.index ["user_id"], name: "index_onboarding_funnels_on_user_id"
+  end
+
   create_table "portfolio_items", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.text "description"
@@ -285,8 +303,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_18_090319) do
   end
 
   create_table "subscriptions", force: :cascade do |t|
+    t.datetime "cancelled_at"
     t.datetime "created_at", null: false
+    t.datetime "current_period_ends_at"
+    t.datetime "events_reset_at"
+    t.datetime "featured_until"
+    t.integer "free_events_used", default: 0
+    t.string "plan", null: false
+    t.string "status", default: "trialing", null: false
+    t.string "stripe_customer_id"
+    t.string "stripe_subscription_id"
+    t.datetime "trial_ends_at"
     t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["stripe_subscription_id"], name: "index_subscriptions_on_stripe_subscription_id", unique: true
+    t.index ["user_id", "status"], name: "index_subscriptions_on_user_id_and_status"
+    t.index ["user_id"], name: "index_subscriptions_on_user_id"
   end
 
   create_table "tatoueur_styles", force: :cascade do |t|
@@ -335,6 +367,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_18_090319) do
     t.datetime "updated_at", null: false
   end
 
+  create_table "user_tattoo_styles", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.bigint "tattoo_style_id", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["tattoo_style_id"], name: "index_user_tattoo_styles_on_tattoo_style_id"
+    t.index ["user_id", "tattoo_style_id"], name: "index_user_tattoo_styles_on_user_id_and_tattoo_style_id", unique: true
+    t.index ["user_id"], name: "index_user_tattoo_styles_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.boolean "banned", default: false, null: false
     t.datetime "banned_at", precision: nil
@@ -376,6 +418,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_18_090319) do
   add_foreign_key "messages", "conversations"
   add_foreign_key "messages", "users"
   add_foreign_key "notifications", "users"
+  add_foreign_key "onboarding_funnels", "users"
   add_foreign_key "portfolio_items", "portfolios"
   add_foreign_key "portfolio_styles", "portfolio_items"
   add_foreign_key "portfolio_styles", "tattoo_styles"
@@ -388,7 +431,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_18_090319) do
   add_foreign_key "shops", "users"
   add_foreign_key "socials", "shops"
   add_foreign_key "socials", "tatoueurs"
+  add_foreign_key "subscriptions", "users"
   add_foreign_key "tatoueur_styles", "tatoueurs"
   add_foreign_key "tatoueur_styles", "tattoo_styles"
   add_foreign_key "tatoueurs", "users"
+  add_foreign_key "user_tattoo_styles", "tattoo_styles"
+  add_foreign_key "user_tattoo_styles", "users"
 end

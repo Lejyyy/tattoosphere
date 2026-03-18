@@ -9,9 +9,12 @@ class RegistrationsController < Devise::RegistrationsController
     resource.update_without_password(params)
   end
 
-  def configure_sign_up_params
-    devise_parameter_sanitizer.permit(:sign_up, keys: [ :first_name, :last_name, :nickname, :phone, :birth_date, :avatar ])
-  end
+   def configure_sign_up_params
+  devise_parameter_sanitizer.permit(:sign_up, keys: [
+    :first_name, :last_name, :nickname, :phone, :birth_date, :avatar, :role,
+    preferred_style_ids: []
+  ])
+end
 
   def configure_account_update_params
     devise_parameter_sanitizer.permit(:account_update, keys: [ :first_name, :last_name, :nickname, :phone, :birth_date, :avatar ])
@@ -27,8 +30,8 @@ class RegistrationsController < Devise::RegistrationsController
 
   def build_resource(hash = {})
     hash[:role] ||= "user"
-    super
-  end
+  super
+end
 
   private
 

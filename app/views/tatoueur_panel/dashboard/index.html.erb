@@ -1,4 +1,6 @@
+<%= render "shared/subscription_widget" %>
 <% content_for :title, "Mon espace tatoueur" %>
+
 
 <%# ── KPIs ── %>
 <div class="row g-3 mb-4">
@@ -140,6 +142,7 @@
 <%# ── Accès rapides ── %>
 <div class="row g-3 mt-2">
   <% [
+    ["💳 Abonnement", subscription_path],
     ["🗓️ Disponibilités", tatoueur_panel_disponibilites_path],
     ["🖼️ Mes photos",    tatoueur_panel_photos_path],
     ["📁 Portfolio",      tatoueur_panel_portfolio_path],

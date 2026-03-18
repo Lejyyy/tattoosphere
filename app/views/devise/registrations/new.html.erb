@@ -1,64 +1,139 @@
-<div class="container py-5" style="max-width: 480px;">
-  <h1 class="h3 mb-4">Créer un compte</h1>
+<div class="container py-5" style="max-width:560px;">
 
-  <%= form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
+  <%# Header %>
+  <div class="mb-5 text-center">
+    <h1 style="font-family:'Bebas Neue',sans-serif;font-size:2.5rem;letter-spacing:0.05em;">
+      Créer un <span class="text-yellow">compte</span>
+    </h1>
+    <p style="color:#666;font-size:0.9rem;">Rejoins la communauté Tattoosphere</p>
+  </div>
 
-    <%# Erreurs %>
-    <% if resource.errors.any? %>
-      <div class="alert alert-danger mb-4">
-        <ul class="mb-0 ps-3">
-          <% resource.errors.full_messages.each do |msg| %>
-            <li><%= msg %></li>
-          <% end %>
-        </ul>
-      </div>
-    <% end %>
-
-    <div class="row g-3">
-
-      <div class="col-md-6">
-        <%= f.label :first_name, "Prénom", class: "form-label" %>
-        <%= f.text_field :first_name, class: "form-control", required: true, autofocus: true %>
-      </div>
-
-      <div class="col-md-6">
-        <%= f.label :last_name, "Nom", class: "form-label" %>
-        <%= f.text_field :last_name, class: "form-control", required: true %>
-      </div>
-
-      <div class="col-12">
-        <%= f.label :nickname, "Pseudo", class: "form-label" %>
-        <%= f.text_field :nickname, class: "form-control", required: true %>
-        <div class="form-text text-secondary">Visible publiquement sur la plateforme</div>
-      </div>
-
-      <div class="col-12">
-        <%= f.label :email, "Email", class: "form-label" %>
-        <%= f.email_field :email, class: "form-control", required: true, autocomplete: "email" %>
-      </div>
-
-      <div class="col-12">
-        <%= f.label :password, "Mot de passe", class: "form-label" %>
-        <%= f.password_field :password, class: "form-control",
-            required: true, autocomplete: "new-password" %>
-        <div class="form-text text-secondary">6 caractères minimum</div>
-      </div>
-
-      <div class="col-12">
-        <%= f.label :password_confirmation, "Confirmation du mot de passe", class: "form-label" %>
-        <%= f.password_field :password_confirmation, class: "form-control",
-            required: true, autocomplete: "new-password" %>
-      </div>
-
-      <div class="col-12 mt-2">
-        <%= f.submit "S'inscrire", class: "btn btn-warning w-100 fw-bold" %>
-      </div>
-
+  <%# Erreurs %>
+  <% if resource.errors.any? %>
+    <div class="alert alert-danger mb-4">
+      <% resource.errors.full_messages.each do |msg| %>
+        <div>⚠️ <%= msg %></div>
+      <% end %>
     </div>
   <% end %>
 
+  <%= form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
+
+    <%# INFOS PERSONNELLES %>
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;padding:1.5rem;margin-bottom:1.5rem;">
+      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:#F5C500;border-left:4px solid #F5C500;padding-left:0.75rem;margin-bottom:1.25rem;">
+        Informations personnelles
+      </h2>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <%= f.label :first_name, "Prénom",
+              style: "display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;" %>
+          <%= f.text_field :first_name, required: true, autofocus: true,
+              style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;outline:none;",
+              onfocus: "this.style.borderColor='#F5C500'",
+              onblur:  "this.style.borderColor='#2A2A2A'" %>
+        </div>
+        <div class="col-md-6">
+          <%= f.label :last_name, "Nom",
+              style: "display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;" %>
+          <%= f.text_field :last_name, required: true,
+              style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;outline:none;",
+              onfocus: "this.style.borderColor='#F5C500'",
+              onblur:  "this.style.borderColor='#2A2A2A'" %>
+        </div>
+        <div class="col-12">
+          <%= f.label :nickname, "Pseudo",
+              style: "display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;" %>
+          <%= f.text_field :nickname, required: true,
+              style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;outline:none;",
+              onfocus: "this.style.borderColor='#F5C500'",
+              onblur:  "this.style.borderColor='#2A2A2A'" %>
+          <p style="font-size:0.75rem;color:#555;margin-top:0.4rem;">Visible publiquement sur la plateforme</p>
+        </div>
+        <div class="col-12">
+          <%= f.label :email, "Email",
+              style: "display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;" %>
+          <%= f.email_field :email, required: true, autocomplete: "email",
+              style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;outline:none;",
+              onfocus: "this.style.borderColor='#F5C500'",
+              onblur:  "this.style.borderColor='#2A2A2A'" %>
+        </div>
+        <div class="col-12">
+          <%= f.label :password, "Mot de passe",
+              style: "display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;" %>
+          <%= f.password_field :password, required: true, autocomplete: "new-password",
+              style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;outline:none;",
+              onfocus: "this.style.borderColor='#F5C500'",
+              onblur:  "this.style.borderColor='#2A2A2A'" %>
+          <p style="font-size:0.75rem;color:#555;margin-top:0.4rem;">6 caractères minimum</p>
+        </div>
+        <div class="col-12">
+          <%= f.label :password_confirmation, "Confirmer le mot de passe",
+              style: "display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;" %>
+          <%= f.password_field :password_confirmation, required: true, autocomplete: "new-password",
+              style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;outline:none;",
+              onfocus: "this.style.borderColor='#F5C500'",
+              onblur:  "this.style.borderColor='#2A2A2A'" %>
+        </div>
+      </div>
+    </div>
+
+    <%# STYLES PRÉFÉRÉS %>
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1.5rem;margin-bottom:1.5rem;">
+      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:#F5C500;border-left:4px solid #F5C500;padding-left:0.75rem;margin-bottom:0.5rem;">
+        Tes styles préférés
+      </h2>
+      <p style="font-size:0.8rem;color:#555;margin-bottom:1.25rem;">
+        Sélectionne les styles qui t'inspirent — on personnalisera tes recommandations.
+      </p>
+
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0.6rem;">
+        <% TattooStyle.order(:name).each do |style| %>
+          <label style="cursor:pointer;" class="style-pill-label">
+            <input type="checkbox"
+                   name="user[preferred_style_ids][]"
+                   value="<%= style.id %>"
+                   id="style_<%= style.id %>"
+                   style="display:none;"
+                   onchange="this.closest('.style-pill-label').querySelector('.style-pill').classList.toggle('style-pill--active', this.checked)">
+            <div class="style-pill" style="background:#0D0D0D;border:1px solid #2A2A2A;padding:0.6rem 0.4rem;
+                        text-align:center;transition:all 0.15s;user-select:none;">
+              <div style="font-size:1.3rem;margin-bottom:0.3rem;"><%= style_icon(style.name) %></div>
+              <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.78rem;font-weight:700;
+                          text-transform:uppercase;letter-spacing:0.05em;color:#888;line-height:1.2;">
+                <%= style.name %>
+              </div>
+            </div>
+          </label>
+        <% end %>
+      </div>
+      <p style="font-size:0.72rem;color:#444;margin-top:0.75rem;">Optionnel — tu pourras modifier ça plus tard.</p>
+    </div>
+
+    <%# SUBMIT %>
+    <%= f.submit "Créer mon compte",
+        style: "width:100%;background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;
+                font-size:1.2rem;letter-spacing:0.1em;padding:1rem;cursor:pointer;text-transform:uppercase;
+                transition:background 0.2s;",
+        onmouseover: "this.style.background='#d4a800'",
+        onmouseout:  "this.style.background='#F5C500'" %>
+
+  <% end %>
+
   <div class="text-center mt-4">
-    <span class="text-secondary small">Déjà un compte ?</span>
-    <%= link_to "Se connecter", new_user_session_path, class: "text-warning small ms-1" %>
+    <span style="color:#555;font-size:0.85rem;">Déjà un compte ?</span>
+    <%= link_to "Se connecter", new_user_session_path,
+          style: "color:#F5C500;font-size:0.85rem;margin-left:0.4rem;" %>
   </div>
+
 </div>
+
+<style>
+  .style-pill--active {
+    border-color: #F5C500 !important;
+    background: rgba(245,197,0,0.08) !important;
+  }
+  .style-pill--active div:last-child {
+    color: #F5C500 !important;
+  }
+</style>

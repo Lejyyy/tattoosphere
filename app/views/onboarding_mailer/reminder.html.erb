@@ -1,0 +1,36 @@
+<% if @number == 1 %>
+  <h1>Votre profil <%= @kind %> est prêt 🎉</h1>
+  <p>Bonjour <%= @user.first_name %>,</p>
+  <p>Vous avez complété votre profil <strong style="color:#ffc107;"><%= @kind %></strong> sur Tattoosphere. Il ne vous reste plus qu'une étape pour être visible par des milliers de clients !</p>
+  <div class="alert-box">
+    Votre profil est enregistré mais <strong>pas encore visible</strong>. Souscrivez à un abonnement pour l'activer.
+  </div>
+
+<% elsif @number == 2 %>
+  <h1>Vous étiez si proche… 🖋️</h1>
+  <p>Bonjour <%= @user.first_name %>,</p>
+  <p>Votre profil <strong style="color:#ffc107;"><%= @kind %></strong> vous attend sur Tattoosphere. Des clients recherchent des artistes comme vous chaque jour.</p>
+  <div class="alert-box">
+    <strong>À partir de 15€/mois</strong>, votre profil devient visible et vous pouvez commencer à recevoir des réservations.
+  </div>
+
+<% elsif @number == 3 %>
+  <h1>Dernière chance ⏳</h1>
+  <p>Bonjour <%= @user.first_name %>,</p>
+  <p>Cela fait 5 jours que votre profil <strong style="color:#ffc107;"><%= @kind %></strong> est prêt mais pas encore activé. Ne laissez pas passer cette opportunité.</p>
+  <div class="alert-box">
+    Rejoignez les artistes qui développent leur activité sur Tattoosphere. <strong>L'offre Essentiel inclut 7 jours d'essai gratuit.</strong>
+  </div>
+<% end %>
+
+<table class="detail-table">
+  <tr><td>Offre Essentiel</td><td><strong style="color:#ffc107;">15€/mois</strong> — 7j d'essai gratuit</td></tr>
+  <tr><td>Offre Pro</td><td><strong style="color:#ffc107;">20€/mois</strong> — 1 event/an + 14j featured</td></tr>
+  <tr><td>Offre Master</td><td><strong style="color:#ffc107;">39€/mois</strong> — 5 events + featured 365j</td></tr>
+</table>
+
+<a href="<%= subscription_url %>" class="btn">Activer mon profil maintenant</a>
+
+<p style="margin-top:24px;font-size:13px;color:#666;">
+  Si vous ne souhaitez plus recevoir ces rappels, ignorez simplement cet email.
+</p>

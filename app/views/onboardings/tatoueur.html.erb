@@ -1,0 +1,116 @@
+<div class="container py-5" style="max-width:600px;">
+
+  <%# Breadcrumb %>
+  <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:2rem;font-size:0.8rem;color:#555;text-transform:uppercase;letter-spacing:0.06em;">
+    <span style="color:#F5C500;">① Profil</span>
+    <span>→</span>
+    <span>② Abonnement</span>
+    <span>→</span>
+    <span>③ Activation</span>
+  </div>
+
+  <div class="mb-4">
+    <h1 style="font-family:'Bebas Neue',sans-serif;font-size:2.5rem;letter-spacing:0.05em;">
+      Devenir <span class="text-yellow">Tatoueur</span>
+    </h1>
+    <p style="color:#666;font-size:0.9rem;">
+      Renseigne tes informations professionnelles. Ton profil sera visible après la souscription à un abonnement.
+    </p>
+  </div>
+
+  <%# Erreurs %>
+  <% if @tatoueur&.errors&.any? %>
+    <div class="alert alert-danger mb-4">
+      <% @tatoueur.errors.full_messages.each do |msg| %>
+        <div>⚠️ <%= msg %></div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%= form_with url: onboarding_submit_tatoueur_path, method: :post, multipart: true do |f| %>
+
+    <%# INFOS PRO %>
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;padding:1.5rem;margin-bottom:1.5rem;">
+      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:#F5C500;border-left:4px solid #F5C500;padding-left:0.75rem;margin-bottom:1.5rem;">
+        Informations professionnelles
+      </h2>
+      <div class="row g-3">
+        <div class="col-12">
+          <label style="display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;">
+            Nom d'artiste / Pseudo
+          </label>
+          <input type="text" name="tatoueur[nickname]" value="<%= current_user.nickname %>" required
+              style="width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;outline:none;"
+              onfocus="this.style.borderColor='#F5C500'" onblur="this.style.borderColor='#2A2A2A'">
+        </div>
+        <div class="col-12">
+          <label style="display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;">
+            Adresse
+          </label>
+          <input type="text" name="tatoueur[address]" placeholder="12 rue de la Paix" required
+              style="width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;outline:none;"
+              onfocus="this.style.borderColor='#F5C500'" onblur="this.style.borderColor='#2A2A2A'">
+        </div>
+        <div class="col-md-8">
+          <label style="display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;">Ville</label>
+          <input type="text" name="tatoueur[city]" required
+              style="width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;outline:none;"
+              onfocus="this.style.borderColor='#F5C500'" onblur="this.style.borderColor='#2A2A2A'">
+        </div>
+        <div class="col-md-4">
+          <label style="display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;">Code postal</label>
+          <input type="text" name="tatoueur[zip_code]" required
+              style="width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;outline:none;"
+              onfocus="this.style.borderColor='#F5C500'" onblur="this.style.borderColor='#2A2A2A'">
+        </div>
+        <div class="col-12">
+          <label style="display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;">
+            SIREN / SIRET
+          </label>
+          <input type="text" name="tatoueur[siren]" placeholder="123 456 789" required
+              style="width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;outline:none;"
+              onfocus="this.style.borderColor='#F5C500'" onblur="this.style.borderColor='#2A2A2A'">
+          <p style="font-size:0.75rem;color:#555;margin-top:0.4rem;">Numéro d'identification de votre activité professionnelle</p>
+        </div>
+      </div>
+    </div>
+
+    <%# DOCUMENTS %>
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1.5rem;margin-bottom:1.5rem;">
+      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:#F5C500;border-left:4px solid #F5C500;padding-left:0.75rem;margin-bottom:0.5rem;">
+        Documents obligatoires
+      </h2>
+      <p style="font-size:0.8rem;color:#555;margin-bottom:1.5rem;">
+        Ces documents sont requis pour exercer légalement. Ils sont confidentiels et ne seront pas publiés.
+      </p>
+      <div class="row g-3">
+        <div class="col-12">
+          <label style="display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;">
+            Pièce d'identité <span style="color:#F5C500;">*</span>
+          </label>
+          <input type="file" name="tatoueur[identity_document]" accept=".pdf,.jpg,.jpeg,.png" required
+              style="width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#888;padding:0.6rem 1rem;font-size:0.85rem;cursor:pointer;">
+          <p style="font-size:0.75rem;color:#555;margin-top:0.4rem;">PDF, JPG ou PNG · Max 10MB</p>
+        </div>
+        <div class="col-12">
+          <label style="display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;">
+            Certificat d'hygiène et sécurité <span style="color:#F5C500;">*</span>
+          </label>
+          <input type="file" name="tatoueur[hygiene_certificate]" accept=".pdf,.jpg,.jpeg,.png" required
+              style="width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#888;padding:0.6rem 1rem;font-size:0.85rem;cursor:pointer;">
+          <p style="font-size:0.75rem;color:#555;margin-top:0.4rem;">PDF, JPG ou PNG · Max 10MB</p>
+        </div>
+      </div>
+    </div>
+
+    <%# SUBMIT %>
+    <button type="submit"
+        style="width:100%;background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:0.1em;padding:1rem;cursor:pointer;text-transform:uppercase;transition:background 0.2s;"
+        onmouseover="this.style.background='#d4a800'"
+        onmouseout="this.style.background='#F5C500'">
+      Enregistrer et choisir mon abonnement →
+    </button>
+
+  <% end %>
+
+</div>

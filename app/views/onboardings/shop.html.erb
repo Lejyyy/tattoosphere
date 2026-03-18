@@ -1,0 +1,86 @@
+<div class="container py-5" style="max-width:600px;">
+
+  <%# Breadcrumb %>
+  <div style="display:flex;align-items:center;gap:0.5rem;margin-bottom:2rem;font-size:0.8rem;color:#555;text-transform:uppercase;letter-spacing:0.06em;">
+    <span style="color:#F5C500;">① Profil</span>
+    <span>→</span>
+    <span>② Abonnement</span>
+    <span>→</span>
+    <span>③ Activation</span>
+  </div>
+
+  <div class="mb-4">
+    <h1 style="font-family:'Bebas Neue',sans-serif;font-size:2.5rem;letter-spacing:0.05em;">
+      Ouvrir un <span class="text-yellow">Shop</span>
+    </h1>
+    <p style="color:#666;font-size:0.9rem;">
+      Renseigne les informations de ton salon. Il sera visible après la souscription à un abonnement.
+    </p>
+  </div>
+
+  <%# Erreurs %>
+  <% if @shop&.errors&.any? %>
+    <div class="alert alert-danger mb-4">
+      <% @shop.errors.full_messages.each do |msg| %>
+        <div>⚠️ <%= msg %></div>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%= form_with url: onboarding_submit_shop_path, method: :post do |f| %>
+
+    <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;padding:1.5rem;margin-bottom:1.5rem;">
+      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:#F5C500;border-left:4px solid #F5C500;padding-left:0.75rem;margin-bottom:1.5rem;">
+        Informations du salon
+      </h2>
+      <div class="row g-3">
+        <div class="col-12">
+          <label style="display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;">
+            Nom du salon <span style="color:#F5C500;">*</span>
+          </label>
+          <input type="text" name="shop[name]" required
+              style="width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;outline:none;"
+              onfocus="this.style.borderColor='#F5C500'" onblur="this.style.borderColor='#2A2A2A'">
+        </div>
+        <div class="col-12">
+          <label style="display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;">
+            Adresse postale <span style="color:#F5C500;">*</span>
+          </label>
+          <input type="text" name="shop[address]" placeholder="12 rue de la Paix" required
+              style="width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;outline:none;"
+              onfocus="this.style.borderColor='#F5C500'" onblur="this.style.borderColor='#2A2A2A'">
+        </div>
+        <div class="col-md-8">
+          <label style="display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;">Ville</label>
+          <input type="text" name="shop[city]" required
+              style="width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;outline:none;"
+              onfocus="this.style.borderColor='#F5C500'" onblur="this.style.borderColor='#2A2A2A'">
+        </div>
+        <div class="col-md-4">
+          <label style="display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;">Code postal</label>
+          <input type="text" name="shop[zip_code]" required
+              style="width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;outline:none;"
+              onfocus="this.style.borderColor='#F5C500'" onblur="this.style.borderColor='#2A2A2A'">
+        </div>
+        <div class="col-12">
+          <label style="display:block;font-size:0.8rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;">
+            SIREN / SIRET <span style="color:#F5C500;">*</span>
+          </label>
+          <input type="text" name="shop[siren]" placeholder="123 456 789" required
+              style="width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;font-size:1rem;outline:none;"
+              onfocus="this.style.borderColor='#F5C500'" onblur="this.style.borderColor='#2A2A2A'">
+          <p style="font-size:0.75rem;color:#555;margin-top:0.4rem;">Numéro d'identification de votre activité professionnelle</p>
+        </div>
+      </div>
+    </div>
+
+    <button type="submit"
+        style="width:100%;background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;font-size:1.2rem;letter-spacing:0.1em;padding:1rem;cursor:pointer;text-transform:uppercase;transition:background 0.2s;"
+        onmouseover="this.style.background='#d4a800'"
+        onmouseout="this.style.background='#F5C500'">
+      Enregistrer et choisir mon abonnement →
+    </button>
+
+  <% end %>
+
+</div>

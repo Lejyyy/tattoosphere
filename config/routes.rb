@@ -98,8 +98,6 @@ Rails.application.routes.draw do
   # ================================
   # CONVERSATIONS & MESSAGES
   # ================================
-
-
   resources :conversations, only: [ :index, :show, :create, :destroy ] do
     resources :messages, only: [ :create ]
     member do
@@ -153,6 +151,12 @@ Rails.application.routes.draw do
       end
     end
 
+    resources :onboarding_funnels, only: [ :index ] do
+    member do
+    post :send_reminder
+      end
+    end
+
     resources :reports,       only: [ :index, :show, :update ]
     resources :tattoo_styles, only: [ :index, :create, :update, :destroy ]
     resources :admin_logs,    only: [ :index ]
@@ -185,44 +189,51 @@ Rails.application.routes.draw do
   # ================================
   namespace :shop_panel do
     root "dashboard#index"
-    get   "stats",      to: "dashboard#stats"
-    get   "bookings",   to: "bookings#index"
+    get   "stats",        to: "dashboard#stats"
+    get   "bookings",     to: "bookings#index"
     get   "bookings/:id", to: "bookings#show",  as: :booking
     patch "bookings/:id", to: "bookings#update"
-    get   "messages",   to: "messages#index"
-    get   "photos",     to: "photos#index"
-    patch "photos",     to: "photos#update"
-    get   "equipe",     to: "team#index"
-    get   "evenements", to: "events#index"
-    get   "portfolios", to: "portfolios#index"
+    get   "messages",     to: "messages#index"
+    get   "photos",       to: "photos#index"
+    patch "photos",       to: "photos#update"
+    get   "equipe",       to: "team#index"
+    get   "evenements",   to: "events#index"
+    get   "portfolios",   to: "portfolios#index"
   end
 
   # ================================
   # NOTIFICATIONS
   # ================================
-
   resources :notifications, only: [ :index, :destroy ] do
-  collection do
-    patch :mark_all_as_read
+    collection do
+      patch :mark_all_as_read
+    end
+    member do
+      patch :mark_as_read
+    end
   end
-  member do
-    patch :mark_as_read
+
+  # ================================
+  # STRIPE & ABONNEMENTS
+  # ================================
+  post "/stripe/webhooks", to: "stripe_webhooks#create"
+
+  resource :subscription, only: [] do
+    get    :index,    on: :collection
+    post   :checkout, on: :collection
+    get    :success,  on: :collection
+    delete :cancel,   on: :collection
+    get    :portal,   on: :collection
   end
-end
 
-# À ajouter dans config/routes.rb
+# ================================
+# ONBOARDING
+# ================================
 
-# Webhook Stripe (pas d'auth, hors ressource)
-post "/stripe/webhooks", to: "stripe_webhooks#create"
-
-# Abonnements
-resource :subscription, only: [ :index ] do
-  collection do
-    get  :index
-    post :checkout
-    get  :success
-    delete :cancel
-    get :portal
-  end
+scope :onboarding do
+  get  "tatoueur", to: "onboarding#tatoueur",       as: :onboarding_tatoueur
+  post "tatoueur", to: "onboarding#submit_tatoueur", as: :onboarding_submit_tatoueur
+  get  "shop",     to: "onboarding#shop",            as: :onboarding_shop
+  post "shop",     to: "onboarding#submit_shop",     as: :onboarding_submit_shop
 end
 end

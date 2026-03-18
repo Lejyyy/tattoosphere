@@ -8,6 +8,9 @@ class User < ApplicationRecord
   has_one  :tatoueur
   has_one  :shop
   has_one :subscription, dependent: :destroy
+  has_one :onboarding_funnel, dependent: :destroy
+  has_one_attached :avatar
+
   has_many :bookings
   has_many :reviews
   has_many :messages
@@ -18,13 +21,17 @@ class User < ApplicationRecord
   has_many :favorite_shops,           through: :favorites, source: :favoritable, source_type: "Shop"
   has_many :favorite_portfolios,      through: :favorites, source: :favoritable, source_type: "Portfolio"
   has_many :favorite_portfolio_items, through: :favorites, source: :favoritable, source_type: "PortfolioItem"
-  has_one_attached :avatar
+
   has_many :event_participations, dependent: :destroy
   has_many :participated_events, through: :event_participations, source: :event
   has_many :reports, foreign_key: :reporter_id, dependent: :destroy
   has_many :admin_logs, foreign_key: :admin_user_id
   has_many :notifications, dependent: :destroy
+  has_many :user_tattoo_styles, dependent: :destroy
+  has_many :preferred_styles, through: :user_tattoo_styles, source: :tattoo_style
 
+  attr_writer :preferred_style_ids
+  after_create :save_preferred_styles
 
   # ================================
   # SCOPES
@@ -53,6 +60,13 @@ class User < ApplicationRecord
   def subscribed?
   subscription&.active?
   end
+  def pro_form_completed?
+  onboarding_funnel&.step.in?(%w[form_completed subscription_page_visited plan_selected subscribed])
+  end
+
+def can_access_subscription_page?
+  pro_form_completed? || subscribed?
+end
 
 def subscription_plan
   subscription&.plan
@@ -65,9 +79,9 @@ def can_create_event_free?
   subscription&.free_events_remaining.to_i > 0
 end
 
-  def favorited?(resource)
-    favorites.exists?(favoritable: resource)
-  end
+def favorited?(resource)
+  favorites.exists?(favoritable: resource)
+end
 
 
 
@@ -76,4 +90,11 @@ end
   def role_assignment_allowed
     errors.add(:role, "ne peut pas être attribué de cette façon") if role_changed? && role == "admin"
   end
+
+  def save_preferred_styles
+  return unless @preferred_style_ids.present?
+  @preferred_style_ids.reject(&:blank?).each do |id|
+    user_tattoo_styles.find_or_create_by!(tattoo_style_id: id)
+  end
+end
 end
