@@ -2,15 +2,7 @@
 
 <style>
 .ts-profile { max-width: 960px; margin: 0 auto; padding: 0 0 4rem; }
-
-/* ── Cover ── */
-.ts-cover {
-  height: 260px;
-  position: relative;
-  overflow: hidden;
-  border-radius: 0 0 12px 12px;
-  background: #0d0d0d;
-}
+.ts-cover { height: 260px; position: relative; overflow: hidden; border-radius: 0 0 12px 12px; background: #0d0d0d; }
 .ts-cover__img { width: 100%; height: 100%; object-fit: cover; display: block; }
 .ts-cover__pattern {
   position: absolute; inset: 0;
@@ -19,101 +11,30 @@
     repeating-linear-gradient(-45deg, #1a1a1a 0px, #1a1a1a 1px, transparent 1px, transparent 12px);
   background-color: #0d0d0d;
 }
-.ts-cover__overlay {
-  position: absolute; inset: 0;
-  background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(13,13,13,0.85) 100%);
-}
+.ts-cover__overlay { position: absolute; inset: 0; background: linear-gradient(to bottom, rgba(0,0,0,0.1) 0%, rgba(13,13,13,0.85) 100%); }
 .ts-cover__edit { position: absolute; top: 1rem; right: 1rem; z-index: 10; }
-/* ── Identity ── */
-.ts-identity {
-  display: flex; align-items: flex-end; gap: 1.5rem;
-  padding: 0 1.5rem;
-  margin-top: -52px;
-  margin-bottom: 0;
-  position: relative; z-index: 2;
-}
-
-.ts-identity__info {
-  padding-bottom: 0.25rem; flex: 1; min-width: 0;
-  display: flex; flex-direction: column;
-}
-
+.ts-identity { display: flex; align-items: flex-end; gap: 1.5rem; padding: 0 1.5rem; margin-top: -52px; margin-bottom: 0; position: relative; z-index: 2; }
+.ts-identity__info { padding-bottom: 0.25rem; flex: 1; min-width: 0; display: flex; flex-direction: column; }
 .ts-avatar-wrap { position: relative; flex-shrink: 0; }
-.ts-avatar {
-  width: 104px; height: 104px;
-  border-radius: 50%;
-  border: 3px solid #f5c500;
-  background: #1a1a1a;
-  object-fit: cover;
-  display: block;
-}
-.ts-avatar--placeholder {
-  display: flex; align-items: center; justify-content: center;
-  font-size: 2.5rem; color: #444;
-}
-.ts-avatar__ring {
-  position: absolute; inset: -5px;
-  border-radius: 50%;
-  border: 1px solid rgba(200,168,75,0.25);
-  pointer-events: none;
-}
-.ts-avatar__verified {
-  position: absolute; bottom: 4px; right: 4px;
-  width: 22px; height: 22px;
-  background: #f5c500; border-radius: 50%;
-  border: 2px solid #0d0d0d;
-  display: flex; align-items: center; justify-content: center;
-}
-.ts-avatar__verified svg { width: 10px; height: 10px; stroke: #000; }
-
-.ts-identity__info { padding-bottom: 0.25rem; flex: 1; min-width: 0; }
-
+.ts-avatar { width: 104px; height: 104px; border-radius: 50%; border: 3px solid #f5c500; background: #1a1a1a; object-fit: cover; display: block; }
+.ts-avatar--placeholder { display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: #444; }
+.ts-avatar__ring { position: absolute; inset: -5px; border-radius: 50%; border: 1px solid rgba(200,168,75,0.25); pointer-events: none; }
 .ts-name-row { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 0.3rem; margin-top: 0.75rem; }
-.ts-name {
-  font-family: 'Bebas Neue', sans-serif;
-  font-size: 2.4rem; letter-spacing: 0.04em; line-height: 1; color: #fff;
-}
-.ts-featured-pill {
-  font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
-  padding: 3px 8px; border-radius: 2px;
-  background: rgba(139,92,246,0.2); color: #a78bfa; border: 1px solid rgba(139,92,246,0.3);
-}
-
+.ts-name { font-family: 'Bebas Neue', sans-serif; font-size: 2.4rem; letter-spacing: 0.04em; line-height: 1; color: #fff; }
+.ts-featured-pill { font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 3px 8px; border-radius: 2px; background: rgba(139,92,246,0.2); color: #a78bfa; border: 1px solid rgba(139,92,246,0.3); }
 .ts-meta { display: flex; gap: 1.25rem; flex-wrap: wrap; font-size: 13px; color: #888; }
 .ts-meta__item { display: flex; align-items: center; gap: 5px; }
 .ts-meta__item a { color: #f5c500; text-decoration: none; }
 .ts-meta__item a:hover { text-decoration: underline; }
-
-
-/* ── Stats strip ── */
-.ts-stats {
-  display: flex; padding: 0 2rem; margin: 1.5rem 0;
-  border-top: 1px solid rgba(255,255,255,0.06);
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-}
+.ts-stats { display: flex; padding: 0 2rem; margin: 1.5rem 0; border-top: 1px solid rgba(255,255,255,0.06); border-bottom: 1px solid rgba(255,255,255,0.06); }
 .ts-stat { flex: 1; padding: 1rem 0; text-align: center; border-right: 1px solid rgba(255,255,255,0.06); }
 .ts-stat:last-child { border-right: none; }
 .ts-stat__val { display: block; font-family: 'Bebas Neue', sans-serif; font-size: 2rem; color: #f5c500; line-height: 1; }
 .ts-stat__label { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #555; margin-top: 3px; }
-
-/* ── Body ── */
 .ts-body { display: grid; grid-template-columns: 1fr 260px; gap: 1.5rem; padding: 0 2rem; }
-
-/* ── Bio ── */
-.ts-bio {
-  font-size: 14px; line-height: 1.8; color: #888;
-  margin-bottom: 1.25rem; padding-bottom: 1.25rem;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-}
-
-/* ── Actions ── */
+.ts-bio { font-size: 14px; line-height: 1.8; color: #888; margin-bottom: 1.25rem; padding-bottom: 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.06); }
 .ts-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1.75rem; }
-.ts-btn {
-  font-family: 'Bebas Neue', sans-serif; font-size: 0.9rem; letter-spacing: 0.07em;
-  padding: 0.5rem 1.2rem; border: none; cursor: pointer;
-  display: inline-flex; align-items: center; gap: 6px;
-  text-decoration: none; border-radius: 2px; transition: opacity .15s;
-}
+.ts-btn { font-family: 'Bebas Neue', sans-serif; font-size: 0.9rem; letter-spacing: 0.07em; padding: 0.5rem 1.2rem; border: none; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; border-radius: 2px; transition: opacity .15s; }
 .ts-btn:hover { opacity: .85; }
 .ts-btn--primary { background: #f5c500; color: #000; }
 .ts-btn--outline { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,0.2); }
@@ -122,68 +43,28 @@
 .ts-btn--ghost:hover { color: #fff; border-color: rgba(255,255,255,0.3); opacity: 1; }
 .ts-btn--danger { background: transparent; color: #e53e3e; border: 1px solid rgba(229,62,62,0.3); }
 .ts-btn--sm { font-size: 0.78rem; padding: 0.35rem 0.85rem; }
-
-/* ── Tabs ── */
-.ts-tabs {
-  display: flex; border-bottom: 1px solid rgba(255,255,255,0.08);
-  margin-bottom: 1.5rem;
-  overflow: visible;
-  flex-wrap: wrap;
-  gap: 0;
-}
-.ts-tab {
-  font-family: 'Bebas Neue', sans-serif; font-size: 0.95rem; letter-spacing: 0.06em;
-  padding: 0.6rem 1.2rem; background: transparent; border: none; cursor: pointer;
-  color: #555; border-bottom: 2px solid transparent; margin-bottom: -1px;
-  transition: color .2s; white-space: nowrap;
-}
+.ts-tabs { display: flex; border-bottom: 1px solid rgba(255,255,255,0.08); margin-bottom: 1.5rem; overflow: visible; flex-wrap: wrap; gap: 0; }
+.ts-tab { font-family: 'Bebas Neue', sans-serif; font-size: 0.95rem; letter-spacing: 0.06em; padding: 0.6rem 1.2rem; background: transparent; border: none; cursor: pointer; color: #555; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color .2s; white-space: nowrap; }
 .ts-tab:hover { color: #aaa; }
 .ts-tab--active { color: #f5c500; border-bottom-color: #f5c500; }
 .ts-tab__count { font-size: 10px; color: #444; margin-left: 3px; }
-
-
-/* ── Section title ── */
-.ts-section-title {
-  font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; letter-spacing: 0.05em;
-  color: #fff; border-left: 3px solid #f5c500; padding-left: 0.65rem; margin-bottom: 1.25rem;
-}
-
-/* ── Masonry galerie ── */
+.ts-section-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; letter-spacing: 0.05em; color: #fff; border-left: 3px solid #f5c500; padding-left: 0.65rem; margin-bottom: 1.25rem; }
 .ts-photo-grid { columns: 2; column-gap: 0.6rem; }
 @media (max-width: 500px) { .ts-photo-grid { columns: 1; } }
 .ts-photo-item { break-inside: avoid; margin-bottom: 0.6rem; overflow: hidden; border-radius: 2px; cursor: zoom-in; }
 .ts-photo-img { width: 100%; display: block; transition: transform .35s; }
 .ts-photo-item:hover .ts-photo-img { transform: scale(1.04); filter: brightness(.85); }
-
-/* ── Tatoueur cards ── */
-.ts-tatoueur-card {
-  display: block; text-decoration: none;
-  background: #111; border: 1px solid #2a2a2a;
-  overflow: hidden; border-radius: 2px; transition: border-color .2s;
-  height: 100%;
-}
+.ts-tatoueur-card { display: block; text-decoration: none; background: #111; border: 1px solid #2a2a2a; overflow: hidden; border-radius: 2px; transition: border-color .2s; height: 100%; }
 .ts-tatoueur-card:hover { border-color: #f5c500; }
 .ts-tatoueur-card__thumb { position: relative; overflow: hidden; height: 200px; background: #0d0d0d; }
 .ts-tatoueur-card__img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s; }
 .ts-tatoueur-card:hover .ts-tatoueur-card__img { transform: scale(1.04); }
 .ts-tatoueur-card__placeholder { width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; font-size: 2.5rem; color: #333; }
-.ts-tatoueur-card__verified {
-  position: absolute; top: 0.5rem; right: 0.5rem;
-  background: rgba(39,174,96,0.9); color: #fff;
-  font-size: 10px; padding: 2px 6px; text-transform: uppercase; letter-spacing: 0.05em;
-  border-radius: 2px;
-}
+.ts-tatoueur-card__verified { position: absolute; top: 0.5rem; right: 0.5rem; background: rgba(39,174,96,0.9); color: #fff; font-size: 10px; padding: 2px 6px; text-transform: uppercase; letter-spacing: 0.05em; border-radius: 2px; }
 .ts-tatoueur-card__info { padding: 0.85rem 1rem; }
 .ts-tatoueur-card__name { display: block; font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; color: #fff; }
 .ts-tatoueur-card__styles { display: block; font-size: 12px; color: #555; margin-top: 2px; }
-
-/* ── Event cards ── */
-.ts-event-card {
-  display: block; text-decoration: none;
-  background: #111; border: 1px solid #2a2a2a;
-  overflow: hidden; border-radius: 2px; transition: border-color .2s;
-  height: 100%;
-}
+.ts-event-card { display: block; text-decoration: none; background: #111; border: 1px solid #2a2a2a; overflow: hidden; border-radius: 2px; transition: border-color .2s; height: 100%; }
 .ts-event-card:hover { border-color: #f5c500; }
 .ts-event-card__thumb { overflow: hidden; height: 180px; background: #0d0d0d; }
 .ts-event-card__img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .3s; }
@@ -194,29 +75,21 @@
 .ts-event-card__name { font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; color: #fff; letter-spacing: 0.04em; margin-bottom: 0.2rem; }
 .ts-event-card__loc { font-size: 12px; color: #555; }
 .ts-event-card__desc { font-size: 12px; color: #555; line-height: 1.5; margin-top: 0.4rem; }
-
-/* ── Sidebar ── */
 .ts-sidebar { display: flex; flex-direction: column; gap: 1rem; }
 .ts-sidebar-card { background: #111; border: 1px solid #1e1e1e; border-radius: 8px; padding: 1rem 1.1rem; }
 .ts-sidebar-title { font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: #555; margin-bottom: 0.75rem; }
-
 .ts-info-row { display: flex; align-items: flex-start; gap: 0.65rem; padding: 0.45rem 0; border-bottom: 1px solid #1a1a1a; font-size: 13px; }
 .ts-info-row:last-child { border-bottom: none; }
 .ts-info-row svg { flex-shrink: 0; margin-top: 2px; color: #555; }
 .ts-info-row__label { color: #555; font-size: 11px; }
 .ts-info-row__val { color: #ccc; }
-
 .ts-tatoueur-mini { display: flex; align-items: center; gap: 0.65rem; padding: 0.5rem 0; border-bottom: 1px solid #1a1a1a; text-decoration: none; transition: opacity .15s; }
 .ts-tatoueur-mini:last-child { border-bottom: none; }
 .ts-tatoueur-mini:hover { opacity: .8; }
 .ts-tatoueur-mini__avatar { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 1px solid #2a2a2a; flex-shrink: 0; background: #1a1a1a; display: flex; align-items: center; justify-content: center; font-size: 14px; color: #444; overflow: hidden; }
 .ts-tatoueur-mini__name { font-size: 13px; font-weight: 500; color: #ddd; }
 .ts-tatoueur-mini__style { font-size: 11px; color: #555; }
-
-/* ── Map ── */
 .ts-map-wrap { border-radius: 8px; overflow: hidden; border: 1px solid #1e1e1e; }
-
-/* ── Lightbox ── */
 .ts-lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 9999; align-items: center; justify-content: center; }
 .ts-lightbox.open { display: flex; }
 .ts-lightbox__img { max-width: 90vw; max-height: 90vh; object-fit: contain; border-radius: 2px; }
@@ -226,9 +99,7 @@
 .ts-lightbox__next { right: 0; }
 .ts-lightbox__close { position: fixed; top: 1rem; right: 1.5rem; background: none; border: none; color: #fff; font-size: 1.75rem; cursor: pointer; opacity: 0.4; transition: opacity .2s; }
 .ts-lightbox__close:hover { opacity: 1; }
-
 .ts-empty { color: #444; font-size: 13px; }
-
 @media (max-width: 700px) {
   .ts-body { grid-template-columns: 1fr; }
   .ts-sidebar { display: none; }
@@ -314,17 +185,14 @@
       <span class="ts-stat__label">Événements</span>
     </div>
     <div class="ts-stat">
-      <span class="ts-stat__val"><%= @shop.photos.count %></span>
+      <span class="ts-stat__val"><%= @shop.gallery_photos.count %></span>
       <span class="ts-stat__label">Photos</span>
     </div>
   </div>
 
   <%# ── Body ── %>
   <div class="ts-body">
-
-    <%# ── Main ── %>
     <div>
-
       <% if @shop.description.present? %>
         <p class="ts-bio"><%= @shop.description %></p>
       <% end %>
@@ -350,10 +218,7 @@
         <% end %>
         <% unless current_user&.shop == @shop %>
           <%= render "favorites/button", favoritable: @shop %>
-          <%= render "shared/share_button",
-              record: @shop,
-              record_type: "Shop",
-              record_name: @shop.name %>
+          <%= render "shared/share_button", record: @shop, record_type: "Shop", record_name: @shop.name %>
         <% end %>
         <% if user_signed_in? && policy(@shop).update? %>
           <%= link_to edit_shop_path(@shop), class: "ts-btn ts-btn--ghost ts-btn--sm" do %>
@@ -374,7 +239,8 @@
 
       <%# Tabs %>
       <% shop_tabs = [] %>
-      <% shop_tabs << { key: "galerie",    label: "Galerie",    count: @shop.photos.count } if @shop.photos.count > 1 %>
+      <% @gallery_photos = @shop.gallery_photos.ordered.includes(:tattoo_style, image_attachment: :blob) %>
+      <% shop_tabs << { key: "galerie",    label: "Galerie",    count: @gallery_photos.count } if @gallery_photos.any? %>
       <% shop_tabs << { key: "tatoueurs",  label: "Tatoueurs",  count: @shop.tatoueurs.count } if @shop.tatoueurs.any? %>
       <% shop_events = @shop.events.where("start_date >= ?", Time.current).order(start_date: :asc) %>
       <% shop_tabs << { key: "evenements", label: "Événements", count: shop_events.count } if shop_events.any? %>
@@ -394,16 +260,16 @@
       </div>
 
       <%# ── Tab : Galerie ── %>
-      <% if @shop.photos.count > 1 %>
+      <% if @gallery_photos.any? %>
         <div id="shop-tab-galerie" class="shop-tab-content">
           <div class="ts-photo-grid">
-            <% @shop.photos.drop(1).each_with_index do |photo, idx| %>
+            <% @gallery_photos.each do |photo| %>
               <div class="ts-photo-item">
-                <img src="<%= url_for(photo) %>"
+                <img src="<%= url_for(photo.image) %>"
                      class="ts-photo-img"
                      data-lightbox="true"
-                     data-src="<%= url_for(photo) %>"
-                     data-caption="Photo <%= idx + 2 %>"
+                     data-src="<%= url_for(photo.image) %>"
+                     data-caption="<%= photo.title.presence || "Photo" %>"
                      onclick="openLightbox(this)" />
               </div>
             <% end %>
@@ -413,7 +279,7 @@
 
       <%# ── Tab : Tatoueurs ── %>
       <% if @shop.tatoueurs.any? %>
-        <% first_visible = @shop.photos.count > 1 %>
+        <% first_visible = @gallery_photos.any? %>
         <div id="shop-tab-tatoueurs" class="shop-tab-content" style="<%= first_visible ? 'display:none;' : '' %>">
           <div class="row g-3">
             <% @shop.tatoueurs.each do |tatoueur| %>
@@ -490,8 +356,6 @@
 
     <%# ── Sidebar ── %>
     <div class="ts-sidebar">
-
-      <%# Infos de contact %>
       <div class="ts-sidebar-card">
         <div class="ts-sidebar-title">Informations</div>
         <% if @shop.address.present? %>
@@ -520,7 +384,6 @@
         <% end %>
       </div>
 
-      <%# Tatoueurs du shop %>
       <% if @shop.tatoueurs.any? %>
         <div class="ts-sidebar-card">
           <div class="ts-sidebar-title">L'équipe (<%= @shop.tatoueurs.count %>)</div>
@@ -545,7 +408,6 @@
         </div>
       <% end %>
 
-      <%# Prochain événement %>
       <% next_event = @shop.events.where("start_date >= ?", Time.current).order(start_date: :asc).first %>
       <% if next_event %>
         <div class="ts-sidebar-card">
@@ -561,7 +423,6 @@
           <% end %>
         </div>
       <% end %>
-
     </div>
   </div>
 </div>
@@ -575,6 +436,9 @@
 </div>
 
 <script>
+  if (!window._shopShowInitialized) {
+  window._shopShowInitialized = true
+
   const shopAllTabs = ["galerie", "tatoueurs", "evenements", "carte"]
 
   function showShopTab(key) {
@@ -612,4 +476,6 @@
     if (e.key === "ArrowRight") shiftLightbox(1)
     if (e.key === "ArrowLeft")  shiftLightbox(-1)
   })
+
+  } // end _shopShowInitialized
 </script>

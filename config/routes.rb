@@ -50,6 +50,7 @@ Rails.application.routes.draw do
     resources :reviews,        only: [ :index ]
     resources :events,         only: [ :index, :show ]
     resources :medias,         only: [ :index ]
+    resources :bookings, only: [ :new, :create ], module: "tatoueurs"
     resources :socials,        only: [ :index ]
     member do
       get    :verification

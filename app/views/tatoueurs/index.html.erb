@@ -285,6 +285,11 @@
 </div>
 
 <script>
+  window._tatoueurIndexInitialized = false
+
+  if (!window._tatoueurIndexInitialized) {
+  window._tatoueurIndexInitialized = true
+
   let mapInitialized = false
 
   function switchView(view) {
@@ -309,4 +314,6 @@
       }, 50)
     }
   }
+
+  } // end _tatoueurIndexInitialized
 </script>

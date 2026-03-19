@@ -1,6 +1,17 @@
 class ApplicationController < ActionController::Base
   include Pundit::Authorization
+
   before_action :authenticate_user!
+
+def authenticate_user_or_json!
+  unless user_signed_in?
+    respond_to do |format|
+      format.json { render json: { error: "non_authentifié", redirect: new_user_session_path }, status: :unauthorized }
+      format.html { redirect_to new_user_session_path }
+    end
+  end
+end
+
   rescue_from Pundit::NotAuthorizedError,      with: :user_not_authorized
   rescue_from ActiveRecord::RecordNotFound,    with: :record_not_found
 

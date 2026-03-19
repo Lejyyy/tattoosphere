@@ -1,5 +1,8 @@
 
 class Tatoueurs::AvailabilitiesController < ApplicationController
+  skip_before_action :authenticate_user!, raise: false
+  before_action :authenticate_for_calendar!
+
   def index
     tatoueur  = Tatoueur.find(params[:tatoueur_id])
     start_date = params[:start_date] ? Date.parse(params[:start_date]) : Date.today.beginning_of_week
@@ -61,4 +64,12 @@ class Tatoueurs::AvailabilitiesController < ApplicationController
 
     render json: { days: days, start_date: start_date.to_s, end_date: end_date.to_s }
   end
+
+  private
+
+def authenticate_for_calendar!
+  unless user_signed_in?
+    render json: { error: "non_authentifié", redirect: new_user_session_path }, status: :unauthorized
+  end
+end
 end

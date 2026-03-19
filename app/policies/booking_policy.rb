@@ -2,7 +2,7 @@ class BookingPolicy < ApplicationPolicy
   def index?   = true
   def new?     = create?
   def show?    = record.user == user || tatoueur_owner? || shop_owner? || user.admin?
-  def create?  = user.user? || user.admin?
+  def create? = user.user? || user.tatoueur? || user.admin?
   def update?  = tatoueur_owner? || shop_owner? || user.admin?
   def destroy? = record.user == user || tatoueur_owner? || shop_owner? || user.admin?
 

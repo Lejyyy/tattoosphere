@@ -422,61 +422,66 @@
       <% end %>
 
       <%# Actions %>
-      <div class="ts-actions">
-        <% if user_signed_in? %>
-          <% unless current_user.tatoueur == @tatoueur %>
-            <%= link_to conversations_path(tatoueur_id: @tatoueur.id),
-                  data: { turbo_method: :post }, class: "ts-btn ts-btn--primary" do %>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-              Contacter
-            <% end %>
-            <% if @tatoueur.shops.any? %>
-              <%= link_to new_shop_booking_path(@tatoueur.shops.first), class: "ts-btn ts-btn--outline" do %>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      <%# Actions %>
+        <div class="ts-actions">
+          <% if user_signed_in? %>
+            <% unless current_user.tatoueur == @tatoueur %>
+              <%= link_to conversations_path(tatoueur_id: @tatoueur.id),
+                    data: { turbo_method: :post }, class: "ts-btn ts-btn--primary" do %>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                Contacter
+              <% end %>
+              <%= link_to new_tatoueur_booking_path(@tatoueur), class: "ts-btn ts-btn--outline" do %>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="4" width="18" height="18" rx="2"/>
+                  <line x1="16" y1="2" x2="16" y2="6"/>
+                  <line x1="8" y1="2" x2="8" y2="6"/>
+                  <line x1="3" y1="10" x2="21" y2="10"/>
+                </svg>
                 Réserver
               <% end %>
-            <% else %>
-              <span class="ts-btn ts-btn--disabled">Réservation indisponible</span>
             <% end %>
-          <% end %>
-        <% else %>
-          <%= link_to new_user_session_path, class: "ts-btn ts-btn--primary" do %>
-            Connectez-vous pour contacter
-          <% end %>
-        <% end %>
-        <% unless current_user&.tatoueur == @tatoueur %>
-          <%= render "favorites/button", favoritable: @tatoueur %>
-          <%= render "shared/share_button",
-              record: @tatoueur,
-              record_type: "Tatoueur",
-              record_name: @tatoueur.nickname %>
-        <% end %>
-        <% if user_signed_in? && policy(@tatoueur).update? %>
-          <%= link_to edit_tatoueur_path(@tatoueur), class: "ts-btn ts-btn--ghost ts-btn--sm" do %>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-            Modifier
-          <% end %>
-        <% end %>
-        <% if current_user&.tatoueur == @tatoueur %>
-          <% unless @tatoueur.verified? %>
-            <%= link_to verification_tatoueur_path(@tatoueur), class: "ts-btn ts-btn--ghost ts-btn--sm" do %>
-              Faire vérifier mon profil
-            <% end %>
-          <% end %>
-          <% if @tatoueur.paypal_onboarded? %>
-            <span class="ts-badge-success">✓ PayPal connecté</span>
           <% else %>
-            <%= link_to connect_paypal_tatoueur_path(@tatoueur), class: "ts-btn ts-btn--ghost ts-btn--sm" do %>
-              Connecter PayPal
+            <%= link_to new_user_session_path, class: "ts-btn ts-btn--primary" do %>
+              Connectez-vous pour contacter
             <% end %>
           <% end %>
-        <% end %>
-      </div>
+
+          <% unless current_user&.tatoueur == @tatoueur %>
+            <%= render "favorites/button", favoritable: @tatoueur %>
+            <%= render "shared/share_button",
+                record: @tatoueur,
+                record_type: "Tatoueur",
+                record_name: @tatoueur.nickname %>
+          <% end %>
+
+          <% if user_signed_in? && policy(@tatoueur).update? %>
+            <%= link_to edit_tatoueur_path(@tatoueur), class: "ts-btn ts-btn--ghost ts-btn--sm" do %>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              Modifier
+            <% end %>
+          <% end %>
+
+          <% if current_user&.tatoueur == @tatoueur %>
+            <% unless @tatoueur.verified? %>
+              <%= link_to verification_tatoueur_path(@tatoueur), class: "ts-btn ts-btn--ghost ts-btn--sm" do %>
+                Faire vérifier mon profil
+              <% end %>
+            <% end %>
+            <% if @tatoueur.paypal_onboarded? %>
+              <span class="ts-badge-success">✓ PayPal connecté</span>
+            <% else %>
+              <%= link_to connect_paypal_tatoueur_path(@tatoueur), class: "ts-btn ts-btn--ghost ts-btn--sm" do %>
+                Connecter PayPal
+              <% end %>
+            <% end %>
+          <% end %>
+        </div>
 
       <%# Tabs %>
       <div class="ts-tabs">
         <% tabs = [] %>
-        <% tabs << { key: "portfolio",      label: "Portfolio",      count: @tatoueur.portfolio_items.count } if @portfolios.any? || @tatoueur.photos.attached? %>
+        <% tabs << { key: "portfolio", label: "Portfolio", count: @tatoueur.portfolio_items.count } if @portfolios.any? || @gallery_photos.any? %>
         <% tabs << { key: "disponibilites", label: "Disponibilités", count: nil } %>
         <% tabs << { key: "evenements",     label: "Événements",     count: @events.count } if @events.any? %>
         <% tabs << { key: "avis",           label: "Avis",           count: @reviews.count } %>
@@ -763,6 +768,8 @@
 </div>
 
 <script>
+  if (!window._tatoueurShowInitialized) {
+  window._tatoueurShowInitialized = true
   const allTabs = ["portfolio", "disponibilites", "evenements", "avis"]
 
   function showTab(key) {
@@ -815,5 +822,6 @@
       btn.classList.toggle("ts-gallery-filter--active",
         (!styleId && btn.dataset.style === "") || btn.dataset.style == styleId)
     })
+  }
   }
 </script>

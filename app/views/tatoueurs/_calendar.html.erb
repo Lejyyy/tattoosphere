@@ -52,7 +52,6 @@
           <th style="width:90px;padding:0.4rem;font-size:0.72rem;color:#555;
                      text-align:left;font-weight:400;text-transform:uppercase;
                      letter-spacing:0.05em;">Période</th>
-          <!-- Jours injectés en JS -->
         </tr>
       </thead>
       <tbody id="cal-body">
@@ -60,7 +59,6 @@
           <td style="padding:0.4rem 0.5rem;font-size:0.8rem;color:#888;white-space:nowrap;vertical-align:middle;">
             🌅 Matin
           </td>
-          <!-- Cellules injectées en JS -->
         </tr>
         <tr id="row-afternoon">
           <td style="padding:0.4rem 0.5rem;font-size:0.8rem;color:#888;white-space:nowrap;vertical-align:middle;">
@@ -78,17 +76,13 @@
     <p style="color:#F5C500;font-family:'Bebas Neue',sans-serif;font-size:1rem;
               letter-spacing:0.05em;margin-bottom:0.5rem;" id="cal-selection-text"></p>
     <% if user_signed_in? %>
-      <% if tatoueur.shops.any? %>
-        <a id="cal-booking-link"
-           href="<%= new_shop_booking_path(tatoueur.shops.first) %>"
-           style="display:inline-block;background:#F5C500;color:#000;border:none;
-                  font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:0.08em;
-                  padding:0.6rem 1.5rem;text-decoration:none;">
-          📅 Réserver ce créneau
-        </a>
-      <% else %>
-        <span style="color:#555;font-size:0.85rem;">Ce tatoueur n'est pas rattaché à un shop.</span>
-      <% end %>
+      <a id="cal-booking-link"
+         href="<%= new_tatoueur_booking_path(tatoueur) %>"
+         style="display:inline-block;background:#F5C500;color:#000;border:none;
+                font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:0.08em;
+                padding:0.6rem 1.5rem;text-decoration:none;">
+        📅 Réserver ce créneau
+      </a>
     <% else %>
       <%= link_to "Connectez-vous pour réserver", new_user_session_path,
           style: "display:inline-block;background:#F5C500;color:#000;
@@ -99,8 +93,14 @@
 </div>
 
 <script>
+  // Réinitialisation à chaque visite Turbo
+  window._calendarInitialized = false
+
+  if (!window._calendarInitialized) {
+  window._calendarInitialized = true
+
   const CAL_API   = "<%= disponibilites_tatoueur_path(tatoueur) %>"
-  const BOOK_BASE = "<%= tatoueur.shops.any? ? new_shop_booking_path(tatoueur.shops.first) : '#' %>"
+  const BOOK_BASE = "<%= new_tatoueur_booking_path(tatoueur) %>"
 
   let currentStart = null
   let calData      = []
@@ -122,23 +122,22 @@
     currentStart = startDate
     const res  = await fetch(`${CAL_API}?start_date=${isoDate(startDate)}`)
     const json = await res.json()
+    if (json.error === "non_authentifié") {
+      document.getElementById('cal-title').textContent = "Connectez-vous pour voir les disponibilités"
+      return
+    }
     calData = json.days
     renderCalendar(json)
   }
 
   function renderCalendar(json) {
-    const days = json.days
+    const days  = json.days
     const start = new Date(days[0].date + 'T00:00:00')
     const end   = new Date(days[6].date + 'T00:00:00')
+    const fmt   = d => d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })
+    document.getElementById('cal-title').textContent = `${fmt(start)} – ${fmt(end)}`
 
-    // Titre
-    const fmt = d => d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })
-    document.getElementById('cal-title').textContent =
-      `${fmt(start)} – ${fmt(end)}`
-
-    // En-têtes jours
     const thead = document.querySelector('#availability-calendar thead tr')
-    // Supprimer anciens headers
     while (thead.children.length > 1) thead.removeChild(thead.lastChild)
     days.forEach(day => {
       const th = document.createElement('th')
@@ -153,8 +152,7 @@
       thead.appendChild(th)
     })
 
-    // Cellules matin & après-midi
-    renderRow('row-morning', days, 'morning')
+    renderRow('row-morning',   days, 'morning')
     renderRow('row-afternoon', days, 'afternoon')
   }
 
@@ -168,7 +166,6 @@
       td.style.cssText = 'padding:0.3rem;text-align:center;'
 
       let bg, cursor, title, clickable = false
-
       if (day.past) {
         bg = '#111'; cursor = 'default'; title = 'Passé'
       } else if (slot.available) {
@@ -199,19 +196,15 @@
     const moment = period === 'morning' ? 'Matin' : 'Après-midi'
     const time   = period === 'morning' ? '09:00' : '14:00'
 
-    document.getElementById('cal-selection-text').textContent =
-      `✅ ${label} — ${moment}`
+    document.getElementById('cal-selection-text').textContent = `✅ ${label} — ${moment}`
 
     const link = document.getElementById('cal-booking-link')
-    if (link && BOOK_BASE !== '#') {
-      link.href = `${BOOK_BASE}?date=${date}&start_time=${time}`
-    }
+    if (link) link.href = `${BOOK_BASE}?date=${date}&start_time=${time}`
 
     document.getElementById('cal-selection').style.display = 'block'
     document.getElementById('cal-selection').scrollIntoView({ behavior: 'smooth', block: 'nearest' })
   }
 
-  // Navigation
   document.getElementById('cal-prev').addEventListener('click', () => {
     const prev = new Date(currentStart)
     prev.setDate(prev.getDate() - 7)
@@ -223,6 +216,7 @@
     loadWeek(next)
   })
 
-  // Init
   loadWeek(mondayOf(new Date()))
+
+  } // end _calendarInitialized
 </script>

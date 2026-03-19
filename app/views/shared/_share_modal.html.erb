@@ -44,9 +44,12 @@
 </div>
 
 <script>
+  if (!window._shareModalInitialized) {
+  window._shareModalInitialized = true
+
   let shareModalType = '', shareModalId = 0, shareModalName = ''
   let shareModalTimeout = null
-  const shareIcons = { Tatoueur: '🖋', Shop: '🏠', Event: '🎪' }
+  const shareIcons  = { Tatoueur: '🖋', Shop: '🏠', Event: '🎪' }
   const shareLabels = { Tatoueur: 'Tatoueur', Shop: 'Shop', Event: 'Événement' }
 
   function openShareModal(type, id, name) {
@@ -102,7 +105,6 @@
   }
 
   function sendSharedProfile(recipientType, recipientId) {
-    // 1. Créer/trouver la conversation
     const param = recipientType === 'Tatoueur' ? 'tatoueur_id'
                 : recipientType === 'Shop'     ? 'shop_id'
                 : 'user_id'
@@ -117,11 +119,9 @@
       body: formData
     })
     .then(r => {
-      // Rails redirige vers la conversation — on récupère l'id depuis le header Location
       const location = r.url || r.headers?.get('Location') || ''
       const match = location.match(/\/conversations\/(\d+)/)
       if (match) return parseInt(match[1])
-      // Fallback : chercher dans l'URL finale
       return r.text().then(html => {
         const m = html.match(/conversation[_-](\d+)|\/conversations\/(\d+)/)
         return m ? parseInt(m[1] || m[2]) : null
@@ -149,7 +149,6 @@
     })
     .then(() => {
       closeShareModal()
-      // Ouvrir la bulle sur cette conversation
       if (typeof toggleChat === 'function') {
         const win = document.getElementById('chat-window')
         if (win && win.style.display === 'none') toggleChat()
@@ -163,6 +162,8 @@
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') closeShareModal()
   })
+
+  } // end _shareModalInitialized
 </script>
 
 <% end %>

@@ -1,0 +1,416 @@
+<% content_for :title, "Réserver avec #{@tatoueur.nickname}" %>
+
+<%# Données disponibilités injectées en JSON %>
+<% avail_by_day = @tatoueur.availabilities.group_by(&:day_of_week) %>
+<% booked_dates = @tatoueur.bookings.where(status: %w[pending confirmed])
+                            .where(date: Date.today..Date.today + 90.days)
+                            .pluck(:date, :start_time, :end_time) %>
+
+<script>
+  const AVAIL_BY_DAY = <%= avail_by_day.transform_values { |avs|
+    avs.map { |a| { start: a.start_time.strftime("%H:%M"), end: a.end_time.strftime("%H:%M") } }
+  }.to_json.html_safe %>
+
+  const BOOKED = <%= booked_dates.map { |date, st, et|
+    { date: date.to_s, start: st&.strftime("%H:%M"), end: et&.strftime("%H:%M") }
+  }.to_json.html_safe %>
+</script>
+
+<div class="container py-5" style="max-width:680px;">
+
+  <%# Header %>
+  <div class="mb-4 d-flex align-items-center gap-3">
+    <%= link_to "←", tatoueur_path(@tatoueur),
+          style: "color:#888;font-size:1.2rem;text-decoration:none;" %>
+    <% if @tatoueur.avatar.attached? %>
+      <%= image_tag @tatoueur.avatar,
+            style: "width:44px;height:44px;object-fit:cover;border-radius:50%;border:2px solid #F5C500;" %>
+    <% end %>
+    <div>
+      <h1 style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:#fff;margin:0;letter-spacing:1px;">
+        Réserver avec <%= @tatoueur.nickname %>
+      </h1>
+      <% if @tatoueur.shops.any? %>
+        <p style="color:#666;font-size:0.82rem;margin:0;">
+          📍 <%= @tatoueur.shops.first.name %><% if @tatoueur.shops.first.address.present? %> — <%= @tatoueur.shops.first.address %><% end %>
+        </p>
+      <% end %>
+    </div>
+  </div>
+
+  <%# Stepper %>
+  <div style="display:flex;align-items:center;gap:0;margin-bottom:2rem;">
+    <% [["1", "Jour"], ["2", "Créneau"], ["3", "Projet"]].each_with_index do |(num, label), i| %>
+      <div style="display:flex;align-items:center;gap:6px;flex:1;">
+        <div id="step-circle-<%= num %>"
+             style="width:28px;height:28px;border-radius:50%;
+                    background:<%= num == '1' ? '#F5C500' : '#1a1a1a' %>;
+                    color:<%= num == '1' ? '#000' : '#555' %>;
+                    border:2px solid <%= num == '1' ? '#F5C500' : '#2a2a2a' %>;
+                    display:flex;align-items:center;justify-content:center;
+                    font-family:'Bebas Neue',sans-serif;font-size:0.85rem;
+                    flex-shrink:0;transition:all 0.3s;">
+          <%= num %>
+        </div>
+        <span id="step-label-<%= num %>"
+              style="font-size:0.78rem;text-transform:uppercase;letter-spacing:0.08em;
+                     color:<%= num == '1' ? '#F5C500' : '#555' %>;transition:color 0.3s;">
+          <%= label %>
+        </span>
+        <% if i < 2 %>
+          <div style="flex:1;height:1px;background:#2a2a2a;margin:0 8px;"></div>
+        <% end %>
+      </div>
+    <% end %>
+  </div>
+
+  <%# Erreurs %>
+  <% if @booking.errors.any? %>
+    <div style="background:#2a1a1a;border:1px solid #dc3545;border-radius:6px;padding:1rem;margin-bottom:1.5rem;">
+      <ul style="color:#f08080;font-size:0.9rem;padding-left:1.2rem;margin:0;">
+        <% @booking.errors.full_messages.each do |msg| %>
+          <li><%= msg %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <%= form_with model: [@tatoueur, @booking], url: tatoueur_bookings_path(@tatoueur), local: true, id: "booking-form" do |f| %>
+    <%= f.hidden_field :date,       id: "input-date" %>
+    <%= f.hidden_field :start_time, id: "input-start" %>
+    <%= f.hidden_field :end_time,   id: "input-end" %>
+
+    <%# ── ÉTAPE 1 : Choix du jour ── %>
+    <div id="step-1" style="background:#1a1a1a;border:1px solid #2a2a2a;border-top:3px solid #F5C500;padding:1.75rem;">
+      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:#F5C500;letter-spacing:0.06em;margin-bottom:1.25rem;">
+        Choisissez un jour
+      </h2>
+
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+        <button type="button" id="week-prev"
+                style="background:transparent;border:1px solid #2a2a2a;color:#888;font-size:1rem;padding:0.3rem 0.85rem;cursor:pointer;transition:all 0.15s;"
+                onmouseover="this.style.borderColor='#F5C500';this.style.color='#F5C500'"
+                onmouseout="this.style.borderColor='#2a2a2a';this.style.color='#888'">‹</button>
+        <span id="week-label" style="font-family:'Bebas Neue',sans-serif;font-size:1rem;color:#fff;letter-spacing:0.05em;"></span>
+        <button type="button" id="week-next"
+                style="background:transparent;border:1px solid #2a2a2a;color:#888;font-size:1rem;padding:0.3rem 0.85rem;cursor:pointer;transition:all 0.15s;"
+                onmouseover="this.style.borderColor='#F5C500';this.style.color='#F5C500'"
+                onmouseout="this.style.borderColor='#2a2a2a';this.style.color='#888'">›</button>
+      </div>
+
+      <div id="days-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;"></div>
+
+      <p style="color:#555;font-size:0.78rem;margin-top:1rem;margin-bottom:0;text-align:center;">
+        Seuls les jours de disponibilité du tatoueur sont sélectionnables.
+      </p>
+
+      <%# Option date libre %>
+      <div id="no-avail-block" style="display:none;margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid #2a2a2a;">
+        <p style="color:#666;font-size:0.82rem;margin-bottom:0.75rem;text-align:center;">
+          Pas de disponibilité affichée ?
+        </p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <button type="button" onclick="requestWithoutDate('soon')"
+                  style="background:#1a1a1a;border:1px solid #2a2a2a;color:#aaa;padding:10px 8px;
+                         cursor:pointer;border-radius:4px;font-size:0.82rem;transition:all 0.15s;text-align:center;"
+                  onmouseover="this.style.borderColor='#F5C500';this.style.color='#F5C500'"
+                  onmouseout="this.style.borderColor='#2a2a2a';this.style.color='#aaa'">
+            ⚡ Le plus tôt possible
+          </button>
+          <button type="button" onclick="requestWithoutDate('flexible')"
+                  style="background:#1a1a1a;border:1px solid #2a2a2a;color:#aaa;padding:10px 8px;
+                         cursor:pointer;border-radius:4px;font-size:0.82rem;transition:all 0.15s;text-align:center;"
+                  onmouseover="this.style.borderColor='#F5C500';this.style.color='#F5C500'"
+                  onmouseout="this.style.borderColor='#2a2a2a';this.style.color='#aaa'">
+            📅 Date flexible
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <%# ── ÉTAPE 2 : Choix du créneau ── %>
+    <div id="step-2" style="display:none;background:#1a1a1a;border:1px solid #2a2a2a;border-top:3px solid #F5C500;padding:1.75rem;margin-top:1rem;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
+        <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:#F5C500;letter-spacing:0.06em;margin:0;">
+          Choisissez un créneau
+        </h2>
+        <button type="button" onclick="goToStep(1)"
+                style="background:transparent;border:none;color:#666;font-size:0.8rem;cursor:pointer;">
+          ← Changer de jour
+        </button>
+      </div>
+      <div id="selected-day-label" style="font-size:0.88rem;color:#aaa;margin-bottom:1.25rem;"></div>
+      <div id="slots-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;"></div>
+    </div>
+
+    <%# ── ÉTAPE 3 : Détails du projet ── %>
+    <div id="step-3" style="display:none;background:#1a1a1a;border:1px solid #2a2a2a;border-top:3px solid #F5C500;padding:1.75rem;margin-top:1rem;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
+        <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:#F5C500;letter-spacing:0.06em;margin:0;">
+          Votre projet
+        </h2>
+        <button type="button" id="back-to-step2"
+                onclick="goToStep(2)"
+                style="background:transparent;border:none;color:#666;font-size:0.8rem;cursor:pointer;">
+          ← Changer de créneau
+        </button>
+      </div>
+
+      <div id="recap-selection"
+           style="background:#0d0d0d;border:1px solid #2a2a2a;border-left:3px solid #F5C500;
+                  padding:0.75rem 1rem;margin-bottom:1.5rem;font-size:0.88rem;color:#aaa;">
+      </div>
+
+      <div class="mb-3">
+        <label style="color:#aaa;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:6px;">
+          Description du projet <span style="color:#555;">(style, taille, emplacement...)</span>
+        </label>
+        <%= f.text_area :description, rows: 4,
+              placeholder: "Ex : Tête de mort en blackwork sur l'avant-bras gauche, environ 10cm...",
+              style: "width:100%;background:#141414;border:1px solid #333;border-radius:4px;padding:10px 14px;color:#fff;font-size:0.9rem;resize:vertical;outline:none;" %>
+      </div>
+
+      <div class="mb-4">
+        <label style="color:#aaa;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:6px;">
+          Budget estimé <span style="color:#555;">(optionnel)</span>
+        </label>
+        <div style="position:relative;">
+          <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#555;font-size:0.95rem;">€</span>
+          <%= f.number_field :price_estimated, step: 1, min: 0, placeholder: "150",
+                style: "width:100%;background:#141414;border:1px solid #333;border-radius:4px;padding:10px 14px 10px 32px;color:#fff;font-size:0.95rem;outline:none;" %>
+        </div>
+      </div>
+
+      <%= f.submit "Envoyer la demande →",
+            style: "width:100%;background:#F5C500;color:#000;font-weight:700;font-size:1.1rem;font-family:'Bebas Neue',sans-serif;letter-spacing:0.1em;padding:14px;border:none;cursor:pointer;" %>
+    </div>
+
+  <% end %>
+</div>
+
+<style>
+  .day-btn { aspect-ratio:1; border:1px solid #2a2a2a; background:#111; color:#fff; cursor:pointer; border-radius:4px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; transition:all 0.15s; padding:4px; }
+  .day-btn:hover:not(:disabled) { border-color:#F5C500; color:#F5C500; }
+  .day-btn:disabled { background:#0d0d0d; color:#333; cursor:not-allowed; border-color:#1a1a1a; }
+  .day-btn.selected { background:rgba(245,197,0,0.15); border-color:#F5C500; color:#F5C500; }
+  .day-btn .day-name { font-size:0.65rem; text-transform:uppercase; letter-spacing:0.08em; }
+  .day-btn .day-num  { font-family:'Bebas Neue',sans-serif; font-size:1.2rem; line-height:1; }
+  .day-btn .day-avail { font-size:0.6rem; color:#27ae60; }
+  .day-btn:disabled .day-avail { color:#333; }
+  .slot-btn { padding:8px 4px; border:1px solid #2a2a2a; background:#111; color:#aaa; cursor:pointer; border-radius:4px; font-size:0.85rem; text-align:center; transition:all 0.15s; }
+  .slot-btn:hover:not(:disabled) { border-color:#F5C500; color:#F5C500; }
+  .slot-btn:disabled { background:#0d0d0d; color:#2a2a2a; cursor:not-allowed; text-decoration:line-through; }
+  .slot-btn.selected { background:rgba(245,197,0,0.15); border-color:#F5C500; color:#F5C500; font-weight:600; }
+</style>
+
+<script>
+  window._bookingFormInitialized = false
+  if (!window._bookingFormInitialized) {
+  window._bookingFormInitialized = true
+
+  const DAYS_FR   = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"]
+  const MONTHS_FR = ["jan", "fév", "mar", "avr", "mai", "jun", "jul", "aoû", "sep", "oct", "nov", "déc"]
+  const SLOT_DURATION = 60
+
+  let currentWeekStart = mondayOfWeek(new Date())
+  let selectedDate     = null
+  let selectedStart    = null
+  let selectedEnd      = null
+  let noDateMode       = null // "soon" | "flexible" | null
+
+  function mondayOfWeek(d) {
+    const date = new Date(d)
+    const day  = date.getDay()
+    date.setDate(date.getDate() - (day === 0 ? 6 : day - 1))
+    date.setHours(0, 0, 0, 0)
+    return date
+  }
+
+  function isoDate(d) {
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+  }
+
+  function slotsForDay(dayOfWeek) {
+    const avails = AVAIL_BY_DAY[dayOfWeek] || []
+    const slots  = []
+    avails.forEach(av => {
+      let [h, m] = av.start.split(':').map(Number)
+      const [eh, em] = av.end.split(':').map(Number)
+      const endMin = eh * 60 + em
+      while (h * 60 + m + SLOT_DURATION <= endMin) {
+        const startStr = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`
+        m += SLOT_DURATION
+        if (m >= 60) { h += Math.floor(m/60); m = m % 60 }
+        const endStr = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`
+        slots.push({ start: startStr, end: endStr })
+      }
+    })
+    return slots
+  }
+
+  function isSlotBooked(dateStr, startStr) {
+    return BOOKED.some(b => b.date === dateStr && b.start === startStr)
+  }
+
+  function renderWeek() {
+    const grid  = document.getElementById("days-grid")
+    const today = new Date(); today.setHours(0,0,0,0)
+    grid.innerHTML = ""
+
+    const end = new Date(currentWeekStart)
+    end.setDate(end.getDate() + 6)
+    const fmt = d => `${d.getDate()} ${MONTHS_FR[d.getMonth()]}`
+    document.getElementById("week-label").textContent = `${fmt(currentWeekStart)} – ${fmt(end)}`
+
+    let hasAvailThisWeek = false
+    for (let i = 0; i < 7; i++) {
+      const d      = new Date(currentWeekStart)
+      d.setDate(d.getDate() + i)
+      const dow    = d.getDay()
+      const avails = AVAIL_BY_DAY[dow] || []
+      const past   = d < today
+      const dateStr = isoDate(d)
+      const isSelected = dateStr === selectedDate
+
+      if (avails.length > 0 && !past) hasAvailThisWeek = true
+
+      const btn = document.createElement("button")
+      btn.type      = "button"
+      btn.className = "day-btn" + (isSelected ? " selected" : "")
+      btn.disabled  = past || avails.length === 0
+      btn.innerHTML = `
+        <span class="day-name">${DAYS_FR[dow]}</span>
+        <span class="day-num">${d.getDate()}</span>
+        ${avails.length > 0 && !past ? '<span class="day-avail">●</span>' : ''}
+      `
+      if (!btn.disabled) btn.onclick = () => selectDay(dateStr, d)
+      grid.appendChild(btn)
+    }
+
+    document.getElementById("week-prev").disabled = currentWeekStart <= mondayOfWeek(new Date())
+
+    // Afficher option "sans date" si aucune dispo visible sur cette semaine
+    const noAvailBlock = document.getElementById("no-avail-block")
+    if (noAvailBlock) noAvailBlock.style.display = hasAvailThisWeek ? "none" : "block"
+  }
+
+  function selectDay(dateStr, dateObj) {
+    selectedDate  = dateStr
+    selectedStart = null
+    selectedEnd   = null
+    noDateMode    = null
+    document.getElementById("input-date").value  = dateStr
+    document.getElementById("input-start").value = ""
+    document.getElementById("input-end").value   = ""
+    renderWeek()
+    renderSlots(dateObj)
+    goToStep(2)
+  }
+
+  function renderSlots(dateObj) {
+    const dow     = dateObj.getDay()
+    const dateStr = isoDate(dateObj)
+    const slots   = slotsForDay(dow)
+    const grid    = document.getElementById("slots-grid")
+    const label   = document.getElementById("selected-day-label")
+    const dayFull = dateObj.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
+
+    label.textContent = `📅 ${dayFull.charAt(0).toUpperCase() + dayFull.slice(1)}`
+    grid.innerHTML    = ""
+
+    if (slots.length === 0) {
+      grid.innerHTML = '<p style="color:#555;font-size:0.85rem;grid-column:1/-1;">Aucun créneau disponible.</p>'
+      return
+    }
+
+    slots.forEach(slot => {
+      const booked     = isSlotBooked(dateStr, slot.start)
+      const isSelected = slot.start === selectedStart
+      const btn = document.createElement("button")
+      btn.type      = "button"
+      btn.className = "slot-btn" + (isSelected ? " selected" : "")
+      btn.disabled  = booked
+      btn.textContent = slot.start
+      btn.title       = booked ? "Déjà réservé" : `${slot.start} – ${slot.end}`
+      if (!booked) btn.onclick = () => selectSlot(slot.start, slot.end, dateObj)
+      grid.appendChild(btn)
+    })
+  }
+
+  function selectSlot(start, end, dateObj) {
+    selectedStart = start
+    selectedEnd   = end
+    document.getElementById("input-start").value = start
+    document.getElementById("input-end").value   = end
+    const dayFull = dateObj.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
+    document.getElementById("recap-selection").innerHTML =
+      `<strong style="color:#fff;">📅 ${dayFull.charAt(0).toUpperCase() + dayFull.slice(1)}</strong>
+       &nbsp;·&nbsp; 🕐 <strong style="color:#F5C500;">${start} – ${end}</strong>`
+    renderSlots(dateObj)
+    goToStep(3)
+  }
+
+  function requestWithoutDate(mode) {
+    noDateMode    = mode
+    selectedDate  = null
+    selectedStart = null
+    selectedEnd   = null
+    document.getElementById("input-date").value  = ""
+    document.getElementById("input-start").value = ""
+    document.getElementById("input-end").value   = ""
+
+    const labels = {
+      soon:     "⚡ Dès que possible — le tatoueur vous proposera un créneau",
+      flexible: "📅 Date flexible — à définir ensemble"
+    }
+    document.getElementById("recap-selection").innerHTML =
+      `<span style="color:#F5C500;">${labels[mode]}</span>`
+
+    // Masquer le bouton "← Changer de créneau" car on vient de l'étape 1
+    const back = document.getElementById("back-to-step2")
+    if (back) back.style.display = "none"
+
+    goToStep(3)
+  }
+
+  function goToStep(n) {
+    [1, 2, 3].forEach(i => {
+      const el = document.getElementById(`step-${i}`)
+      if (el) el.style.display = i === n ? "block" : "none"
+
+      const circle = document.getElementById(`step-circle-${i}`)
+      const label  = document.getElementById(`step-label-${i}`)
+      if (circle && label) {
+        const active = i === n
+        const done   = i < n
+        circle.style.background  = active ? "#F5C500" : done ? "rgba(245,197,0,0.2)" : "#1a1a1a"
+        circle.style.color       = active ? "#000"    : done ? "#F5C500"             : "#555"
+        circle.style.borderColor = active || done ? "#F5C500" : "#2a2a2a"
+        circle.textContent       = done ? "✓" : i
+        label.style.color        = active || done ? "#F5C500" : "#555"
+      }
+    })
+
+    // Remettre le bouton retour si on revient à l'étape 3 normalement
+    if (n === 2) {
+      const back = document.getElementById("back-to-step2")
+      if (back) back.style.display = ""
+    }
+  }
+
+  document.getElementById("week-prev").addEventListener("click", () => {
+    const prev = new Date(currentWeekStart)
+    prev.setDate(prev.getDate() - 7)
+    if (prev >= mondayOfWeek(new Date())) { currentWeekStart = prev; renderWeek() }
+  })
+  document.getElementById("week-next").addEventListener("click", () => {
+    const next = new Date(currentWeekStart)
+    next.setDate(next.getDate() + 7)
+    currentWeekStart = next
+    renderWeek()
+  })
+
+  renderWeek()
+
+  } // end _bookingFormInitialized
+</script>
