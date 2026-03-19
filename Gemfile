@@ -89,7 +89,7 @@ gem "geocoder", "~> 1.8"
 
 gem "paypal-checkout-sdk", "~> 1.0"
 
-gem "prawn", "~> 2.4"
+gem "prawn", "~> 2.5"
 
 gem "prawn-table", "~> 0.2.2"
 
