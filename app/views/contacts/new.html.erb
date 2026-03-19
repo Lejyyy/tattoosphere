@@ -1,0 +1,79 @@
+<% content_for :title, "Contact — Tattoosphere" %>
+
+<div class="container py-5" style="max-width: 680px;">
+
+  <div class="text-center mb-5">
+    <h1 style="font-family:'Bebas Neue',sans-serif;font-size:2.5rem;color:#fff;letter-spacing:1px;">
+      Contactez-nous
+    </h1>
+    <p style="color:#888;font-size:1rem;margin-top:8px;">
+      Une question, un problème ou une suggestion ? On vous répond rapidement.
+    </p>
+  </div>
+
+  <% if notice %>
+    <div class="alert-flash alert-flash--success mb-4">
+      <%= notice %>
+    </div>
+  <% end %>
+
+  <div style="background:#1e1e1e;border:1px solid #2a2a2a;border-radius:12px;padding:2rem;">
+
+    <%= form_with model: @contact_request, url: contact_path, local: true do |f| %>
+
+      <%# Erreurs %>
+      <% if @contact_request.errors.any? %>
+        <div style="background:#2a1a1a;border:1px solid #dc3545;border-radius:8px;padding:1rem;margin-bottom:1.5rem;">
+          <p style="color:#dc3545;font-weight:600;margin-bottom:0.5rem;">
+            <%= pluralize(@contact_request.errors.count, "erreur") %> :
+          </p>
+          <ul style="color:#f08080;font-size:0.9rem;padding-left:1.2rem;margin:0;">
+            <% @contact_request.errors.full_messages.each do |msg| %>
+              <li><%= msg %></li>
+            <% end %>
+          </ul>
+        </div>
+      <% end %>
+
+      <%# Nom + Email côte à côte %>
+      <div class="row g-3 mb-3">
+        <div class="col-md-6">
+          <%= f.label :name, "Nom", style: "color:#aaa;font-size:0.85rem;margin-bottom:4px;display:block;" %>
+          <%= f.text_field :name,
+                placeholder: "Votre nom",
+                style: "width:100%;background:#141414;border:1px solid #333;border-radius:8px;padding:10px 14px;color:#fff;font-size:0.95rem;outline:none;" %>
+        </div>
+        <div class="col-md-6">
+          <%= f.label :email, "Email", style: "color:#aaa;font-size:0.85rem;margin-bottom:4px;display:block;" %>
+          <%= f.email_field :email,
+                placeholder: "votre@email.com",
+                style: "width:100%;background:#141414;border:1px solid #333;border-radius:8px;padding:10px 14px;color:#fff;font-size:0.95rem;outline:none;" %>
+        </div>
+      </div>
+
+      <%# Sujet %>
+      <div class="mb-3">
+        <%= f.label :subject, "Sujet", style: "color:#aaa;font-size:0.85rem;margin-bottom:4px;display:block;" %>
+        <%= f.select :subject,
+              ContactRequest::SUBJECTS,
+              { include_blank: "Sélectionnez un sujet" },
+              style: "width:100%;background:#141414;border:1px solid #333;border-radius:8px;padding:10px 14px;color:#fff;font-size:0.95rem;outline:none;" %>
+      </div>
+
+      <%# Message %>
+      <div class="mb-4">
+        <%= f.label :message, "Message", style: "color:#aaa;font-size:0.85rem;margin-bottom:4px;display:block;" %>
+        <%= f.text_area :message,
+              rows: 6,
+              placeholder: "Décrivez votre demande...",
+              style: "width:100%;background:#141414;border:1px solid #333;border-radius:8px;padding:10px 14px;color:#fff;font-size:0.95rem;outline:none;resize:vertical;" %>
+        <span style="color:#555;font-size:0.8rem;">10 caractères minimum, 2000 maximum.</span>
+      </div>
+
+      <%# Submit %>
+      <%= f.submit "Envoyer le message",
+            style: "width:100%;background:#ffc107;color:#000;font-weight:700;font-size:1rem;padding:12px;border:none;border-radius:8px;cursor:pointer;" %>
+
+    <% end %>
+  </div>
+</div>

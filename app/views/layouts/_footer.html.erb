@@ -1,0 +1,25 @@
+<footer style="border-top:1px solid #2a2a2a;padding:20px 32px;margin-top:auto;">
+  <div style="max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+
+    <span style="font-family:'Bebas Neue',sans-serif;color:#ffc107;font-size:1.1rem;letter-spacing:1px;">
+      TATTOOSPHERE
+    </span>
+
+    <nav style="display:flex;align-items:center;gap:24px;flex-wrap:wrap;">
+      <%= link_to "Contact", new_contact_path, style: "color:#888;font-size:0.85rem;text-decoration:none;" %>
+      <%= link_to "CGU", cgu_path, style: "color:#888;font-size:0.85rem;text-decoration:none;" %>
+      <%= link_to "Mentions légales", mentions_legales_path, style: "color:#888;font-size:0.85rem;text-decoration:none;" %>
+      <%= link_to "FAQ", faq_path, style: "color:#888;font-size:0.85rem;text-decoration:none;" %>
+      <%# Réseaux sociaux %>
+      <a href="#" style="color:#888;" title="Instagram">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><circle cx="12" cy="12" r="4"/>
+          <circle cx="17.5" cy="6.5" r="0.5" fill="currentColor"/>
+        </svg>
+      </a>
+    </nav>
+
+    <span style="color:#555;font-size:0.8rem;">© <%= Date.current.year %> Tattoosphere</span>
+
+  </div>
+</footer>

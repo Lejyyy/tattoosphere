@@ -1,0 +1,30 @@
+<h1>Nouveau message de contact</h1>
+<p>Un utilisateur vous a envoyé un message via le formulaire de contact.</p>
+
+<table class="detail-table">
+  <tr>
+    <td>Nom</td>
+    <td><%= @contact_request.name %></td>
+  </tr>
+  <tr>
+    <td>Email</td>
+    <td><a href="mailto:<%= @contact_request.email %>" style="color:#ffc107;"><%= @contact_request.email %></a></td>
+  </tr>
+  <tr>
+    <td>Sujet</td>
+    <td><%= @contact_request.subject %></td>
+  </tr>
+  <tr>
+    <td>Date</td>
+    <td><%= l @contact_request.created_at, format: :long %></td>
+  </tr>
+</table>
+
+<div class="alert-box">
+  <strong style="color:#ffc107;display:block;margin-bottom:8px;">Message</strong>
+  <%= simple_format @contact_request.message, style: "color:#ccc;font-size:14px;line-height:1.6;" %>
+</div>
+
+<p style="font-size:13px;color:#666;margin-top:16px;">
+  Répondre directement à cet email enverra votre réponse à <strong style="color:#aaa;"><%= @contact_request.email %></strong>.
+</p>

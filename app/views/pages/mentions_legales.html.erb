@@ -1,0 +1,100 @@
+<% content_for :title, "Mentions légales — Tattoosphere" %>
+
+<div class="container py-5" style="max-width:780px;">
+
+  <div class="text-center mb-5">
+    <h1 style="font-family:'Bebas Neue',sans-serif;font-size:2.5rem;color:#fff;letter-spacing:1px;">
+      Mentions légales
+    </h1>
+    <p style="color:#555;font-size:0.85rem;margin-top:8px;">Dernière mise à jour : <%= Date.current.strftime("%d/%m/%Y") %></p>
+  </div>
+
+  <% sections = [
+    {
+      title: "1. Éditeur du site",
+      content: <<~HTML
+        Le site <strong style="color:#fff;">tattoosphere.fr</strong> est édité par la société <strong style="color:#fff;">Tattoosphere SARL</strong>.<br><br>
+        <strong style="color:#aaa;">Siège social :</strong> [Adresse du siège social]<br>
+        <strong style="color:#aaa;">SIRET :</strong> [Numéro SIRET]<br>
+        <strong style="color:#aaa;">Capital social :</strong> [Montant du capital] €<br>
+        <strong style="color:#aaa;">Email :</strong> <a href="mailto:contact@tattoosphere.fr" style="color:#ffc107;text-decoration:none;">contact@tattoosphere.fr</a>
+      HTML
+    },
+    {
+      title: "2. Responsable de publication",
+      content: <<~HTML
+        Le responsable de la publication est <strong style="color:#fff;">Jorys Djemili</strong>.<br>
+        <strong style="color:#aaa;">Contact :</strong> <a href="mailto:contact@tattoosphere.fr" style="color:#ffc107;text-decoration:none;">contact@tattoosphere.fr</a>
+      HTML
+    },
+    {
+      title: "3. Hébergement",
+      content: <<~HTML
+        Le site est hébergé par la société <strong style="color:#fff;">OVH SAS</strong>.<br><br>
+        <strong style="color:#aaa;">Siège social :</strong> 2 rue Kellermann, 59100 Roubaix, France<br>
+        <strong style="color:#aaa;">Site web :</strong> <a href="https://www.ovh.com" target="_blank" style="color:#ffc107;text-decoration:none;">www.ovh.com</a>
+      HTML
+    },
+    {
+      title: "4. Propriété intellectuelle",
+      content: <<~HTML
+        L'ensemble du contenu du site Tattoosphere (textes, images, graphismes, logo, icônes, etc.) est la propriété exclusive de Tattoosphere SARL ou de ses partenaires, et est protégé par les lois françaises et internationales relatives à la propriété intellectuelle.<br><br>
+        Toute reproduction, distribution, modification ou utilisation de ces contenus, sans autorisation écrite préalable, est strictement interdite.
+      HTML
+    },
+    {
+      title: "5. Données personnelles & RGPD",
+      content: <<~HTML
+        Conformément au Règlement Général sur la Protection des Données (RGPD) et à la loi Informatique et Libertés, vous disposez des droits suivants concernant vos données personnelles :<br><br>
+        <ul style="color:#999;padding-left:1.2rem;line-height:2;">
+          <li>Droit d'accès</li>
+          <li>Droit de rectification</li>
+          <li>Droit à l'effacement (« droit à l'oubli »)</li>
+          <li>Droit à la portabilité</li>
+          <li>Droit d'opposition</li>
+        </ul>
+        <br>
+        Pour exercer ces droits, contactez-nous à : <a href="mailto:contact@tattoosphere.fr" style="color:#ffc107;text-decoration:none;">contact@tattoosphere.fr</a>.<br><br>
+        Les données collectées sont utilisées uniquement dans le cadre du fonctionnement de la plateforme et ne sont jamais cédées à des tiers à des fins commerciales.
+      HTML
+    },
+    {
+      title: "6. Cookies",
+      content: <<~HTML
+        Le site Tattoosphere peut utiliser des cookies techniques nécessaires à son bon fonctionnement (session, authentification, préférences).<br><br>
+        Aucun cookie publicitaire ou de traçage tiers n'est déposé sans votre consentement. Vous pouvez configurer votre navigateur pour refuser les cookies, bien que cela puisse affecter certaines fonctionnalités du site.
+      HTML
+    },
+    {
+      title: "7. Limitation de responsabilité",
+      content: <<~HTML
+        Tattoosphere s'efforce d'assurer l'exactitude et la mise à jour des informations diffusées sur ce site. Toutefois, Tattoosphere ne peut garantir l'exactitude, la précision ou l'exhaustivité des informations mises à disposition.<br><br>
+        Tattoosphere décline toute responsabilité pour tout dommage résultant d'une intrusion frauduleuse d'un tiers ayant entraîné une modification des informations mises à disposition sur le site.
+      HTML
+    },
+    {
+      title: "8. Droit applicable",
+      content: <<~HTML
+        Les présentes mentions légales sont soumises au droit français. En cas de litige, les tribunaux français seront seuls compétents.
+      HTML
+    }
+  ] %>
+
+  <% sections.each do |section| %>
+    <div style="margin-bottom:2rem;padding-bottom:2rem;border-bottom:1px solid #2a2a2a;">
+      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:#ffc107;letter-spacing:1px;margin-bottom:1rem;">
+        <%= section[:title] %>
+      </h2>
+      <p style="color:#999;font-size:0.92rem;line-height:1.8;">
+        <%= section[:content].html_safe %>
+      </p>
+    </div>
+  <% end %>
+
+  <div class="text-center mt-4">
+    <p style="color:#666;font-size:0.85rem;margin-bottom:12px;">Des questions sur vos données ou sur le site ?</p>
+    <%= link_to "Nous contacter", new_contact_path,
+          style: "background:#ffc107;color:#000;font-weight:700;padding:10px 28px;border-radius:8px;text-decoration:none;font-size:0.95rem;" %>
+  </div>
+
+</div>

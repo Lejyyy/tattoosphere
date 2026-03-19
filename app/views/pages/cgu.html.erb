@@ -1,0 +1,148 @@
+<% content_for :title, "CGU — Tattoosphere" %>
+
+<div class="container py-5" style="max-width:780px;">
+
+  <div class="text-center mb-5">
+    <h1 style="font-family:'Bebas Neue',sans-serif;font-size:2.5rem;color:#fff;letter-spacing:1px;">
+      Conditions Générales d'Utilisation
+    </h1>
+    <p style="color:#555;font-size:0.85rem;margin-top:8px;">Dernière mise à jour : <%= Date.current.strftime("%d/%m/%Y") %></p>
+  </div>
+
+  <% sections = [
+    {
+      title: "1. Objet",
+      content: <<~HTML
+        Les présentes Conditions Générales d'Utilisation (CGU) ont pour objet de définir les modalités et conditions dans lesquelles <strong style="color:#fff;">Tattoosphere SARL</strong> met à disposition la plateforme <strong style="color:#fff;">tattoosphere.fr</strong> et les services associés, ainsi que les conditions d'utilisation de ces services par l'utilisateur.<br><br>
+        Toute utilisation de la plateforme implique l'acceptation pleine et entière des présentes CGU.
+      HTML
+    },
+    {
+      title: "2. Description du service",
+      content: <<~HTML
+        Tattoosphere est une plateforme en ligne mettant en relation :<br><br>
+        <ul style="color:#999;padding-left:1.2rem;line-height:2;">
+          <li><strong style="color:#aaa;">Les clients</strong> : personnes souhaitant trouver un tatoueur ou un shop et réserver une séance.</li>
+          <li><strong style="color:#aaa;">Les tatoueurs</strong> : artistes professionnels proposant leurs services via un profil dédié.</li>
+          <li><strong style="color:#aaa;">Les shops</strong> : établissements de tatouage référençant leurs artistes et services.</li>
+        </ul>
+        <br>
+        Tattoosphere agit en tant qu'intermédiaire technique et ne saurait être considérée comme partie aux transactions entre utilisateurs.
+      HTML
+    },
+    {
+      title: "3. Inscription et compte utilisateur",
+      content: <<~HTML
+        L'accès à certaines fonctionnalités de la plateforme nécessite la création d'un compte. L'utilisateur s'engage à :<br><br>
+        <ul style="color:#999;padding-left:1.2rem;line-height:2;">
+          <li>Fournir des informations exactes, complètes et à jour lors de son inscription.</li>
+          <li>Maintenir la confidentialité de ses identifiants de connexion.</li>
+          <li>Notifier immédiatement Tattoosphere de toute utilisation non autorisée de son compte.</li>
+          <li>Ne pas créer plusieurs comptes ou usurper l'identité d'un tiers.</li>
+        </ul>
+        <br>
+        Tattoosphere se réserve le droit de suspendre ou supprimer tout compte en cas de violation des présentes CGU.
+      HTML
+    },
+    {
+      title: "4. Profils tatoueurs et vérification",
+      content: <<~HTML
+        Les tatoueurs peuvent créer un profil professionnel sur la plateforme. La procédure de vérification permet d'obtenir un badge attestant de leur statut professionnel.<br><br>
+        Le tatoueur s'engage à :<br><br>
+        <ul style="color:#999;padding-left:1.2rem;line-height:2;">
+          <li>Fournir des documents authentiques lors de la demande de vérification.</li>
+          <li>Ne publier que des œuvres dont il détient les droits.</li>
+          <li>Respecter ses engagements envers les clients (rendez-vous, tarifs annoncés).</li>
+          <li>Maintenir ses informations de disponibilité à jour.</li>
+        </ul>
+      HTML
+    },
+    {
+      title: "5. Réservations",
+      content: <<~HTML
+        La plateforme permet aux clients de soumettre des demandes de réservation auprès des tatoueurs. Une réservation n'est confirmée qu'après acceptation explicite par l'artiste.<br><br>
+        <strong style="color:#aaa;">Annulation :</strong> Toute annulation doit être effectuée dans les délais précisés sur le profil de l'artiste. En cas d'annulation tardive, un acompte versé peut être retenu selon les conditions définies par l'artiste.<br><br>
+        Tattoosphere n'intervient pas dans le règlement des litiges liés aux réservations et décline toute responsabilité quant à l'exécution des prestations.
+      HTML
+    },
+    {
+      title: "6. Contenus publiés par les utilisateurs",
+      content: <<~HTML
+        Les utilisateurs sont seuls responsables des contenus qu'ils publient sur la plateforme (photos, descriptions, avis, messages). En publiant du contenu, l'utilisateur garantit :<br><br>
+        <ul style="color:#999;padding-left:1.2rem;line-height:2;">
+          <li>Détenir les droits nécessaires sur les contenus publiés.</li>
+          <li>Ne pas publier de contenu illicite, diffamatoire, obscène ou portant atteinte aux droits de tiers.</li>
+          <li>Ne pas utiliser la plateforme à des fins de démarchage commercial non sollicité.</li>
+        </ul>
+        <br>
+        Tattoosphere se réserve le droit de supprimer tout contenu contrevenant aux présentes CGU, sans préavis ni indemnité.
+      HTML
+    },
+    {
+      title: "7. Messagerie et communications",
+      content: <<~HTML
+        La messagerie intégrée à la plateforme est destinée exclusivement aux échanges liés aux services proposés sur Tattoosphere. Il est interdit de l'utiliser pour :<br><br>
+        <ul style="color:#999;padding-left:1.2rem;line-height:2;">
+          <li>Envoyer des messages à caractère publicitaire ou promotionnel non sollicités.</li>
+          <li>Harceler, menacer ou insulter d'autres utilisateurs.</li>
+          <li>Partager des contenus illicites ou portant atteinte à des tiers.</li>
+        </ul>
+      HTML
+    },
+    {
+      title: "8. Tarifs et paiements",
+      content: <<~HTML
+        L'inscription et l'accès aux fonctionnalités de base de Tattoosphere sont gratuits. Des fonctionnalités premium pourront être proposées à l'avenir, avec une information préalable claire sur les tarifs applicables.<br><br>
+        Les transactions financières liées aux prestations de tatouage s'effectuent directement entre le client et l'artiste ou le shop. Tattoosphere n'intervient pas dans ces transactions et n'en est pas responsable.
+      HTML
+    },
+    {
+      title: "9. Responsabilité",
+      content: <<~HTML
+        Tattoosphere s'efforce d'assurer la disponibilité et la continuité de la plateforme, mais ne peut garantir un accès ininterrompu. Tattoosphere ne saurait être tenue responsable :<br><br>
+        <ul style="color:#999;padding-left:1.2rem;line-height:2;">
+          <li>Des dommages résultant d'une interruption ou d'un dysfonctionnement de la plateforme.</li>
+          <li>Du comportement des utilisateurs ou de la qualité des prestations fournies par les tatoueurs.</li>
+          <li>Des pertes de données liées à une utilisation incorrecte du service.</li>
+        </ul>
+      HTML
+    },
+    {
+      title: "10. Modification des CGU",
+      content: <<~HTML
+        Tattoosphere se réserve le droit de modifier les présentes CGU à tout moment. Les utilisateurs seront informés de toute modification significative par email ou par une notification sur la plateforme.<br><br>
+        La poursuite de l'utilisation de la plateforme après notification vaut acceptation des nouvelles CGU.
+      HTML
+    },
+    {
+      title: "11. Résiliation",
+      content: <<~HTML
+        L'utilisateur peut supprimer son compte à tout moment depuis les paramètres de son espace personnel. Tattoosphere se réserve le droit de résilier l'accès d'un utilisateur en cas de violation grave ou répétée des présentes CGU, sans préavis ni indemnité.
+      HTML
+    },
+    {
+      title: "12. Droit applicable et juridiction",
+      content: <<~HTML
+        Les présentes CGU sont soumises au droit français. En cas de litige relatif à leur interprétation ou à leur exécution, et à défaut de résolution amiable, les tribunaux compétents du ressort du siège social de Tattoosphere SARL seront seuls compétents.
+      HTML
+    }
+  ] %>
+
+  <% sections.each do |section| %>
+    <div style="margin-bottom:2rem;padding-bottom:2rem;border-bottom:1px solid #2a2a2a;">
+      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:#ffc107;letter-spacing:1px;margin-bottom:1rem;">
+        <%= section[:title] %>
+      </h2>
+      <p style="color:#999;font-size:0.92rem;line-height:1.8;">
+        <%= section[:content].html_safe %>
+      </p>
+    </div>
+  <% end %>
+
+  <div class="text-center mt-4">
+    <p style="color:#666;font-size:0.85rem;margin-bottom:12px;">Des questions sur nos conditions d'utilisation ?</p>
+    <%= link_to "Nous contacter", new_contact_path,
+          style: "background:#ffc107;color:#000;font-weight:700;padding:10px 28px;border-radius:8px;text-decoration:none;font-size:0.95rem;" %>
+  </div>
+
+</div>

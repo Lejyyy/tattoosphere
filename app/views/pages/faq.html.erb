@@ -1,0 +1,160 @@
+<% content_for :title, "FAQ — Tattoosphere" %>
+
+<div class="container py-5" style="max-width:780px;">
+
+  <div class="text-center mb-5">
+    <h1 style="font-family:'Bebas Neue',sans-serif;font-size:2.5rem;color:#fff;letter-spacing:1px;">
+      Foire aux questions
+    </h1>
+    <p style="color:#888;font-size:1rem;margin-top:8px;">
+      Vous ne trouvez pas votre réponse ?
+      <%= link_to "Contactez-nous", new_contact_path, style: "color:#ffc107;text-decoration:none;" %>.
+    </p>
+  </div>
+
+  <%# ── Macro pour une entrée FAQ ── %>
+  <% faq_sections = [
+    {
+      title: "Clients — Réservations & tatouages",
+      icon: "🖋️",
+      items: [
+        {
+          q: "Comment prendre rendez-vous avec un tatoueur ?",
+          a: "Rendez-vous sur le profil du tatoueur de votre choix, consultez ses disponibilités et cliquez sur « Réserver ». Vous recevrez une confirmation par email une fois la demande acceptée par l'artiste."
+        },
+        {
+          q: "Puis-je annuler ou modifier ma réservation ?",
+          a: "Oui, depuis votre espace personnel rubrique « Mes réservations ». Toute annulation moins de 48 h avant le rendez-vous peut entraîner des frais selon la politique de l'artiste."
+        },
+        {
+          q: "Comment trouver un tatoueur selon mon style ?",
+          a: "Utilisez les filtres de recherche (style, ville, disponibilité) sur la page Tatoueurs ou explorez la carte interactive pour trouver un artiste près de chez vous."
+        },
+        {
+          q: "Le devis est-il gratuit ?",
+          a: "Oui. Vous pouvez envoyer un message à n'importe quel artiste pour obtenir un devis sans engagement avant de réserver."
+        }
+      ]
+    },
+    {
+      title: "Tatoueurs — Profil & vérification",
+      icon: "✅",
+      items: [
+        {
+          q: "Comment créer mon profil de tatoueur ?",
+          a: "Après inscription, rendez-vous dans « Mon espace » et complétez votre profil : bio, styles, portfolio, disponibilités. Un profil complet attire davantage de clients."
+        },
+        {
+          q: "Qu'est-ce que la vérification tatoueur ?",
+          a: "La vérification confirme votre identité et votre statut professionnel (SIRET, diplôme ou attestation). Une fois vérifié, un badge apparaît sur votre profil, renforçant la confiance des clients."
+        },
+        {
+          q: "Comment soumettre ma demande de vérification ?",
+          a: "Depuis votre panneau tatoueur, rubrique « Vérification », téléchargez les documents requis. L'équipe Tattoosphere examine votre dossier sous 48–72 h ouvrées."
+        },
+        {
+          q: "Puis-je gérer mes indisponibilités ?",
+          a: "Oui. Depuis votre panneau, section « Disponibilités », vous pouvez bloquer des créneaux manuellement (congés, événements) en plus de vos horaires récurrents."
+        }
+      ]
+    },
+    {
+      title: "Shops",
+      icon: "🏪",
+      items: [
+        {
+          q: "Comment référencer mon shop sur Tattoosphere ?",
+          a: "Créez un compte, puis créez votre profil Shop depuis votre espace. Renseignez le nom, l'adresse, les horaires et les tatoueurs rattachés à votre établissement."
+        },
+        {
+          q: "Puis-je rattacher plusieurs tatoueurs à mon shop ?",
+          a: "Oui. Les tatoueurs peuvent rejoindre votre shop depuis leur propre profil, ou vous pouvez les inviter directement depuis le panneau shop."
+        },
+        {
+          q: "Mon shop apparaît-il sur la carte ?",
+          a: "Oui, dès que votre adresse est renseignée et géolocalisée, votre shop apparaît automatiquement sur la carte interactive."
+        }
+      ]
+    },
+    {
+      title: "Paiements",
+      icon: "💳",
+      items: [
+        {
+          q: "Comment fonctionne le paiement sur Tattoosphere ?",
+          a: "Le paiement s'effectue directement entre vous et l'artiste ou le shop. Tattoosphere ne prélève pas de commission sur les transactions pour le moment."
+        },
+        {
+          q: "Quels moyens de paiement sont acceptés ?",
+          a: "Cela dépend de chaque artiste. Consultez leur profil ou envoyez-leur un message pour connaître les modalités (espèces, virement, carte, etc.)."
+        },
+        {
+          q: "Un acompte est-il demandé à la réservation ?",
+          a: "Certains tatoueurs demandent un acompte pour confirmer la réservation. Le montant et les conditions sont précisés sur leur profil."
+        }
+      ]
+    },
+    {
+      title: "Compte & sécurité",
+      icon: "🔒",
+      items: [
+        {
+          q: "Comment modifier mon mot de passe ?",
+          a: "Depuis « Mon compte » > « Sécurité », vous pouvez changer votre mot de passe à tout moment. En cas d'oubli, utilisez le lien « Mot de passe oublié » sur la page de connexion."
+        },
+        {
+          q: "Mes données personnelles sont-elles protégées ?",
+          a: "Oui. Tattoosphere respecte le RGPD. Vos données ne sont jamais revendues à des tiers. Vous pouvez demander la suppression de votre compte et de vos données à tout moment."
+        },
+        {
+          q: "Comment signaler un contenu inapproprié ?",
+          a: "Utilisez le formulaire de contact en sélectionnant « Signaler un contenu », ou cliquez sur le bouton de signalement directement sur le profil concerné."
+        },
+        {
+          q: "Puis-je supprimer mon compte ?",
+          a: "Oui. Depuis « Mon compte » > « Paramètres », vous trouverez l'option de suppression définitive. Cette action est irréversible."
+        }
+      ]
+    }
+  ] %>
+
+  <% faq_sections.each do |section| %>
+    <div class="mb-5">
+      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:#ffc107;letter-spacing:1px;margin-bottom:1rem;display:flex;align-items:center;gap:8px;">
+        <span><%= section[:icon] %></span>
+        <span><%= section[:title] %></span>
+      </h2>
+
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <% section[:items].each_with_index do |item, i| %>
+          <details style="background:#1e1e1e;border:1px solid #2a2a2a;border-radius:8px;overflow:hidden;">
+            <summary style="padding:14px 18px;cursor:pointer;color:#e0e0e0;font-weight:600;font-size:0.95rem;list-style:none;display:flex;justify-content:space-between;align-items:center;">
+              <%= item[:q] %>
+              <span style="color:#ffc107;font-size:1.2rem;flex-shrink:0;margin-left:12px;">+</span>
+            </summary>
+            <div style="padding:0 18px 16px;color:#999;font-size:0.9rem;line-height:1.7;border-top:1px solid #2a2a2a;padding-top:14px;">
+              <%= item[:a] %>
+            </div>
+          </details>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+
+  <div class="text-center mt-5 pt-4" style="border-top:1px solid #2a2a2a;">
+    <p style="color:#888;margin-bottom:12px;">Vous n'avez pas trouvé votre réponse ?</p>
+    <%= link_to "Nous contacter", new_contact_path,
+          style: "background:#ffc107;color:#000;font-weight:700;padding:10px 28px;border-radius:8px;text-decoration:none;font-size:0.95rem;" %>
+  </div>
+
+</div>
+
+<script>
+  // Remplace le + par un − quand ouvert
+  document.querySelectorAll("details").forEach(d => {
+    d.addEventListener("toggle", () => {
+      const icon = d.querySelector("summary span:last-child")
+      if (icon) icon.textContent = d.open ? "−" : "+"
+    })
+  })
+</script>

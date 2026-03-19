@@ -1,0 +1,73 @@
+<% content_for :title, "Admin — Message de #{@contact_request.name}" %>
+
+<div style="max-width:700px;">
+
+  <%# ── Header ── %>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:12px;">
+    <%= link_to "← Retour", admin_contact_requests_path,
+          style: "color:#888;font-size:0.85rem;text-decoration:none;" %>
+    <div style="display:flex;gap:8px;">
+      <% unless @contact_request.answered? %>
+        <%= button_to "Marquer répondu", mark_answered_admin_contact_request_path(@contact_request), method: :patch,
+              style: "background:#27AE6022;color:#27AE60;border:1px solid #27AE6044;
+                      padding:6px 16px;border-radius:4px;font-size:0.8rem;cursor:pointer;" %>
+      <% end %>
+      <a href="mailto:<%= @contact_request.email %>?subject=Re: <%= @contact_request.subject %>"
+         style="background:#F5C500;color:#000;font-weight:700;padding:6px 16px;border-radius:4px;
+                font-size:0.8rem;text-decoration:none;">
+        Répondre par email
+      </a>
+    </div>
+  </div>
+
+  <%# ── Carte message ── %>
+  <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-radius:4px;overflow:hidden;">
+
+    <%# Statut bandeau %>
+    <% color, label = case @contact_request.status
+      when "pending"  then ["#E74C3C", "En attente de traitement"]
+      when "read"     then ["#E67E22", "Lu"]
+      when "answered" then ["#27AE60", "Répondu"]
+      end %>
+    <div style="background:<%= color %>18;border-bottom:1px solid <%= color %>33;
+                padding:8px 20px;font-size:0.8rem;color:<%= color %>;font-weight:600;
+                letter-spacing:0.05em;text-transform:uppercase;">
+      <%= label %>
+    </div>
+
+    <%# Infos expéditeur %>
+    <div style="padding:1.5rem;border-bottom:1px solid #2A2A2A;">
+      <table style="width:100%;border-collapse:collapse;font-size:0.88rem;">
+        <% [
+          ["Nom",   @contact_request.name],
+          ["Email", "<a href='mailto:#{@contact_request.email}' style='color:#F5C500;text-decoration:none;'>#{@contact_request.email}</a>"],
+          ["Sujet", @contact_request.subject],
+          ["Date",  @contact_request.created_at.strftime("%d/%m/%Y à %H:%M")],
+        ].each do |label, value| %>
+          <tr>
+            <td style="padding:6px 0;color:#555;width:80px;text-transform:uppercase;font-size:0.72rem;letter-spacing:0.08em;font-weight:600;">
+              <%= label %>
+            </td>
+            <td style="padding:6px 0;color:#ddd;">
+              <%= value.html_safe %>
+            </td>
+          </tr>
+        <% end %>
+      </table>
+    </div>
+
+    <%# Corps du message %>
+    <div style="padding:1.5rem;">
+      <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.08em;color:#555;margin-bottom:0.75rem;font-weight:600;">
+        Message
+      </div>
+      <div style="color:#ccc;font-size:0.92rem;line-height:1.8;white-space:pre-wrap;
+                  background:#141414;border:1px solid #2A2A2A;border-left:3px solid #F5C500;
+                  padding:1rem 1.25rem;border-radius:2px;">
+        <%= @contact_request.message %>
+      </div>
+    </div>
+
+  </div>
+
+</div>

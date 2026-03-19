@@ -1,0 +1,102 @@
+<% content_for :title, "Admin — Messages de contact" %>
+
+<%# ── KPIs ── %>
+<div class="row g-3 mb-4">
+  <% [
+    ["Total",     @pending_count + @read_count + @answered_count, admin_contact_requests_path,                    "#F5C500"],
+    ["En attente", @pending_count,  admin_contact_requests_path(status: "pending"),  @pending_count  > 0 ? "#E74C3C" : "#F5C500"],
+    ["Lus",        @read_count,     admin_contact_requests_path(status: "read"),     @read_count     > 0 ? "#E67E22" : "#F5C500"],
+    ["Répondus",   @answered_count, admin_contact_requests_path(status: "answered"), "#27AE60"],
+  ].each do |label, count, path, color| %>
+    <div class="col-6 col-md-3">
+      <%= link_to path, style: "text-decoration:none;" do %>
+        <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid <%= color %>;
+                    padding:1.25rem;text-align:center;transition:border-color 0.2s;"
+             onmouseover="this.style.borderColor='#F5C500'"
+             onmouseout="this.style.borderColor='#2A2A2A'">
+          <div style="font-family:'Bebas Neue',sans-serif;font-size:2rem;color:<%= color %>;line-height:1;">
+            <%= count %>
+          </div>
+          <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-top:0.3rem;">
+            <%= label %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% end %>
+</div>
+
+<%# ── Filtres ── %>
+<div style="display:flex;gap:8px;margin-bottom:1.5rem;flex-wrap:wrap;">
+  <% [["Tous", nil], ["En attente", "pending"], ["Lus", "read"], ["Répondus", "answered"]].each do |label, val| %>
+    <%= link_to label, admin_contact_requests_path(status: val),
+          style: "padding:6px 16px;border-radius:4px;font-size:0.8rem;text-decoration:none;
+                  letter-spacing:0.05em;text-transform:uppercase;
+                  #{params[:status] == val ? 'background:#F5C500;color:#000;font-weight:700;' : 'background:#1A1A1A;border:1px solid #2A2A2A;color:#888;'}" %>
+  <% end %>
+</div>
+
+<%# ── Tableau ── %>
+<div style="background:#1A1A1A;border:1px solid #2A2A2A;border-radius:4px;overflow:hidden;">
+  <table style="width:100%;border-collapse:collapse;font-size:0.85rem;">
+    <thead>
+      <tr style="border-bottom:1px solid #2A2A2A;">
+        <% ["Nom", "Email", "Sujet", "Date", "Statut", "Actions"].each do |h| %>
+          <th style="padding:10px 14px;text-align:left;text-transform:uppercase;letter-spacing:0.08em;font-size:0.7rem;color:#555;font-weight:600;">
+            <%= h %>
+          </th>
+        <% end %>
+      </tr>
+    </thead>
+    <tbody>
+      <% if @contact_requests.empty? %>
+        <tr>
+          <td colspan="6" style="padding:2rem;text-align:center;color:#555;">Aucun message.</td>
+        </tr>
+      <% else %>
+        <% @contact_requests.each do |cr| %>
+          <tr style="border-bottom:1px solid #1e1e1e;transition:background 0.15s;"
+              onmouseover="this.style.background='#222'"
+              onmouseout="this.style.background='transparent'">
+            <td style="padding:10px 14px;color:#fff;font-weight:600;"><%= cr.name %></td>
+            <td style="padding:10px 14px;">
+              <a href="mailto:<%= cr.email %>" style="color:#F5C500;text-decoration:none;"><%= cr.email %></a>
+            </td>
+            <td style="padding:10px 14px;color:#aaa;"><%= cr.subject %></td>
+            <td style="padding:10px 14px;color:#666;white-space:nowrap;">
+              <%= cr.created_at.strftime("%d/%m/%Y %H:%M") %>
+            </td>
+            <td style="padding:10px 14px;">
+              <% color, label = case cr.status
+                when "pending"  then ["#E74C3C", "En attente"]
+                when "read"     then ["#E67E22", "Lu"]
+                when "answered" then ["#27AE60", "Répondu"]
+                end %>
+              <span style="background:<%= color %>22;color:<%= color %>;border:1px solid <%= color %>44;
+                           padding:3px 10px;border-radius:20px;font-size:0.75rem;font-weight:600;">
+                <%= label %>
+              </span>
+            </td>
+            <td style="padding:10px 14px;">
+              <div style="display:flex;gap:6px;">
+                <%= link_to "Voir", admin_contact_request_path(cr),
+                      style: "background:#2A2A2A;color:#fff;padding:4px 12px;border-radius:4px;
+                              font-size:0.75rem;text-decoration:none;" %>
+                <% if cr.pending? %>
+                  <%= button_to "Lu", mark_read_admin_contact_request_path(cr), method: :patch,
+                        style: "background:#E67E2222;color:#E67E22;border:1px solid #E67E2244;
+                                padding:4px 12px;border-radius:4px;font-size:0.75rem;cursor:pointer;" %>
+                <% end %>
+                <% unless cr.answered? %>
+                  <%= button_to "Répondu", mark_answered_admin_contact_request_path(cr), method: :patch,
+                        style: "background:#27AE6022;color:#27AE60;border:1px solid #27AE6044;
+                                padding:4px 12px;border-radius:4px;font-size:0.75rem;cursor:pointer;" %>
+                <% end %>
+              </div>
+            </td>
+          </tr>
+        <% end %>
+      <% end %>
+    </tbody>
+  </table>
+</div>

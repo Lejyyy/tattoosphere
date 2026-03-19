@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_18_104236) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_18_151502) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -96,6 +96,16 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_18_104236) do
     t.index ["shop_id"], name: "index_bookings_on_shop_id"
     t.index ["tatoueur_id"], name: "index_bookings_on_tatoueur_id"
     t.index ["user_id"], name: "index_bookings_on_user_id"
+  end
+
+  create_table "contact_requests", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "email", null: false
+    t.text "message", null: false
+    t.string "name", null: false
+    t.string "status", default: "pending", null: false
+    t.string "subject", null: false
+    t.datetime "updated_at", null: false
   end
 
   create_table "conversation_participants", force: :cascade do |t|

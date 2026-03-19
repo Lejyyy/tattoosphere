@@ -8,6 +8,9 @@ Rails.application.routes.draw do
   get "/search",    to: "searches#index", as: :search
   get "/explorer",  to: "explore#index",  as: :explore
   get "conversations/search_recipients", to: "conversations#search_recipients", as: :search_recipients
+  get "/faq", to: "pages#faq"
+  get "/mentions-legales", to: "pages#mentions_legales"
+  get "/cgu", to: "pages#cgu"
 
   # ================================
   # AUTHENTIFICATION
@@ -157,6 +160,13 @@ Rails.application.routes.draw do
       end
     end
 
+    resources :contact_requests, only: [ :index, :show, :update ] do
+    member do
+    patch :mark_read
+    patch :mark_answered
+      end
+    end
+
     resources :reports,       only: [ :index, :show, :update ]
     resources :tattoo_styles, only: [ :index, :create, :update, :destroy ]
     resources :admin_logs,    only: [ :index ]
@@ -236,4 +246,7 @@ scope :onboarding do
   get  "shop",     to: "onboarding#shop",            as: :onboarding_shop
   post "shop",     to: "onboarding#submit_shop",     as: :onboarding_submit_shop
 end
+
+resource :contact, only: [ :new, :create ], controller: "contacts"
+get "/contact", to: "contacts#new"
 end

@@ -9,6 +9,7 @@
     ["Événements",    @events_count,    admin_events_path,    "#F5C500"],
     ["Signalements",  @pending_reports.to_i, admin_reports_path,   @pending_reports.to_i > 0 ? "#E74C3C" : "#F5C500"],
     ["Vérifs en att.", @pending_verifs.count, admin_tatoueurs_path(status: "pending"), @pending_verifs.any? ? "#E67E22" : "#F5C500"],
+    ["Messages contact", ContactRequest.pending.count, admin_contact_requests_path, ContactRequest.pending.any? ? "#E74C3C" : "#F5C500"],
   ].each do |label, count, path, color| %>
     <div class="col-6 col-md-4 col-lg-2">
       <%= link_to path, style: "text-decoration:none;" do %>

@@ -19,6 +19,15 @@ class PagesController < ApplicationController
                    .limit(3)
   end
 
+  def faq
+  end
+
+  def cgu
+  end
+
+  def mentions_legales
+  end
+
   # GET /map
   def map
     @tatoueurs = Tatoueur.where(is_active: true)
