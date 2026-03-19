@@ -1,47 +1,47 @@
-<% content_for :title, "Photos" %>
+<% content_for :title, "Ma galerie" %>
 
-<h1 style="font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.05em;margin-bottom:1.5rem;">
-  Photos & Couverture
-</h1>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/Sortable.min.js"></script>
 
-<% label_s = "display:block;font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#888;margin-bottom:0.4rem;" %>
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.5rem;flex-wrap:wrap;gap:12px;">
+  <h1 style="font-family:'Bebas Neue',sans-serif;font-size:2rem;letter-spacing:0.05em;margin:0;">
+    Ma galerie
+    <span style="font-size:1rem;color:#555;font-family:'Barlow Condensed',sans-serif;margin-left:8px;">
+      <%= @photos.count %> photo(s)
+    </span>
+  </h1>
+  <%= link_to "Voir mon profil →", shop_path(current_shop),
+        style: "font-size:0.8rem;color:#888;text-decoration:none;" %>
+</div>
 
-<div class="row g-4">
-
-  <%# ── Photo de profil ── %>
+<%# ── Cover + profil ── %>
+<div class="row g-4 mb-4">
+  <%# Photo de profil %>
   <div class="col-lg-6">
     <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;padding:1.5rem;">
       <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:#F5C500;
                  border-left:4px solid #F5C500;padding-left:0.75rem;margin-bottom:1.25rem;">
         Photo de profil
       </h3>
-      <% profile_photo = current_shop.photos.first %>
-      <% if profile_photo %>
-        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:1rem;">
-          <%= image_tag profile_photo,
-              style: "width:80px;height:80px;object-fit:cover;border:2px solid #F5C500;" %>
-          <%= link_to "✕ Supprimer",
-              update_profile_photo_shop_path(current_shop, remove_profile_photo: "1"),
-              data: { turbo_method: :patch, turbo_confirm: "Supprimer la photo de profil ?" },
-              style: "font-size:0.8rem;color:#E74C3C;text-decoration:none;
-                      border:1px solid #E74C3C44;padding:0.25rem 0.6rem;" %>
-        </div>
+      <% if current_shop.avatar.attached? %>
+        <%= image_tag current_shop.avatar,
+            style: "width:80px;height:80px;object-fit:cover;border:2px solid #F5C500;
+                    border-radius:50%;display:block;margin-bottom:1rem;" %>
       <% end %>
-      <%= form_with url: shop_panel_photos_path, method: :patch,
+      <%= form_with url: shop_path(current_shop), method: :patch,
                     html: { enctype: "multipart/form-data" } do |f| %>
-        <label style="<%= label_s %>">Nouvelle photo de profil</label>
-        <input type="file" name="shop[photos]" accept="image/*"
-               style="color:#888;font-size:0.9rem;width:100%;margin-bottom:1rem;">
-        <button type="submit"
-                style="background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;
-                       font-size:1rem;letter-spacing:0.08em;padding:0.6rem 1.5rem;cursor:pointer;">
-          Enregistrer
-        </button>
+        <label style="color:#888;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:4px;">
+          Nouvelle photo de profil
+        </label>
+        <%= f.file_field :avatar, accept: "image/*",
+            style: "color:#888;font-size:0.9rem;width:100%;margin-bottom:1rem;" %>
+        <%= f.submit "Mettre à jour",
+            style: "background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;
+                    font-size:1rem;letter-spacing:0.08em;padding:0.6rem 1.5rem;cursor:pointer;" %>
       <% end %>
     </div>
   </div>
 
-  <%# ── Cover ── %>
+  <%# Cover %>
   <div class="col-lg-6">
     <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;padding:1.5rem;">
       <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:#F5C500;
@@ -49,30 +49,25 @@
         Photo de couverture
       </h3>
       <% if current_shop.cover.attached? %>
-        <div style="position:relative;margin-bottom:1rem;">
-          <%= image_tag current_shop.cover,
-              style: "width:100%;height:100px;object-fit:cover;display:block;border:1px solid #2A2A2A;" %>
-        </div>
+        <%= image_tag current_shop.cover,
+            style: "width:100%;height:80px;object-fit:cover;border:1px solid #2A2A2A;
+                    display:block;margin-bottom:1rem;" %>
       <% end %>
-      <%= form_with url: shop_panel_photos_path, method: :patch,
+      <%= form_with url: update_cover_shop_panel_photos_path, method: :patch,
                     html: { enctype: "multipart/form-data" } do |f| %>
-        <label style="<%= label_s %>">Nouvelle cover</label>
+        <label style="color:#888;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:4px;">
+          Nouvelle cover
+        </label>
         <input type="file" name="shop[cover]" accept="image/*"
                style="color:#888;font-size:0.9rem;width:100%;margin-bottom:0.75rem;">
-        <label style="<%= label_s %>">
-          Couleur de fond <span style="color:#555;font-weight:400;">(si pas d'image)</span>
-        </label>
         <div style="display:flex;gap:0.75rem;align-items:center;margin-bottom:1rem;">
           <input type="color" name="shop[cover_color]"
                  value="<%= current_shop.cover_color || '#1A1A1A' %>"
-                 style="width:48px;height:36px;border:1px solid #2A2A2A;background:transparent;
-                        cursor:pointer;padding:0;">
-          <% [["#0D0D0D","Noir"],["#1A1A1A","Gris"],["#1a0a00","Brun"],
-              ["#0a0a1a","Bleu"],["#1a000d","Rouge"],["#1a1500","Or"]].each do |hex, lbl| %>
+                 style="width:48px;height:36px;border:1px solid #2A2A2A;background:transparent;cursor:pointer;padding:0;">
+          <% [["#0D0D0D","Noir"],["#1A1A1A","Gris"],["#1a0a00","Brun"],["#0a0a1a","Bleu"],["#1a000d","Rouge"],["#1a1500","Or"]].each do |hex, lbl| %>
             <button type="button" title="<%= lbl %>"
                     onclick="document.querySelector('input[name=\'shop[cover_color]\']').value='<%= hex %>'"
-                    style="width:24px;height:24px;background:<%= hex %>;border:1px solid #444;cursor:pointer;">
-            </button>
+                    style="width:24px;height:24px;background:<%= hex %>;border:1px solid #444;cursor:pointer;"></button>
           <% end %>
         </div>
         <% if current_shop.cover.attached? %>
@@ -92,37 +87,261 @@
       <% end %>
     </div>
   </div>
+</div>
 
-  <%# ── Galerie ── %>
-  <div class="col-12">
-    <div style="background:#1A1A1A;border:1px solid #2A2A2A;padding:1.5rem;">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">
-        <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:#F5C500;
-                   border-left:4px solid #F5C500;padding-left:0.75rem;margin:0;">
-          Galerie (<%= current_shop.photos.count %> photos)
-        </h3>
-      </div>
-      <% if current_shop.photos.count > 1 %>
-        <div class="row row-cols-2 row-cols-md-4 row-cols-lg-6 g-2 mb-3">
-          <% current_shop.photos.drop(1).each do |photo| %>
-            <div class="col">
-              <%= image_tag photo,
-                  style: "width:100%;height:90px;object-fit:cover;border:1px solid #2A2A2A;display:block;" %>
-            </div>
+<%# ── Upload zone ── %>
+<div id="upload-zone"
+     style="border:2px dashed #2a2a2a;border-radius:4px;padding:2rem;text-align:center;
+            margin-bottom:2rem;cursor:pointer;transition:border-color 0.2s;background:#111;"
+     ondragover="event.preventDefault();this.style.borderColor='#F5C500'"
+     ondragleave="this.style.borderColor='#2a2a2a'"
+     ondrop="handleDrop(event)"
+     onclick="document.getElementById('photo-input').click()">
+  <div style="font-size:2rem;margin-bottom:0.5rem;">📸</div>
+  <p style="color:#888;margin:0;font-size:0.9rem;">
+    Glisse tes photos ici ou <span style="color:#F5C500;text-decoration:underline;">clique pour sélectionner</span>
+  </p>
+  <p style="color:#555;font-size:0.78rem;margin-top:4px;">JPG, PNG — plusieurs fichiers acceptés</p>
+</div>
+
+<%= form_with url: shop_panel_photos_path, method: :post,
+      html: { id: "upload-form", enctype: "multipart/form-data" } do |f| %>
+  <input type="file" id="photo-input" name="photos[]" multiple accept="image/*"
+         style="display:none;" onchange="previewAndSubmit(this)">
+  <div id="upload-meta" style="display:none;background:#1a1a1a;border:1px solid #2a2a2a;
+                                padding:1.25rem;margin-bottom:1.5rem;border-radius:4px;">
+    <p style="color:#F5C500;font-family:'Bebas Neue',sans-serif;font-size:1rem;
+              letter-spacing:0.05em;margin-bottom:1rem;">Métadonnées (optionnel)</p>
+    <div class="row g-3">
+      <div class="col-md-4">
+        <label style="color:#888;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:4px;">Style</label>
+        <select name="tattoo_style_id"
+                style="width:100%;background:#0d0d0d;border:1px solid #2a2a2a;color:#fff;padding:8px 12px;font-size:0.9rem;outline:none;">
+          <option value="">— Aucun style —</option>
+          <% @tattoo_styles.each do |style| %>
+            <option value="<%= style.id %>"><%= style.name %></option>
           <% end %>
-        </div>
-      <% end %>
-      <%= form_with url: shop_path(current_shop), method: :patch,
-                    html: { enctype: "multipart/form-data",
-                            style: "display:flex;gap:0.75rem;align-items:flex-end;" } do |f| %>
-        <%= f.file_field :photos, multiple: true, accept: "image/*",
-            style: "flex:1;color:#888;font-size:0.9rem;" %>
-        <%= f.submit "Ajouter",
-            style: "background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;
-                    font-size:1rem;letter-spacing:0.08em;padding:0.6rem 1.25rem;
-                    cursor:pointer;white-space:nowrap;" %>
-      <% end %>
+        </select>
+      </div>
+      <div class="col-md-4">
+        <label style="color:#888;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:4px;">Titre</label>
+        <input type="text" name="title" placeholder="Ex : Rose baroque"
+               style="width:100%;background:#0d0d0d;border:1px solid #2a2a2a;color:#fff;padding:8px 12px;font-size:0.9rem;outline:none;">
+      </div>
+      <div class="col-md-4">
+        <label style="color:#888;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:4px;">Description</label>
+        <input type="text" name="description" placeholder="Quelques mots..."
+               style="width:100%;background:#0d0d0d;border:1px solid #2a2a2a;color:#fff;padding:8px 12px;font-size:0.9rem;outline:none;">
+      </div>
+    </div>
+    <div style="margin-top:1rem;display:flex;gap:8px;">
+      <button type="submit"
+              style="background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;
+                     font-size:1rem;letter-spacing:0.08em;padding:0.5rem 1.5rem;cursor:pointer;">
+        Uploader
+      </button>
+      <button type="button" onclick="cancelUpload()"
+              style="background:transparent;color:#888;border:1px solid #2a2a2a;font-size:0.85rem;padding:0.5rem 1rem;cursor:pointer;">
+        Annuler
+      </button>
     </div>
   </div>
+<% end %>
 
+<%# ── Filtres ── %>
+<% if @photos.any? %>
+  <% styles_present = @photos.map(&:tattoo_style).compact.uniq %>
+  <% if styles_present.any? %>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.5rem;">
+      <button onclick="filterStyle(null)" class="style-filter style-filter--active" data-style="">✦ Tous</button>
+      <% styles_present.each do |style| %>
+        <button onclick="filterStyle('<%= style.id %>')" class="style-filter" data-style="<%= style.id %>">
+          <%= style.name %>
+        </button>
+      <% end %>
+    </div>
+  <% end %>
+
+  <%# ── Grille ── %>
+  <div id="gallery-grid" class="row g-3">
+    <% @photos.each do |photo| %>
+      <div class="col-6 col-md-4 col-lg-3 gallery-item"
+           data-id="<%= photo.id %>"
+           data-style="<%= photo.tattoo_style_id %>">
+        <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-radius:2px;overflow:hidden;
+                    position:relative;cursor:grab;"
+             onmouseover="this.querySelector('.photo-actions').style.opacity='1'"
+             onmouseout="this.querySelector('.photo-actions').style.opacity='0'">
+          <%= image_tag photo.image, style: "width:100%;height:160px;object-fit:cover;display:block;" %>
+          <div class="photo-actions"
+               style="position:absolute;inset:0;background:rgba(0,0,0,0.7);
+                      display:flex;flex-direction:column;justify-content:space-between;
+                      padding:0.6rem;opacity:0;transition:opacity 0.2s;">
+            <div>
+              <% if photo.title.present? %>
+                <p style="color:#fff;font-size:0.8rem;font-weight:600;margin:0 0 2px;"><%= photo.title %></p>
+              <% end %>
+              <% if photo.style_name.present? %>
+                <span style="background:rgba(245,197,0,0.2);color:#F5C500;font-size:0.7rem;padding:2px 7px;border-radius:2px;">
+                  <%= photo.style_name %>
+                </span>
+              <% end %>
+            </div>
+            <div style="display:flex;gap:6px;justify-content:flex-end;">
+              <button onclick="openEdit(<%= photo.id %>, '<%= j photo.title.to_s %>', '<%= j photo.description.to_s %>', '<%= photo.tattoo_style_id %>')"
+                      style="background:rgba(255,255,255,0.1);color:#fff;border:none;padding:4px 10px;font-size:0.75rem;cursor:pointer;border-radius:2px;">
+                ✏️
+              </button>
+              <%= button_to "✕", shop_panel_photo_path(photo), method: :delete,
+                    data: { turbo_confirm: "Supprimer cette photo ?" },
+                    style: "background:rgba(192,57,43,0.8);color:#fff;border:none;padding:4px 10px;font-size:0.75rem;cursor:pointer;border-radius:2px;" %>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  </div>
+  <p style="color:#555;font-size:0.78rem;margin-top:1rem;text-align:center;">💡 Glisse les photos pour les réorganiser</p>
+<% else %>
+  <div style="text-align:center;padding:3rem;color:#555;">
+    <div style="font-size:3rem;margin-bottom:1rem;">📷</div>
+    <p>Aucune photo dans la galerie.</p>
+  </div>
+<% end %>
+
+<%# ── Modal édition ── %>
+<div id="edit-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:9999;align-items:center;justify-content:center;">
+  <div style="background:#1a1a1a;border:1px solid #2a2a2a;border-top:3px solid #F5C500;padding:2rem;width:100%;max-width:480px;border-radius:2px;margin:1rem;">
+    <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:#F5C500;margin-bottom:1.25rem;">Modifier la photo</h3>
+    <form id="edit-form" method="post">
+      <input type="hidden" name="_method" value="patch">
+      <input type="hidden" name="<%= form_authenticity_token %>" value="">
+      <div style="margin-bottom:1rem;">
+        <label style="color:#888;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:4px;">Titre</label>
+        <input type="text" id="edit-title" name="photo[title]"
+               style="width:100%;background:#0d0d0d;border:1px solid #2a2a2a;color:#fff;padding:8px 12px;font-size:0.9rem;outline:none;">
+      </div>
+      <div style="margin-bottom:1rem;">
+        <label style="color:#888;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:4px;">Description</label>
+        <textarea id="edit-description" name="photo[description]" rows="3"
+                  style="width:100%;background:#0d0d0d;border:1px solid #2a2a2a;color:#fff;padding:8px 12px;font-size:0.9rem;outline:none;resize:none;"></textarea>
+      </div>
+      <div style="margin-bottom:1.5rem;">
+        <label style="color:#888;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:4px;">Style</label>
+        <select id="edit-style" name="photo[tattoo_style_id]"
+                style="width:100%;background:#0d0d0d;border:1px solid #2a2a2a;color:#fff;padding:8px 12px;font-size:0.9rem;outline:none;">
+          <option value="">— Aucun style —</option>
+          <% @tattoo_styles.each do |style| %>
+            <option value="<%= style.id %>"><%= style.name %></option>
+          <% end %>
+        </select>
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button type="submit"
+                style="background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:0.08em;padding:0.5rem 1.5rem;cursor:pointer;">
+          Enregistrer
+        </button>
+        <button type="button" onclick="closeEdit()"
+                style="background:transparent;color:#888;border:1px solid #2a2a2a;font-size:0.85rem;padding:0.5rem 1rem;cursor:pointer;">
+          Annuler
+        </button>
+      </div>
+    </form>
+  </div>
 </div>
+
+<style>
+  .style-filter {
+    background: #111; border: 1px solid #2a2a2a; color: #555;
+    padding: 5px 16px; font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.85rem; letter-spacing: 0.08em; cursor: pointer;
+    border-radius: 2px; transition: all 0.2s;
+  }
+  .style-filter:hover { color: #F5C500; border-color: rgba(245,197,0,0.4); background: rgba(245,197,0,0.05); }
+  .style-filter--active { background: rgba(245,197,0,0.12); color: #F5C500; border-color: rgba(245,197,0,0.5); }
+</style>
+
+<script>
+  if (!window._shopGalleryInitialized) {
+  window._shopGalleryInitialized = true
+
+  function handleDrop(e) {
+    e.preventDefault()
+    document.getElementById("upload-zone").style.borderColor = "#2a2a2a"
+    const files = e.dataTransfer.files
+    if (!files.length) return
+    const input = document.getElementById("photo-input")
+    const dt = new DataTransfer()
+    Array.from(files).forEach(f => dt.items.add(f))
+    input.files = dt.files
+    showMeta()
+  }
+
+  function previewAndSubmit(input) { if (input.files.length) showMeta() }
+  function showMeta() {
+    document.getElementById("upload-meta").style.display = "block"
+    document.getElementById("upload-zone").style.borderColor = "#F5C500"
+  }
+  function cancelUpload() {
+    document.getElementById("upload-meta").style.display = "none"
+    document.getElementById("upload-zone").style.borderColor = "#2a2a2a"
+    document.getElementById("photo-input").value = ""
+  }
+
+  function filterStyle(styleId) {
+    document.querySelectorAll(".gallery-item").forEach(el => {
+      el.style.display = (!styleId || el.dataset.style == styleId) ? "" : "none"
+    })
+    document.querySelectorAll(".style-filter").forEach(btn => {
+      btn.classList.toggle("style-filter--active",
+        (!styleId && btn.dataset.style === "") || btn.dataset.style == styleId)
+    })
+  }
+
+  const grid = document.getElementById("gallery-grid")
+  if (grid) {
+    Sortable.create(grid, {
+      animation: 150,
+      onEnd() {
+        const ids = Array.from(grid.querySelectorAll(".gallery-item")).map(el => el.dataset.id)
+        fetch("<%= reorder_shop_panel_photos_path %>", {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-Token": document.querySelector("meta[name='csrf-token']").content
+          },
+          body: JSON.stringify({ order: ids })
+        })
+      }
+    })
+  }
+
+  function openEdit(id, title, desc, styleId) {
+    document.getElementById("edit-title").value       = title
+    document.getElementById("edit-description").value = desc
+    document.getElementById("edit-style").value       = styleId || ""
+    document.getElementById("edit-form").action       = `/shop_panel/photos/${id}`
+    document.getElementById("edit-modal").style.display = "flex"
+  }
+
+  function closeEdit() { document.getElementById("edit-modal").style.display = "none" }
+
+  document.getElementById("edit-modal")?.addEventListener("click", e => {
+    if (e.target === document.getElementById("edit-modal")) closeEdit()
+  })
+
+  document.getElementById("edit-form")?.addEventListener("submit", async e => {
+    e.preventDefault()
+    const form = e.target
+    const data = new FormData(form)
+    data.append("authenticity_token", document.querySelector("meta[name='csrf-token']").content)
+    await fetch(form.action, {
+      method: "POST",
+      headers: { "X-CSRF-Token": document.querySelector("meta[name='csrf-token']").content },
+      body: data
+    })
+    window.location.reload()
+  })
+
+  } // end _shopGalleryInitialized
+</script>

@@ -23,6 +23,8 @@ class Tatoueur < ApplicationRecord
   has_many :favorites, as: :favoritable, dependent: :destroy
   has_many :blocked_slots, dependent: :destroy
   has_many :reports, as: :reportable, dependent: :destroy
+  has_many :reviews
+  has_many :gallery_photos, class_name: "Photo", as: :record, dependent: :destroy
 
   # ================================
   # VIRTUAL ATTRIBUTES

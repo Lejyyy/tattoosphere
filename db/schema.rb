@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_18_151502) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_19_142709) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -218,6 +218,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_18_151502) do
     t.index ["user_id"], name: "index_onboarding_funnels_on_user_id"
   end
 
+  create_table "photos", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.integer "position", default: 0, null: false
+    t.bigint "record_id", null: false
+    t.string "record_type", null: false
+    t.bigint "tattoo_style_id"
+    t.string "title"
+    t.datetime "updated_at", null: false
+    t.index ["record_type", "record_id", "position"], name: "index_photos_on_record_type_and_record_id_and_position"
+    t.index ["record_type", "record_id"], name: "index_photos_on_record"
+    t.index ["tattoo_style_id"], name: "index_photos_on_tattoo_style_id"
+  end
+
   create_table "portfolio_items", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.text "description"
@@ -263,6 +277,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_18_151502) do
     t.text "comment"
     t.datetime "created_at", null: false
     t.integer "rating"
+    t.datetime "replied_at"
+    t.text "reply"
     t.bigint "tatoueur_id", null: false
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
@@ -429,6 +445,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_18_151502) do
   add_foreign_key "messages", "users"
   add_foreign_key "notifications", "users"
   add_foreign_key "onboarding_funnels", "users"
+  add_foreign_key "photos", "tattoo_styles"
   add_foreign_key "portfolio_items", "portfolios"
   add_foreign_key "portfolio_styles", "portfolio_items"
   add_foreign_key "portfolio_styles", "tattoo_styles"

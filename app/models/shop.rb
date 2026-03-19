@@ -13,6 +13,7 @@ class Shop < ApplicationRecord
   has_many :medias
   has_many :socials
   has_many :events
+  has_many :gallery_photos, class_name: "Photo", as: :record, dependent: :destroy
 
   # ================================
   # SCOPES

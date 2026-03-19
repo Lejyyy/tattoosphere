@@ -184,8 +184,12 @@ Rails.application.routes.draw do
     get   "bookings/:id",   to: "bookings#show",  as: :booking
     patch "bookings/:id",   to: "bookings#update"
     get   "messages",       to: "messages#index"
-    get   "photos",         to: "photos#index"
-    patch "photos",         to: "photos#update"
+    resources :photos, only: [ :index, :create, :update, :destroy ] do
+    collection do
+      patch :reorder
+      patch :update_cover
+    end
+  end
     get   "disponibilites", to: "availabilities#index"
     get   "paiements",      to: "payments#index"
     get   "portfolio",      to: "portfolio#index"
@@ -204,8 +208,12 @@ Rails.application.routes.draw do
     get   "bookings/:id", to: "bookings#show",  as: :booking
     patch "bookings/:id", to: "bookings#update"
     get   "messages",     to: "messages#index"
-    get   "photos",       to: "photos#index"
-    patch "photos",       to: "photos#update"
+    resources :photos, only: [ :index, :create, :update, :destroy ] do
+    collection do
+      patch :reorder
+      patch :update_cover
+      end
+    end
     get   "equipe",       to: "team#index"
     get   "evenements",   to: "events#index"
     get   "portfolios",   to: "portfolios#index"
@@ -236,17 +244,28 @@ Rails.application.routes.draw do
     get    :portal,   on: :collection
   end
 
-# ================================
-# ONBOARDING
-# ================================
+  # ================================
+  # ONBOARDING
+  # ================================
+  scope :onboarding do
+    get  "tatoueur", to: "onboarding#tatoueur",        as: :onboarding_tatoueur
+    post "tatoueur", to: "onboarding#submit_tatoueur", as: :onboarding_submit_tatoueur
+    get  "shop",     to: "onboarding#shop",            as: :onboarding_shop
+    post "shop",     to: "onboarding#submit_shop",     as: :onboarding_submit_shop
+  end
 
-scope :onboarding do
-  get  "tatoueur", to: "onboarding#tatoueur",       as: :onboarding_tatoueur
-  post "tatoueur", to: "onboarding#submit_tatoueur", as: :onboarding_submit_tatoueur
-  get  "shop",     to: "onboarding#shop",            as: :onboarding_shop
-  post "shop",     to: "onboarding#submit_shop",     as: :onboarding_submit_shop
-end
+  # ================================
+  # CONTACT
+  # ================================
+  resource :contact, only: [ :new, :create ], controller: "contacts"
+  get "/contact", to: "contacts#new"
 
-resource :contact, only: [ :new, :create ], controller: "contacts"
-get "/contact", to: "contacts#new"
+  # ================================
+  # REVIEWS (réponse tatoueur)
+  # ================================
+  resources :reviews, only: [] do
+    member do
+      patch :reply
+    end
+  end
 end

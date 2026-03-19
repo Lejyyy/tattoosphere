@@ -48,6 +48,7 @@ class TatoueursController < ApplicationController
     @events         = @tatoueur.events.where("start_date >= ?", Time.current).order(start_date: :asc)
     @availabilities = @tatoueur.availabilities.order(:day_of_week)
     @photos         = @tatoueur.photos
+    @gallery_photos = @tatoueur.gallery_photos.ordered.includes(:tattoo_style, image_attachment: :blob)
   end
 
   # GET /tatoueurs/new

@@ -146,6 +146,47 @@
                 data: { turbo_confirm: "Confirmer l'annulation de cette réservation ?" },
                 class: "btn btn-outline-danger btn-sm w-100" %>
           <% end %>
+
+          <%# Avis %>
+      <% if @booking.status == "done" && @booking.user == current_user %>
+        <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;padding:1.5rem;margin-top:1.5rem;">
+          <h3 style="font-family:'Bebas Neue',sans-serif;font-size:1.3rem;color:#fff;margin-bottom:1rem;">
+            Votre avis
+          </h3>
+          <% if @booking.review.present? %>
+            <%# Avis déjà laissé %>
+            <div style="margin-bottom:0.75rem;">
+              <div style="display:flex;gap:2px;margin-bottom:0.5rem;">
+                <% 5.times do |i| %>
+                  <svg width="14" height="14" viewBox="0 0 24 24"
+                       fill="<%= i < @booking.review.rating ? '#F5C500' : 'none' %>"
+                       stroke="<%= i < @booking.review.rating ? '#F5C500' : '#333' %>"
+                       stroke-width="2">
+                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                  </svg>
+                <% end %>
+              </div>
+              <p style="color:#888;font-size:0.88rem;line-height:1.6;margin:0;">
+                <%= @booking.review.comment %>
+              </p>
+            </div>
+            <span style="font-size:0.78rem;color:#555;">
+              Publié le <%= @booking.review.created_at.strftime("%d/%m/%Y") %>
+            </span>
+          <% else %>
+            <%# Pas encore d'avis %>
+            <p style="color:#888;font-size:0.88rem;margin-bottom:1rem;">
+              Votre séance est terminée. Partagez votre expérience avec
+              <strong style="color:#fff;"><%= @booking.tatoueur.nickname %></strong> !
+            </p>
+            <%= link_to "⭐ Laisser un avis",
+                  new_booking_review_path(@booking),
+                  style: "display:block;text-align:center;background:#F5C500;color:#000;
+                          font-family:'Bebas Neue',sans-serif;font-size:1rem;letter-spacing:0.08em;
+                          padding:0.6rem 1.25rem;text-decoration:none;border-radius:2px;" %>
+          <% end %>
+        </div>
+      <% end %>
         </div>
       </div>
 

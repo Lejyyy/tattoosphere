@@ -13,6 +13,10 @@ class ReviewPolicy < ApplicationPolicy
       record.booking.review.nil?
   end
 
+  def reply?
+    user.tatoueur == record.tatoueur
+  end
+
   def update?  = false
   def destroy? = user.admin?
 

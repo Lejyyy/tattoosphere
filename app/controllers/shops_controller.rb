@@ -65,7 +65,11 @@ class ShopsController < ApplicationController
   # PATCH /shops/:id
   def update
     authorize @shop
-    @@tatoueur.cover.purge if params[:tatoueur][:remove_cover] == "1" || params[:preset_cover_url].present?
+
+    # Gestion de la cover
+    if params[:shop]&.[](:remove_cover) == "1" || params[:preset_cover_url].present?
+      @shop.cover.purge if @shop.cover.attached?
+    end
 
     if params[:preset_cover_url].present?
       filename  = File.basename(params[:preset_cover_url])
@@ -89,7 +93,6 @@ class ShopsController < ApplicationController
       render :edit, status: :unprocessable_entity
     end
   end
-
   # DELETE /shops/:id
   def destroy
     authorize @shop
@@ -149,7 +152,7 @@ class ShopsController < ApplicationController
     params.require(:shop).permit(
       :name, :address, :description,
       :email, :phone, :open_hours,
-      :cover, :cover_color, :remove_cover
+      :cover, :cover_color
     )
   end
 end

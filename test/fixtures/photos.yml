@@ -1,0 +1,17 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  record: one
+  record_type: Record
+  tattoo_style: one
+  title: MyString
+  description: MyText
+  position: 1
+
+two:
+  record: two
+  record_type: Record
+  tattoo_style: two
+  title: MyString
+  description: MyText
+  position: 1

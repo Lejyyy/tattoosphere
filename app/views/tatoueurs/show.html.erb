@@ -492,78 +492,123 @@
         <% end %>
       </div>
 
-      <%# ── Tab : Portfolio ── %>
-      <% if @portfolios.any? || @tatoueur.photos.attached? %>
-        <div id="tab-portfolio" class="tab-content">
-          <% if @portfolios.any? %>
-            <h2 class="ts-section-title">Portfolios</h2>
-            <div class="row g-3 mb-4">
-              <% @portfolios.each do |portfolio| %>
-                <div class="col-md-4">
-                  <%= link_to tatoueur_portfolio_path(@tatoueur, portfolio), class: "ts-portfolio-card" do %>
-                    <div class="ts-portfolio-card__thumb">
-                      <% first_item = portfolio.portfolio_items.first %>
-                      <% if first_item&.images&.attached? %>
-                        <%= image_tag first_item.images.first, class: "ts-portfolio-card__img" %>
-                      <% else %>
-                        <div class="ts-portfolio-card__empty">🖼️</div>
-                      <% end %>
-                    </div>
-                    <div class="ts-portfolio-card__info">
-                      <span class="ts-portfolio-card__name"><%= portfolio.name %></span>
-                      <span class="ts-portfolio-card__count"><%= portfolio.portfolio_items.count %> réalisation(s)</span>
-                    </div>
-                  <% end %>
-                </div>
-              <% end %>
-            </div>
-          <% end %>
+     <%# ── Tab : Portfolio ── %>
+<% if @portfolios.any? || @gallery_photos.any? %>
+  <div id="tab-portfolio" class="tab-content">
 
-          <% if @tatoueur.photos.attached? || (user_signed_in? && current_user.tatoueur == @tatoueur) %>
-            <div class="ts-section-header">
-              <h2 class="ts-section-title mb-0">Réalisations</h2>
-              <% if user_signed_in? && current_user.tatoueur == @tatoueur %>
-                <button onclick="toggleUploadForm()" class="ts-btn ts-btn--ghost ts-btn--sm">➕ Ajouter</button>
-              <% end %>
-            </div>
 
-            <% if user_signed_in? && current_user.tatoueur == @tatoueur %>
-              <div id="upload-form" class="ts-upload-form" style="display:none;">
-                <%= form_with url: update_photos_tatoueur_path(@tatoueur), method: :patch, html: { enctype: "multipart/form-data" } do |f| %>
-                  <p style="font-size:11px;text-transform:uppercase;letter-spacing:0.08em;color:#555;margin-bottom:0.6rem;">Sélectionne une ou plusieurs photos</p>
-                  <%= f.file_field :photos, multiple: true, accept: "image/*", style: "color:#888;width:100%;margin-bottom:0.75rem;" %>
-                  <%= f.submit "Uploader", class: "ts-btn ts-btn--primary" %>
+    <%# Portfolios existants %>
+    <% if @portfolios.any? %>
+      <h2 class="ts-section-title">Portfolios</h2>
+      <div class="row g-3 mb-4">
+        <% @portfolios.each do |portfolio| %>
+          <div class="col-md-4">
+            <%= link_to tatoueur_portfolio_path(@tatoueur, portfolio), class: "ts-portfolio-card" do %>
+              <div class="ts-portfolio-card__thumb">
+                <% first_item = portfolio.portfolio_items.first %>
+                <% if first_item&.images&.attached? %>
+                  <%= image_tag first_item.images.first, class: "ts-portfolio-card__img" %>
+                <% else %>
+                  <div class="ts-portfolio-card__empty">🖼️</div>
                 <% end %>
               </div>
-            <% end %>
-
-            <% if @tatoueur.photos.attached? %>
-              <div class="ts-photo-grid">
-                <% @tatoueur.photos.each_with_index do |photo, idx| %>
-                  <div class="ts-photo-item"
-                       onmouseover="this.querySelector('.ts-photo-del') && (this.querySelector('.ts-photo-del').style.opacity='1')"
-                       onmouseout="this.querySelector('.ts-photo-del') && (this.querySelector('.ts-photo-del').style.opacity='0')">
-                    <img src="<%= url_for(photo) %>"
-                         class="ts-photo-img"
-                         data-lightbox="true"
-                         data-src="<%= url_for(photo) %>"
-                         data-caption="Réalisation <%= idx + 1 %>"
-                         onclick="openLightbox(this)" />
-                    <% if user_signed_in? && current_user.tatoueur == @tatoueur %>
-                      <%= link_to "✕",
-                          delete_photo_tatoueur_path(@tatoueur, photo_id: photo.id),
-                          data: { turbo_method: :delete, turbo_confirm: "Supprimer cette photo ?" },
-                          class: "ts-photo-del" %>
-                    <% end %>
-                  </div>
-                <% end %>
+              <div class="ts-portfolio-card__info">
+                <span class="ts-portfolio-card__name"><%= portfolio.name %></span>
+                <span class="ts-portfolio-card__count"><%= portfolio.portfolio_items.count %> réalisation(s)</span>
               </div>
-            <% else %>
-              <p class="ts-empty">Aucune réalisation pour le moment.</p>
             <% end %>
+          </div>
+        <% end %>
+      </div>
+    <% end %>
+
+    <%# Galerie enrichie %>
+    <% if @gallery_photos.any? || (user_signed_in? && current_user.tatoueur == @tatoueur) %>
+      <div class="ts-section-header">
+        <h2 class="ts-section-title mb-0">Réalisations</h2>
+        <% if user_signed_in? && current_user.tatoueur == @tatoueur %>
+          <%= link_to "Gérer la galerie →", tatoueur_panel_photos_path,
+                class: "ts-btn ts-btn--ghost ts-btn--sm" %>
+        <% end %>
+      </div>
+
+      <%# Filtres par style %>
+      <% styles_present = @gallery_photos.map(&:tattoo_style).compact.uniq %>
+      <% if styles_present.any? %>
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:1.25rem;">
+          <button onclick="filterGallery(null)" class="ts-gallery-filter ts-gallery-filter--active" data-style="">
+            ✦ Tous
+          </button>
+          <% styles_present.each do |style| %>
+            <button onclick="filterGallery('<%= style.id %>')"
+                    class="ts-gallery-filter" data-style="<%= style.id %>">
+              <%= style.name %>
+            </button>
           <% end %>
         </div>
+        <style>
+          .ts-gallery-filter {
+            background: #111;
+            border: 1px solid #2a2a2a;
+            color: #555;
+            padding: 5px 16px;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 0.85rem;
+            letter-spacing: 0.08em;
+            cursor: pointer;
+            border-radius: 2px;
+            transition: all 0.2s;
+          }
+          .ts-gallery-filter:hover {
+            color: #F5C500;
+            border-color: rgba(245,197,0,0.4);
+            background: rgba(245,197,0,0.05);
+          }
+          .ts-gallery-filter--active {
+            background: rgba(245,197,0,0.12);
+            color: #F5C500;
+            border-color: rgba(245,197,0,0.5);
+            box-shadow: 0 0 8px rgba(245,197,0,0.1);
+          }
+        </style>
       <% end %>
+
+      <% if @gallery_photos.any? %>
+        <div class="ts-photo-grid" id="gallery-public">
+          <% @gallery_photos.each do |photo| %>
+            <div class="ts-photo-item gallery-pub-item" data-style="<%= photo.tattoo_style_id %>">
+              <img src="<%= url_for(photo.image) %>"
+                   class="ts-photo-img"
+                   data-lightbox="true"
+                   data-src="<%= url_for(photo.image) %>"
+                   data-caption="<%= photo.title.presence || "Réalisation" %>"
+                   onclick="openLightbox(this)" />
+              <%# Badge style %>
+              <% if photo.style_name.present? %>
+                <span style="position:absolute;bottom:0.4rem;left:0.4rem;
+                             background:rgba(0,0,0,0.75);color:#F5C500;font-size:10px;
+                             padding:2px 7px;letter-spacing:0.05em;">
+                  <%= photo.style_name %>
+                </span>
+              <% end %>
+              <%# Titre au hover %>
+              <% if photo.title.present? %>
+                <span style="position:absolute;bottom:0.4rem;right:0.4rem;
+                             background:rgba(0,0,0,0.75);color:#fff;font-size:10px;
+                             padding:2px 7px;max-width:60%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                  <%= photo.title %>
+                </span>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      <% else %>
+        <p class="ts-empty">Aucune réalisation pour le moment.</p>
+      <% end %>
+    <% end %>
+
+  </div>
+<% end %>
 
       <%# ── Tab : Disponibilités ── %>
       <div id="tab-disponibilites" class="tab-content" style="display:none;">
@@ -631,8 +676,9 @@
           <p class="ts-empty">Aucun avis pour le moment.</p>
         <% end %>
       </div>
-
     </div>
+
+    
 
     <%# ── Sidebar ── %>
     <div class="ts-sidebar">
@@ -760,4 +806,14 @@
     if (e.key === "ArrowRight") shiftLightbox(1)
     if (e.key === "ArrowLeft")  shiftLightbox(-1)
   })
+
+  function filterGallery(styleId) {
+    document.querySelectorAll(".gallery-pub-item").forEach(el => {
+      el.style.display = (!styleId || el.dataset.style == styleId) ? "" : "none"
+    })
+    document.querySelectorAll(".ts-gallery-filter").forEach(btn => {
+      btn.classList.toggle("ts-gallery-filter--active",
+        (!styleId && btn.dataset.style === "") || btn.dataset.style == styleId)
+    })
+  }
 </script>

@@ -66,44 +66,74 @@
                  border-left:4px solid #F5C500;padding-left:0.75rem;margin-bottom:1rem;">
         Ajouter un tatoueur
       </h3>
-      <% if @available_tatoueurs.any? %>
-        <input type="text" id="search-tatoueur" placeholder="Rechercher..."
-               oninput="filterTatoueurs(this.value)"
-               style="width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;
-                      padding:0.65rem 1rem;font-size:0.9rem;outline:none;margin-bottom:0.75rem;"
-               onfocus="this.style.borderColor='#F5C500'"
-               onblur="this.style.borderColor='#2A2A2A'">
-        <div style="display:flex;flex-direction:column;gap:0.4rem;max-height:300px;overflow-y:auto;">
-          <% @available_tatoueurs.each do |t| %>
-            <div class="avail-tatoueur"
-                 data-name="<%= t.nickname.downcase %>"
-                 style="display:flex;align-items:center;justify-content:space-between;
-                        padding:0.6rem 0.75rem;background:#0D0D0D;border:1px solid #2A2A2A;">
-              <div style="display:flex;align-items:center;gap:0.5rem;">
-                <% if t.avatar.attached? %>
-                  <%= image_tag t.avatar,
-                      style: "width:28px;height:28px;object-fit:cover;border-radius:50%;
-                              border:1px solid #2A2A2A;" %>
-                <% end %>
-                <span style="font-family:'Bebas Neue',sans-serif;font-size:0.95rem;color:#fff;">
-                  <%= t.nickname %>
-                </span>
+      <%# Formulaire de recherche %>
+<%= form_with url: shop_panel_equipe_path, method: :get, local: true do |f| %>
+  <div style="display:flex;gap:0.75rem;align-items:center;margin-bottom:1rem;">
+    <%= f.text_field :q,
+          value: params[:q],
+          placeholder: "Rechercher un tatoueur par pseudo...",
+          autofocus: true,
+          style: "flex:1;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;
+                  padding:0.65rem 1rem;font-size:0.9rem;outline:none;",
+          onfocus: "this.style.borderColor='#F5C500'",
+          onblur:  "this.style.borderColor='#2A2A2A'" %>
+    <%= f.submit "Rechercher",
+          style: "background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;
+                  font-size:0.9rem;letter-spacing:0.08em;padding:0.65rem 1.25rem;cursor:pointer;
+                  white-space:nowrap;" %>
+  </div>
+<% end %>
+
+<%# Résultats %>
+<% if params[:q].present? %>
+  <% if @available_tatoueurs.any? %>
+    <div style="display:flex;flex-direction:column;gap:0.4rem;">
+      <% @available_tatoueurs.each do |t| %>
+        <div style="display:flex;align-items:center;justify-content:space-between;
+                    padding:0.6rem 0.75rem;background:#0D0D0D;border:1px solid #2A2A2A;">
+          <div style="display:flex;align-items:center;gap:0.75rem;">
+            <% if t.avatar.attached? %>
+              <%= image_tag t.avatar,
+                  style: "width:36px;height:36px;object-fit:cover;border-radius:50%;
+                          border:1px solid #2A2A2A;" %>
+            <% else %>
+              <div style="width:36px;height:36px;border-radius:50%;background:#1a1a1a;
+                          border:1px solid #2A2A2A;display:flex;align-items:center;
+                          justify-content:center;color:#F5C500;font-weight:700;">
+                <%= t.nickname.first.upcase %>
               </div>
-              <%= button_to "Ajouter",
-                  add_tatoueur_shop_path(current_shop),
-                  method: :post,
-                  params: { tatoueur_id: t.id },
-                  style: "background:#F5C500;color:#000;border:none;
-                          font-family:'Bebas Neue',sans-serif;font-size:0.85rem;
-                          letter-spacing:0.05em;padding:0.25rem 0.75rem;cursor:pointer;" %>
+            <% end %>
+            <div>
+              <div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;color:#fff;">
+                <%= t.nickname %>
+              </div>
+              <% if t.tattoo_styles.any? %>
+                <div style="font-size:11px;color:#555;">
+                  <%= t.tattoo_styles.map(&:name).join(", ") %>
+                </div>
+              <% end %>
             </div>
-          <% end %>
+          </div>
+          <%= button_to "Ajouter",
+                add_tatoueur_shop_path(current_shop),
+                method: :post,
+                params: { tatoueur_id: t.id },
+                style: "background:#F5C500;color:#000;border:none;
+                        font-family:'Bebas Neue',sans-serif;font-size:0.85rem;
+                        letter-spacing:0.05em;padding:0.35rem 1rem;cursor:pointer;" %>
         </div>
-      <% else %>
-        <p style="color:#555;font-size:0.85rem;">Aucun tatoueur disponible à ajouter.</p>
       <% end %>
     </div>
-  </div>
+  <% else %>
+    <p style="color:#555;font-size:0.85rem;">
+      Aucun tatoueur trouvé pour "<%= params[:q] %>".
+    </p>
+  <% end %>
+<% else %>
+  <p style="color:#555;font-size:0.85rem;">
+    Entrez un pseudo pour rechercher un tatoueur.
+  </p>
+<% end %>
 
 </div>
 

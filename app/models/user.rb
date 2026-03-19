@@ -29,6 +29,7 @@ class User < ApplicationRecord
   has_many :notifications, dependent: :destroy
   has_many :user_tattoo_styles, dependent: :destroy
   has_many :preferred_styles, through: :user_tattoo_styles, source: :tattoo_style
+  has_many :reviews
 
   attr_writer :preferred_style_ids
   after_create :save_preferred_styles
