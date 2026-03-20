@@ -1,222 +1,484 @@
-<% content_for :title, "Réserver avec #{@tatoueur.nickname}" %>
-
-<%# Données disponibilités injectées en JSON %>
-<% avail_by_day = @tatoueur.availabilities.group_by(&:day_of_week) %>
-<% booked_dates = @tatoueur.bookings.where(status: %w[pending confirmed])
-                            .where(date: Date.today..Date.today + 90.days)
-                            .pluck(:date, :start_time, :end_time) %>
-
-<script>
-  const AVAIL_BY_DAY = <%= avail_by_day.transform_values { |avs|
-    avs.map { |a| { start: a.start_time.strftime("%H:%M"), end: a.end_time.strftime("%H:%M") } }
-  }.to_json.html_safe %>
-
-  const BOOKED = <%= booked_dates.map { |date, st, et|
-    { date: date.to_s, start: st&.strftime("%H:%M"), end: et&.strftime("%H:%M") }
-  }.to_json.html_safe %>
-</script>
+<% content_for :title, "Nouvelle réservation" %>
 
 <div class="container py-5" style="max-width:680px;">
 
-  <%# Header %>
-  <div class="mb-4 d-flex align-items-center gap-3">
-    <%= link_to "←", tatoueur_path(@tatoueur),
-          style: "color:#888;font-size:1.2rem;text-decoration:none;" %>
-    <% if @tatoueur.avatar.attached? %>
-      <%= image_tag @tatoueur.avatar,
-            style: "width:44px;height:44px;object-fit:cover;border-radius:50%;border:2px solid #F5C500;" %>
-    <% end %>
-    <div>
-      <h1 style="font-family:'Bebas Neue',sans-serif;font-size:1.8rem;color:#fff;margin:0;letter-spacing:1px;">
-        Réserver avec <%= @tatoueur.nickname %>
-      </h1>
-      <% if @tatoueur.shops.any? %>
-        <p style="color:#666;font-size:0.82rem;margin:0;">
-          📍 <%= @tatoueur.shops.first.name %><% if @tatoueur.shops.first.address.present? %> — <%= @tatoueur.shops.first.address %><% end %>
-        </p>
-      <% end %>
-    </div>
+  <%# ── En-tête ── %>
+  <div class="mb-5">
+    <%= link_to "← Retour", shop_path(@shop),
+        style: "font-size:0.8rem;font-weight:700;text-transform:uppercase;
+                letter-spacing:0.08em;color:#888;text-decoration:none;" %>
+    <h1 style="font-family:'Bebas Neue',sans-serif;font-size:3rem;
+               letter-spacing:0.05em;margin-top:1rem;margin-bottom:0.25rem;">
+      Réserver chez <span style="color:#F5C500;"><%= @shop.name %></span>
+    </h1>
   </div>
 
-  <%# Stepper %>
-  <div style="display:flex;align-items:center;gap:0;margin-bottom:2rem;">
-    <% [["1", "Jour"], ["2", "Créneau"], ["3", "Projet"]].each_with_index do |(num, label), i| %>
-      <div style="display:flex;align-items:center;gap:6px;flex:1;">
-        <div id="step-circle-<%= num %>"
-             style="width:28px;height:28px;border-radius:50%;
-                    background:<%= num == '1' ? '#F5C500' : '#1a1a1a' %>;
-                    color:<%= num == '1' ? '#000' : '#555' %>;
-                    border:2px solid <%= num == '1' ? '#F5C500' : '#2a2a2a' %>;
-                    display:flex;align-items:center;justify-content:center;
-                    font-family:'Bebas Neue',sans-serif;font-size:0.85rem;
-                    flex-shrink:0;transition:all 0.3s;">
-          <%= num %>
-        </div>
-        <span id="step-label-<%= num %>"
-              style="font-size:0.78rem;text-transform:uppercase;letter-spacing:0.08em;
-                     color:<%= num == '1' ? '#F5C500' : '#555' %>;transition:color 0.3s;">
-          <%= label %>
-        </span>
-        <% if i < 2 %>
-          <div style="flex:1;height:1px;background:#2a2a2a;margin:0 8px;"></div>
-        <% end %>
-      </div>
-    <% end %>
-  </div>
-
-  <%# Erreurs %>
+  <%# ── Erreurs ── %>
   <% if @booking.errors.any? %>
-    <div style="background:#2a1a1a;border:1px solid #dc3545;border-radius:6px;padding:1rem;margin-bottom:1.5rem;">
-      <ul style="color:#f08080;font-size:0.9rem;padding-left:1.2rem;margin:0;">
-        <% @booking.errors.full_messages.each do |msg| %>
-          <li><%= msg %></li>
-        <% end %>
-      </ul>
+    <div style="background:#1a0000;border:1px solid #ff4444;padding:1rem 1.25rem;margin-bottom:1.5rem;">
+      <% @booking.errors.full_messages.each do |msg| %>
+        <p style="color:#ff6666;margin:0;font-size:0.9rem;">⚠️ <%= msg %></p>
+      <% end %>
     </div>
   <% end %>
 
-  <%= form_with model: [@tatoueur, @booking], url: tatoueur_bookings_path(@tatoueur), local: true, id: "booking-form" do |f| %>
-    <%= f.hidden_field :date,       id: "input-date" %>
-    <%= f.hidden_field :start_time, id: "input-start" %>
-    <%= f.hidden_field :end_time,   id: "input-end" %>
-
-    <%# ── ÉTAPE 1 : Choix du jour ── %>
-    <div id="step-1" style="background:#1a1a1a;border:1px solid #2a2a2a;border-top:3px solid #F5C500;padding:1.75rem;">
-      <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:#F5C500;letter-spacing:0.06em;margin-bottom:1.25rem;">
-        Choisissez un jour
-      </h2>
-
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
-        <button type="button" id="week-prev"
-                style="background:transparent;border:1px solid #2a2a2a;color:#888;font-size:1rem;padding:0.3rem 0.85rem;cursor:pointer;transition:all 0.15s;"
-                onmouseover="this.style.borderColor='#F5C500';this.style.color='#F5C500'"
-                onmouseout="this.style.borderColor='#2a2a2a';this.style.color='#888'">‹</button>
-        <span id="week-label" style="font-family:'Bebas Neue',sans-serif;font-size:1rem;color:#fff;letter-spacing:0.05em;"></span>
-        <button type="button" id="week-next"
-                style="background:transparent;border:1px solid #2a2a2a;color:#888;font-size:1rem;padding:0.3rem 0.85rem;cursor:pointer;transition:all 0.15s;"
-                onmouseover="this.style.borderColor='#F5C500';this.style.color='#F5C500'"
-                onmouseout="this.style.borderColor='#2a2a2a';this.style.color='#888'">›</button>
+  <%# ── Barre de progression ── %>
+  <div style="display:flex;gap:0;margin-bottom:2.5rem;" id="stepper-bar">
+    <% steps = ["Tatoueur", "Date & Heure", "Projet", "Récap"] %>
+    <% steps.each_with_index do |label, i| %>
+      <div id="step-bar-<%= i %>"
+           style="flex:1;text-align:center;padding:0.6rem 0.25rem;
+                  font-family:'Bebas Neue',sans-serif;font-size:0.9rem;letter-spacing:0.05em;
+                  border-bottom:3px solid <%= i == 0 ? '#F5C500' : '#2A2A2A' %>;
+                  color:<%= i == 0 ? '#F5C500' : '#555' %>;transition:all 0.2s;">
+        <span style="display:inline-block;width:22px;height:22px;line-height:22px;
+                     border-radius:50%;margin-right:0.3rem;font-size:0.75rem;
+                     background:<%= i == 0 ? '#F5C500' : '#2A2A2A' %>;
+                     color:<%= i == 0 ? '#000' : '#555' %>;">
+          <%= i + 1 %>
+        </span>
+        <%= label %>
       </div>
+    <% end %>
+  </div>
 
-      <div id="days-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;"></div>
+  <%= form_with model: [@shop, @booking], id: "booking-form" do |f| %>
 
-      <p style="color:#555;font-size:0.78rem;margin-top:1rem;margin-bottom:0;text-align:center;">
-        Seuls les jours de disponibilité du tatoueur sont sélectionnables.
-      </p>
+    <%# ════════════════════════════════ %>
+    <%# ÉTAPE 1 — Tatoueur %>
+    <%# ════════════════════════════════ %>
+    <div id="step-0" class="booking-step">
+      <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;padding:2rem;">
+        <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:#F5C500;
+                   border-left:4px solid #F5C500;padding-left:0.75rem;margin-bottom:1.5rem;">
+          Choisis ton tatoueur
+        </h2>
 
-      <%# Option date libre %>
-      <div id="no-avail-block" style="display:none;margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid #2a2a2a;">
-        <p style="color:#666;font-size:0.82rem;margin-bottom:0.75rem;text-align:center;">
-          Pas de disponibilité affichée ?
-        </p>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
-          <button type="button" onclick="requestWithoutDate('soon')"
-                  style="background:#1a1a1a;border:1px solid #2a2a2a;color:#aaa;padding:10px 8px;
-                         cursor:pointer;border-radius:4px;font-size:0.82rem;transition:all 0.15s;text-align:center;"
-                  onmouseover="this.style.borderColor='#F5C500';this.style.color='#F5C500'"
-                  onmouseout="this.style.borderColor='#2a2a2a';this.style.color='#aaa'">
-            ⚡ Le plus tôt possible
-          </button>
-          <button type="button" onclick="requestWithoutDate('flexible')"
-                  style="background:#1a1a1a;border:1px solid #2a2a2a;color:#aaa;padding:10px 8px;
-                         cursor:pointer;border-radius:4px;font-size:0.82rem;transition:all 0.15s;text-align:center;"
-                  onmouseover="this.style.borderColor='#F5C500';this.style.color='#F5C500'"
-                  onmouseout="this.style.borderColor='#2a2a2a';this.style.color='#aaa'">
-            📅 Date flexible
-          </button>
+        <div class="row g-3">
+          <% @tatoueurs.each do |tatoueur| %>
+            <div class="col-6">
+              <label style="display:block;cursor:pointer;">
+                <input type="radio" name="booking[tatoueur_id]"
+                       value="<%= tatoueur.id %>"
+                       style="display:none;"
+                       onchange="selectTatoueur(this, <%= tatoueur.id %>, '<%= tatoueur.nickname %>')">
+                <div id="tatoueur-card-<%= tatoueur.id %>"
+                     style="background:#0D0D0D;border:2px solid #2A2A2A;padding:1rem;
+                            transition:all 0.15s;text-align:center;">
+                  <% if tatoueur.avatar.attached? %>
+                    <%= image_tag tatoueur.avatar,
+                        style: "width:70px;height:70px;object-fit:cover;
+                                border:2px solid #2A2A2A;margin-bottom:0.6rem;display:block;margin:0 auto 0.6rem;" %>
+                  <% else %>
+                    <div style="width:70px;height:70px;background:#1A1A1A;border:2px solid #2A2A2A;
+                                display:flex;align-items:center;justify-content:center;
+                                font-size:1.8rem;margin:0 auto 0.6rem;">🖋️</div>
+                  <% end %>
+                  <div style="font-family:'Bebas Neue',sans-serif;font-size:1rem;
+                              color:#fff;letter-spacing:0.04em;"><%= tatoueur.nickname %></div>
+                  <div style="font-size:0.75rem;color:#666;margin-top:0.2rem;">
+                    <%= tatoueur.tattoo_styles.map(&:name).first(2).join(", ").presence || "—" %>
+                  </div>
+                </div>
+              </label>
+            </div>
+          <% end %>
         </div>
       </div>
-    </div>
 
-    <%# ── ÉTAPE 2 : Choix du créneau ── %>
-    <div id="step-2" style="display:none;background:#1a1a1a;border:1px solid #2a2a2a;border-top:3px solid #F5C500;padding:1.75rem;margin-top:1rem;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
-        <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:#F5C500;letter-spacing:0.06em;margin:0;">
-          Choisissez un créneau
-        </h2>
+      <div style="display:flex;justify-content:flex-end;margin-top:1rem;">
         <button type="button" onclick="goToStep(1)"
-                style="background:transparent;border:none;color:#666;font-size:0.8rem;cursor:pointer;">
-          ← Changer de jour
+                style="background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;
+                       font-size:1.1rem;letter-spacing:0.08em;padding:0.75rem 2rem;cursor:pointer;">
+          Suivant →
         </button>
       </div>
-      <div id="selected-day-label" style="font-size:0.88rem;color:#aaa;margin-bottom:1.25rem;"></div>
-      <div id="slots-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;"></div>
     </div>
 
-    <%# ── ÉTAPE 3 : Détails du projet ── %>
-    <div id="step-3" style="display:none;background:#1a1a1a;border:1px solid #2a2a2a;border-top:3px solid #F5C500;padding:1.75rem;margin-top:1rem;">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
-        <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.2rem;color:#F5C500;letter-spacing:0.06em;margin:0;">
-          Votre projet
+    <%# Données disponibilités du tatoueur sélectionné — injectées dynamiquement via JS fetch %>
+    <%# Les constantes AVAIL_BY_DAY / BOOKED sont chargées après sélection du tatoueur %>
+
+    <%# ════════════════════════════════ %>
+    <%# ÉTAPE 2 — Date & Créneau %>
+    <%# ════════════════════════════════ %>
+    <div id="step-1" class="booking-step" style="display:none;">
+
+      <%# Champs cachés date / heure %>
+      <%= f.hidden_field :date,       id: "input-date" %>
+      <%= f.hidden_field :start_time, id: "input-start" %>
+      <%= f.hidden_field :end_time,   id: "input-end" %>
+
+      <%# ── Sous-étape 2a : Choix du jour ── %>
+      <div id="substep-day" style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;padding:2rem;">
+        <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:#F5C500;
+                   border-left:4px solid #F5C500;padding-left:0.75rem;margin-bottom:1.5rem;">
+          Choisissez un jour
         </h2>
-        <button type="button" id="back-to-step2"
-                onclick="goToStep(2)"
-                style="background:transparent;border:none;color:#666;font-size:0.8rem;cursor:pointer;">
-          ← Changer de créneau
-        </button>
-      </div>
 
-      <div id="recap-selection"
-           style="background:#0d0d0d;border:1px solid #2a2a2a;border-left:3px solid #F5C500;
-                  padding:0.75rem 1rem;margin-bottom:1.5rem;font-size:0.88rem;color:#aaa;">
-      </div>
+        <div id="cal-no-tatoueur"
+             style="color:#555;font-size:0.85rem;text-align:center;padding:2rem 0;">
+          ← Sélectionne d'abord un tatoueur à l'étape 1
+        </div>
 
-      <div class="mb-3">
-        <label style="color:#aaa;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:6px;">
-          Description du projet <span style="color:#555;">(style, taille, emplacement...)</span>
-        </label>
-        <%= f.text_area :description, rows: 4,
-              placeholder: "Ex : Tête de mort en blackwork sur l'avant-bras gauche, environ 10cm...",
-              style: "width:100%;background:#141414;border:1px solid #333;border-radius:4px;padding:10px 14px;color:#fff;font-size:0.9rem;resize:vertical;outline:none;" %>
-      </div>
+        <div id="cal-loading"
+             style="display:none;color:#888;font-size:0.85rem;text-align:center;padding:2rem 0;">
+          <span style="display:inline-block;animation:spin 1s linear infinite;">⏳</span>
+          Chargement des disponibilités…
+        </div>
 
-      <div class="mb-4">
-        <label style="color:#aaa;font-size:0.78rem;text-transform:uppercase;letter-spacing:0.08em;display:block;margin-bottom:6px;">
-          Budget estimé <span style="color:#555;">(optionnel)</span>
-        </label>
-        <div style="position:relative;">
-          <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#555;font-size:0.95rem;">€</span>
-          <%= f.number_field :price_estimated, step: 1, min: 0, placeholder: "150",
-                style: "width:100%;background:#141414;border:1px solid #333;border-radius:4px;padding:10px 14px 10px 32px;color:#fff;font-size:0.95rem;outline:none;" %>
+        <div id="cal-body" style="display:none;">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+            <button type="button" id="week-prev"
+                    style="background:transparent;border:1px solid #2A2A2A;color:#888;font-size:1rem;
+                           padding:0.3rem 0.85rem;cursor:pointer;transition:all 0.15s;"
+                    onmouseover="this.style.borderColor='#F5C500';this.style.color='#F5C500'"
+                    onmouseout="this.style.borderColor='#2A2A2A';this.style.color='#888'">‹</button>
+            <span id="week-label"
+                  style="font-family:'Bebas Neue',sans-serif;font-size:1rem;color:#fff;letter-spacing:0.05em;"></span>
+            <button type="button" id="week-next"
+                    style="background:transparent;border:1px solid #2A2A2A;color:#888;font-size:1rem;
+                           padding:0.3rem 0.85rem;cursor:pointer;transition:all 0.15s;"
+                    onmouseover="this.style.borderColor='#F5C500';this.style.color='#F5C500'"
+                    onmouseout="this.style.borderColor='#2A2A2A';this.style.color='#888'">›</button>
+          </div>
+
+          <div id="days-grid" style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;"></div>
+
+          <p style="color:#555;font-size:0.78rem;margin-top:1rem;margin-bottom:0;text-align:center;">
+            Seuls les jours de disponibilité du tatoueur sont sélectionnables.
+          </p>
+
+          <div id="no-avail-block" style="display:none;margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid #2A2A2A;">
+            <p style="color:#666;font-size:0.82rem;margin-bottom:0.75rem;text-align:center;">
+              Pas de disponibilité affichée ?
+            </p>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+              <button type="button" onclick="requestWithoutDate('soon')"
+                      style="background:#1A1A1A;border:1px solid #2A2A2A;color:#aaa;padding:10px 8px;
+                             cursor:pointer;font-size:0.82rem;transition:all 0.15s;text-align:center;"
+                      onmouseover="this.style.borderColor='#F5C500';this.style.color='#F5C500'"
+                      onmouseout="this.style.borderColor='#2A2A2A';this.style.color='#aaa'">
+                ⚡ Le plus tôt possible
+              </button>
+              <button type="button" onclick="requestWithoutDate('flexible')"
+                      style="background:#1A1A1A;border:1px solid #2A2A2A;color:#aaa;padding:10px 8px;
+                             cursor:pointer;font-size:0.82rem;transition:all 0.15s;text-align:center;"
+                      onmouseover="this.style.borderColor='#F5C500';this.style.color='#F5C500'"
+                      onmouseout="this.style.borderColor='#2A2A2A';this.style.color='#aaa'">
+                📅 Date flexible
+              </button>
+            </div>
+          </div>
         </div>
       </div>
 
-      <%= f.submit "Envoyer la demande →",
-            style: "width:100%;background:#F5C500;color:#000;font-weight:700;font-size:1.1rem;font-family:'Bebas Neue',sans-serif;letter-spacing:0.1em;padding:14px;border:none;cursor:pointer;" %>
+      <%# ── Sous-étape 2b : Choix du créneau ── %>
+      <div id="substep-slot"
+           style="display:none;background:#1A1A1A;border:1px solid #2A2A2A;
+                  border-top:3px solid #F5C500;padding:2rem;margin-top:1rem;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;">
+          <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:#F5C500;
+                     border-left:4px solid #F5C500;padding-left:0.75rem;margin:0;">
+            Choisissez un créneau
+          </h2>
+          <button type="button" onclick="showSubstep('day')"
+                  style="background:transparent;border:none;color:#666;font-size:0.8rem;cursor:pointer;">
+            ← Changer de jour
+          </button>
+        </div>
+        <div id="selected-day-label" style="font-size:0.88rem;color:#aaa;margin-bottom:1.25rem;"></div>
+        <div id="slots-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;"></div>
+      </div>
+
+      <%# Récap créneau sélectionné (affiché une fois le créneau choisi ou mode sans date) %>
+      <div id="slot-recap"
+           style="display:none;background:#0D0D0D;border:1px solid #2A2A2A;border-left:3px solid #F5C500;
+                  padding:0.75rem 1rem;margin-top:1rem;font-size:0.88rem;color:#aaa;">
+      </div>
+
+      <div style="display:flex;justify-content:space-between;margin-top:1rem;">
+        <button type="button" onclick="goToStep(0)"
+                style="background:transparent;color:#888;border:1px solid #444;
+                       font-family:'Bebas Neue',sans-serif;font-size:1rem;
+                       letter-spacing:0.08em;padding:0.75rem 1.5rem;cursor:pointer;">
+          ← Retour
+        </button>
+        <button type="button" id="btn-next-step2" onclick="goToStep(2)" disabled
+                style="background:#555;color:#000;border:none;font-family:'Bebas Neue',sans-serif;
+                       font-size:1.1rem;letter-spacing:0.08em;padding:0.75rem 2rem;cursor:not-allowed;
+                       opacity:0.5;transition:all 0.2s;">
+          Suivant →
+        </button>
+      </div>
+    </div>
+
+    <%# ════════════════════════════════ %>
+    <%# ÉTAPE 3 — Projet %>
+    <%# ════════════════════════════════ %>
+    <div id="step-2" class="booking-step" style="display:none;">
+      <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;padding:2rem;">
+        <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:#F5C500;
+                   border-left:4px solid #F5C500;padding-left:0.75rem;margin-bottom:1.5rem;">
+          Ton projet
+        </h2>
+
+        <%# Nom du projet %>
+        <div class="mb-4">
+          <label style="display:block;font-size:0.75rem;font-weight:700;text-transform:uppercase;
+                        letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;">
+            Nom du projet
+          </label>
+          <input type="text" name="booking[project_name]"
+                 placeholder="Ex : Ancre Old School, Portrait réaliste..."
+                 style="width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;
+                        padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;
+                        font-size:1rem;outline:none;"
+                 onfocus="this.style.borderColor='#F5C500'"
+                 onblur="this.style.borderColor='#2A2A2A'">
+        </div>
+
+        <%# Description %>
+        <div class="mb-4">
+          <label style="display:block;font-size:0.75rem;font-weight:700;text-transform:uppercase;
+                        letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;">
+            Description
+          </label>
+          <%= f.text_area :description, rows: 4,
+              placeholder: "Style, placement, taille, références...",
+              style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;
+                      padding:0.85rem 1rem;font-family:'Barlow Condensed',sans-serif;
+                      font-size:1rem;outline:none;resize:vertical;",
+              onfocus: "this.style.borderColor='#F5C500'",
+              onblur:  "this.style.borderColor='#2A2A2A'" %>
+        </div>
+
+        <%# Budget %>
+        <div class="mb-4">
+          <label style="display:block;font-size:0.75rem;font-weight:700;text-transform:uppercase;
+                        letter-spacing:0.08em;color:#888;margin-bottom:0.5rem;">
+            Budget estimé (€)
+          </label>
+          <div style="position:relative;">
+            <span style="position:absolute;left:1rem;top:50%;transform:translateY(-50%);
+                         color:#F5C500;font-family:'Bebas Neue',sans-serif;">€</span>
+            <%= f.number_field :price_estimated, step: 0.01, min: 0, placeholder: "150",
+                style: "width:100%;background:#0D0D0D;border:1px solid #2A2A2A;color:#fff;
+                        padding:0.85rem 1rem 0.85rem 2.5rem;font-family:'Barlow Condensed',sans-serif;
+                        font-size:1rem;outline:none;",
+                onfocus: "this.style.borderColor='#F5C500'",
+                onblur:  "this.style.borderColor='#2A2A2A'" %>
+          </div>
+        </div>
+
+        <%# ── Image de référence ── %>
+        <div class="mb-4">
+          <label style="display:block;font-size:0.75rem;font-weight:700;text-transform:uppercase;
+                        letter-spacing:0.08em;color:#888;margin-bottom:0.75rem;">
+            Image de référence
+            <span style="color:#555;font-size:0.7rem;font-weight:400;text-transform:none;">(optionnel)</span>
+          </label>
+
+          <%# Onglets %>
+          <div style="display:flex;margin-bottom:0;border-bottom:2px solid #2A2A2A;">
+            <button type="button" id="tab-upload" onclick="switchRefTab('upload')"
+                    style="padding:0.55rem 1.25rem;font-family:'Bebas Neue',sans-serif;font-size:1rem;
+                           letter-spacing:0.06em;border:none;cursor:pointer;transition:all 0.15s;
+                           background:transparent;color:#F5C500;
+                           border-bottom:2px solid #F5C500;margin-bottom:-2px;">
+              ⬆ Importer
+            </button>
+            <button type="button" id="tab-portfolio" onclick="switchRefTab('portfolio')"
+                    style="padding:0.55rem 1.25rem;font-family:'Bebas Neue',sans-serif;font-size:1rem;
+                           letter-spacing:0.06em;border:none;cursor:pointer;transition:all 0.15s;
+                           background:transparent;color:#555;
+                           border-bottom:2px solid transparent;margin-bottom:-2px;">
+              🖼 Portfolio du tatoueur
+            </button>
+          </div>
+
+          <%# Panneau Import %>
+          <div id="panel-upload"
+               style="background:#0D0D0D;border:1px solid #2A2A2A;border-top:none;padding:1.25rem;">
+            <label id="upload-dropzone"
+                   style="display:flex;flex-direction:column;align-items:center;justify-content:center;
+                          gap:0.5rem;border:2px dashed #2A2A2A;padding:2rem;cursor:pointer;
+                          transition:border-color 0.15s;text-align:center;"
+                   ondragover="this.style.borderColor='#F5C500'"
+                   ondragleave="this.style.borderColor='#2A2A2A'">
+              <span style="font-size:2rem;">🖼️</span>
+              <span style="color:#888;font-size:0.85rem;">
+                Glisse une image ou <span style="color:#F5C500;">clique pour parcourir</span>
+              </span>
+              <span style="color:#555;font-size:0.75rem;">JPG, PNG, WEBP — max 5 Mo</span>
+              <%= f.file_field :reference_image, id: "ref-file-input", style: "display:none;",
+                  accept: "image/*", onchange: "previewUpload(this)" %>
+            </label>
+
+            <div id="upload-preview" style="display:none;margin-top:1rem;position:relative;">
+              <img id="upload-preview-img"
+                   style="max-height:160px;max-width:100%;object-fit:cover;border:1px solid #2A2A2A;display:block;">
+              <button type="button" onclick="clearUpload()"
+                      style="position:absolute;top:4px;right:4px;background:rgba(0,0,0,0.7);
+                             border:1px solid #555;color:#fff;width:24px;height:24px;
+                             display:flex;align-items:center;justify-content:center;
+                             font-size:0.9rem;cursor:pointer;padding:0;">✕</button>
+            </div>
+          </div>
+
+          <%# Panneau Portfolio %>
+          <div id="panel-portfolio"
+               style="display:none;background:#0D0D0D;border:1px solid #2A2A2A;border-top:none;padding:1.25rem;">
+
+            <div id="portfolio-empty"
+                 style="color:#555;font-size:0.85rem;text-align:center;padding:1.5rem 0;">
+              ← Sélectionne d'abord un tatoueur à l'étape 1
+            </div>
+
+            <div id="portfolio-loading"
+                 style="display:none;color:#888;font-size:0.85rem;text-align:center;padding:1.5rem 0;">
+              <span style="display:inline-block;animation:spin 1s linear infinite;">⏳</span>
+              Chargement du portfolio…
+            </div>
+
+            <div id="portfolio-grid"
+                 style="display:none;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));
+                        gap:0.5rem;max-height:240px;overflow-y:auto;">
+            </div>
+
+            <div id="portfolio-none"
+                 style="display:none;color:#555;font-size:0.85rem;text-align:center;padding:1.5rem 0;">
+              Ce tatoueur n'a pas encore de portfolio.
+            </div>
+
+            <div id="portfolio-selected"
+                 style="display:none;margin-top:1rem;padding-top:1rem;
+                        border-top:1px solid #2A2A2A;align-items:center;gap:0.75rem;">
+              <img id="portfolio-selected-img"
+                   style="width:60px;height:60px;object-fit:cover;border:2px solid #F5C500;">
+              <div>
+                <div style="color:#F5C500;font-family:'Bebas Neue',sans-serif;font-size:0.9rem;">
+                  Image sélectionnée
+                </div>
+                <button type="button" onclick="clearPortfolioSelection()"
+                        style="background:none;border:none;color:#888;font-size:0.75rem;
+                               cursor:pointer;padding:0;text-decoration:underline;">
+                  Retirer
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <input type="hidden" id="ref-image-url-input" name="booking[reference_image_url]" value="">
+        </div>
+        <%# /Image de référence %>
+
+      </div><%# /inner card %>
+
+      <div style="display:flex;justify-content:space-between;margin-top:1rem;">
+        <button type="button" onclick="goToStep(1)"
+                style="background:transparent;color:#888;border:1px solid #444;
+                       font-family:'Bebas Neue',sans-serif;font-size:1rem;
+                       letter-spacing:0.08em;padding:0.75rem 1.5rem;cursor:pointer;">
+          ← Retour
+        </button>
+        <button type="button" onclick="goToStep(3)"
+                style="background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;
+                       font-size:1.1rem;letter-spacing:0.08em;padding:0.75rem 2rem;cursor:pointer;">
+          Suivant →
+        </button>
+      </div>
+    </div>
+
+    <%# ════════════════════════════════ %>
+    <%# ÉTAPE 4 — Récap %>
+    <%# ════════════════════════════════ %>
+    <div id="step-3" class="booking-step" style="display:none;">
+      <div style="background:#1A1A1A;border:1px solid #2A2A2A;border-top:3px solid #F5C500;padding:2rem;">
+        <h2 style="font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:#F5C500;
+                   border-left:4px solid #F5C500;padding-left:0.75rem;margin-bottom:1.5rem;">
+          Récapitulatif
+        </h2>
+
+        <div style="display:flex;flex-direction:column;gap:0.75rem;">
+          <div style="display:flex;justify-content:space-between;padding:0.75rem 0;border-bottom:1px solid #2A2A2A;">
+            <span style="color:#888;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;">Tatoueur</span>
+            <span id="recap-tatoueur" style="color:#fff;font-family:'Bebas Neue',sans-serif;font-size:1rem;">—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:0.75rem 0;border-bottom:1px solid #2A2A2A;">
+            <span style="color:#888;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;">Date</span>
+            <span id="recap-date" style="color:#fff;font-family:'Bebas Neue',sans-serif;font-size:1rem;">—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:0.75rem 0;border-bottom:1px solid #2A2A2A;">
+            <span style="color:#888;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;">Moment</span>
+            <span id="recap-heure" style="color:#fff;font-family:'Bebas Neue',sans-serif;font-size:1rem;">—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:0.75rem 0;border-bottom:1px solid #2A2A2A;">
+            <span style="color:#888;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;">Projet</span>
+            <span id="recap-projet" style="color:#fff;font-family:'Bebas Neue',sans-serif;font-size:1rem;">—</span>
+          </div>
+          <div style="display:flex;justify-content:space-between;padding:0.75rem 0;">
+            <span style="color:#888;font-size:0.85rem;text-transform:uppercase;letter-spacing:0.05em;">Budget</span>
+            <span id="recap-budget" style="color:#F5C500;font-family:'Bebas Neue',sans-serif;font-size:1rem;">—</span>
+          </div>
+        </div>
+
+        <div id="recap-ref-wrap" style="display:none;margin-top:1rem;padding-top:1rem;border-top:1px solid #2A2A2A;">
+          <p style="color:#888;font-size:0.75rem;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.5rem;">
+            Image de référence
+          </p>
+          <img id="recap-ref-img" src="" style="max-height:120px;object-fit:cover;border:1px solid #2A2A2A;">
+        </div>
+
+        <div style="background:rgba(245,197,0,0.08);border:1px solid rgba(245,197,0,0.2);padding:1rem;margin-top:1.5rem;">
+          <p style="margin:0;font-size:0.85rem;color:#F5C500;">
+            💳 Un acompte vous sera demandé après confirmation de la réservation.
+          </p>
+        </div>
+      </div>
+
+      <div style="display:flex;justify-content:space-between;margin-top:1rem;">
+        <button type="button" onclick="goToStep(2)"
+                style="background:transparent;color:#888;border:1px solid #444;
+                       font-family:'Bebas Neue',sans-serif;font-size:1rem;
+                       letter-spacing:0.08em;padding:0.75rem 1.5rem;cursor:pointer;">
+          ← Retour
+        </button>
+        <%= f.submit "Envoyer ma demande",
+            style: "background:#F5C500;color:#000;border:none;font-family:'Bebas Neue',sans-serif;
+                    font-size:1.2rem;letter-spacing:0.1em;padding:0.75rem 2rem;cursor:pointer;",
+            onmouseover: "this.style.background='#d4a800'",
+            onmouseout:  "this.style.background='#F5C500'" %>
+      </div>
     </div>
 
   <% end %>
 </div>
 
 <style>
-  .day-btn { aspect-ratio:1; border:1px solid #2a2a2a; background:#111; color:#fff; cursor:pointer; border-radius:4px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; transition:all 0.15s; padding:4px; }
-  .day-btn:hover:not(:disabled) { border-color:#F5C500; color:#F5C500; }
-  .day-btn:disabled { background:#0d0d0d; color:#333; cursor:not-allowed; border-color:#1a1a1a; }
-  .day-btn.selected { background:rgba(245,197,0,0.15); border-color:#F5C500; color:#F5C500; }
-  .day-btn .day-name { font-size:0.65rem; text-transform:uppercase; letter-spacing:0.08em; }
-  .day-btn .day-num  { font-family:'Bebas Neue',sans-serif; font-size:1.2rem; line-height:1; }
-  .day-btn .day-avail { font-size:0.6rem; color:#27ae60; }
-  .day-btn:disabled .day-avail { color:#333; }
-  .slot-btn { padding:8px 4px; border:1px solid #2a2a2a; background:#111; color:#aaa; cursor:pointer; border-radius:4px; font-size:0.85rem; text-align:center; transition:all 0.15s; }
-  .slot-btn:hover:not(:disabled) { border-color:#F5C500; color:#F5C500; }
-  .slot-btn:disabled { background:#0d0d0d; color:#2a2a2a; cursor:not-allowed; text-decoration:line-through; }
-  .slot-btn.selected { background:rgba(245,197,0,0.15); border-color:#F5C500; color:#F5C500; font-weight:600; }
+  @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 
 <script>
-  window._bookingFormInitialized = false
-  if (!window._bookingFormInitialized) {
-  window._bookingFormInitialized = true
+  let currentStep          = 0
+  let selectedTatoueurName = ""
+  let selectedTatoueurId   = null
+  let currentPortfolioId   = null
+  let recapRefSource       = null
+  let recapRefPreview      = null
+
+  // Calendrier
+  let AVAIL_BY_DAY       = {}
+  let BOOKED             = []
+  let currentWeekStart   = mondayOfWeek(new Date())
+  let selectedDate       = null
+  let selectedStart      = null
+  let selectedEnd        = null
+  let noDateMode         = null
+  let slotConfirmed      = false   // true dès qu'un créneau OU un mode sans date est choisi
 
   const DAYS_FR   = ["Dim", "Lun", "Mar", "Mer", "Jeu", "Ven", "Sam"]
   const MONTHS_FR = ["jan", "fév", "mar", "avr", "mai", "jun", "jul", "aoû", "sep", "oct", "nov", "déc"]
   const SLOT_DURATION = 60
-
-  let currentWeekStart = mondayOfWeek(new Date())
-  let selectedDate     = null
-  let selectedStart    = null
-  let selectedEnd      = null
-  let noDateMode       = null // "soon" | "flexible" | null
 
   function mondayOfWeek(d) {
     const date = new Date(d)
@@ -230,13 +492,114 @@
     return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
   }
 
+  // ── Navigation principale ────────────────────────
+  function goToStep(idx) {
+    document.querySelectorAll('.booking-step').forEach((el, i) => {
+      el.style.display = i === idx ? 'block' : 'none'
+    })
+    document.querySelectorAll('[id^="step-bar-"]').forEach((el, i) => {
+      el.style.borderBottomColor = i === idx ? '#F5C500' : '#2A2A2A'
+      el.style.color             = i === idx ? '#F5C500' : '#555'
+      const dot = el.querySelector('span')
+      if (dot) {
+        dot.style.background = i <= idx ? '#F5C500' : '#2A2A2A'
+        dot.style.color      = i <= idx ? '#000'    : '#555'
+      }
+    })
+    currentStep = idx
+    if (idx === 3) buildRecap()
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  // ── Étape 1 : sélection tatoueur ─────────────────
+  function selectTatoueur(input, id, name) {
+    document.querySelectorAll('[id^="tatoueur-card-"]').forEach(c => {
+      c.style.borderColor = '#2A2A2A'
+      c.style.background  = '#0D0D0D'
+    })
+    const card = document.getElementById(`tatoueur-card-${id}`)
+    if (card) {
+      card.style.borderColor = '#F5C500'
+      card.style.background  = 'rgba(245,197,0,0.06)'
+    }
+    selectedTatoueurName = name
+
+    // Reset portfolio si changement de tatoueur
+    if (currentPortfolioId && currentPortfolioId !== String(id)) {
+      currentPortfolioId = null
+      clearPortfolioSelection()
+      clearUpload()
+      showPortfolioState('empty')
+    }
+
+    // Reset calendrier si changement de tatoueur
+    if (selectedTatoueurId !== String(id)) {
+      selectedTatoueurId = String(id)
+      resetCalendar()
+      loadAvailabilities(id)
+    }
+  }
+
+  // ── Étape 2 : calendrier ─────────────────────────
+
+  function resetCalendar() {
+    AVAIL_BY_DAY     = {}
+    BOOKED           = []
+    selectedDate     = null
+    selectedStart    = null
+    selectedEnd      = null
+    noDateMode       = null
+    slotConfirmed    = false
+    currentWeekStart = mondayOfWeek(new Date())
+    unlockNextStep2(false)
+    showSubstep('day')
+    document.getElementById('slot-recap').style.display = 'none'
+    document.getElementById('input-date').value  = ''
+    document.getElementById('input-start').value = ''
+    document.getElementById('input-end').value   = ''
+  }
+
+  function loadAvailabilities(tatoueurId) {
+    showCalState('loading')
+
+    fetch(`/tatoueurs/${tatoueurId}/availabilities_and_bookings`)
+      .then(r => r.json())
+      .then(data => {
+        AVAIL_BY_DAY = data.avail_by_day
+        BOOKED       = data.booked
+        showCalState('body')
+        renderWeek()
+      })
+      .catch(() => showCalState('body'))   // affiche le calendrier vide en cas d'erreur
+  }
+
+  function showCalState(state) {
+    document.getElementById('cal-no-tatoueur').style.display = state === 'none'    ? 'block' : 'none'
+    document.getElementById('cal-loading').style.display     = state === 'loading' ? 'block' : 'none'
+    document.getElementById('cal-body').style.display        = state === 'body'    ? 'block' : 'none'
+  }
+
+  function showSubstep(sub) {
+    document.getElementById('substep-day').style.display  = sub === 'day'  ? 'block' : 'none'
+    document.getElementById('substep-slot').style.display = sub === 'slot' ? 'block' : 'none'
+  }
+
+  function unlockNextStep2(enabled) {
+    const btn = document.getElementById('btn-next-step2')
+    if (!btn) return
+    btn.disabled           = !enabled
+    btn.style.background   = enabled ? '#F5C500' : '#555'
+    btn.style.cursor       = enabled ? 'pointer'  : 'not-allowed'
+    btn.style.opacity      = enabled ? '1'        : '0.5'
+  }
+
   function slotsForDay(dayOfWeek) {
     const avails = AVAIL_BY_DAY[dayOfWeek] || []
     const slots  = []
     avails.forEach(av => {
-      let [h, m] = av.start.split(':').map(Number)
-      const [eh, em] = av.end.split(':').map(Number)
-      const endMin = eh * 60 + em
+      let [h, m]      = av.start.split(':').map(Number)
+      const [eh, em]  = av.end.split(':').map(Number)
+      const endMin    = eh * 60 + em
       while (h * 60 + m + SLOT_DURATION <= endMin) {
         const startStr = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`
         m += SLOT_DURATION
@@ -253,30 +616,30 @@
   }
 
   function renderWeek() {
-    const grid  = document.getElementById("days-grid")
+    const grid  = document.getElementById('days-grid')
     const today = new Date(); today.setHours(0,0,0,0)
-    grid.innerHTML = ""
+    grid.innerHTML = ''
 
     const end = new Date(currentWeekStart)
     end.setDate(end.getDate() + 6)
     const fmt = d => `${d.getDate()} ${MONTHS_FR[d.getMonth()]}`
-    document.getElementById("week-label").textContent = `${fmt(currentWeekStart)} – ${fmt(end)}`
+    document.getElementById('week-label').textContent = `${fmt(currentWeekStart)} – ${fmt(end)}`
 
-    let hasAvailThisWeek = false
+    let hasAvail = false
     for (let i = 0; i < 7; i++) {
       const d      = new Date(currentWeekStart)
       d.setDate(d.getDate() + i)
       const dow    = d.getDay()
       const avails = AVAIL_BY_DAY[dow] || []
       const past   = d < today
-      const dateStr = isoDate(d)
+      const dateStr    = isoDate(d)
       const isSelected = dateStr === selectedDate
 
-      if (avails.length > 0 && !past) hasAvailThisWeek = true
+      if (avails.length > 0 && !past) hasAvail = true
 
-      const btn = document.createElement("button")
-      btn.type      = "button"
-      btn.className = "day-btn" + (isSelected ? " selected" : "")
+      const btn = document.createElement('button')
+      btn.type      = 'button'
+      btn.className = 'day-btn' + (isSelected ? ' selected' : '')
       btn.disabled  = past || avails.length === 0
       btn.innerHTML = `
         <span class="day-name">${DAYS_FR[dow]}</span>
@@ -287,11 +650,8 @@
       grid.appendChild(btn)
     }
 
-    document.getElementById("week-prev").disabled = currentWeekStart <= mondayOfWeek(new Date())
-
-    // Afficher option "sans date" si aucune dispo visible sur cette semaine
-    const noAvailBlock = document.getElementById("no-avail-block")
-    if (noAvailBlock) noAvailBlock.style.display = hasAvailThisWeek ? "none" : "block"
+    document.getElementById('week-prev').disabled = currentWeekStart <= mondayOfWeek(new Date())
+    document.getElementById('no-avail-block').style.display = hasAvail ? 'none' : 'block'
   }
 
   function selectDay(dateStr, dateObj) {
@@ -299,26 +659,28 @@
     selectedStart = null
     selectedEnd   = null
     noDateMode    = null
-    document.getElementById("input-date").value  = dateStr
-    document.getElementById("input-start").value = ""
-    document.getElementById("input-end").value   = ""
+    slotConfirmed = false
+    document.getElementById('input-date').value  = dateStr
+    document.getElementById('input-start').value = ''
+    document.getElementById('input-end').value   = ''
+    unlockNextStep2(false)
     renderWeek()
     renderSlots(dateObj)
-    goToStep(2)
+    showSubstep('slot')
   }
 
   function renderSlots(dateObj) {
     const dow     = dateObj.getDay()
     const dateStr = isoDate(dateObj)
     const slots   = slotsForDay(dow)
-    const grid    = document.getElementById("slots-grid")
-    const label   = document.getElementById("selected-day-label")
+    const grid    = document.getElementById('slots-grid')
+    const label   = document.getElementById('selected-day-label')
     const dayFull = dateObj.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
 
     label.textContent = `📅 ${dayFull.charAt(0).toUpperCase() + dayFull.slice(1)}`
-    grid.innerHTML    = ""
+    grid.innerHTML    = ''
 
-    if (slots.length === 0) {
+    if (!slots.length) {
       grid.innerHTML = '<p style="color:#555;font-size:0.85rem;grid-column:1/-1;">Aucun créneau disponible.</p>'
       return
     }
@@ -326,12 +688,12 @@
     slots.forEach(slot => {
       const booked     = isSlotBooked(dateStr, slot.start)
       const isSelected = slot.start === selectedStart
-      const btn = document.createElement("button")
-      btn.type      = "button"
-      btn.className = "slot-btn" + (isSelected ? " selected" : "")
+      const btn = document.createElement('button')
+      btn.type      = 'button'
+      btn.className = 'slot-btn' + (isSelected ? ' selected' : '')
       btn.disabled  = booked
       btn.textContent = slot.start
-      btn.title       = booked ? "Déjà réservé" : `${slot.start} – ${slot.end}`
+      btn.title       = booked ? 'Déjà réservé' : `${slot.start} – ${slot.end}`
       if (!booked) btn.onclick = () => selectSlot(slot.start, slot.end, dateObj)
       grid.appendChild(btn)
     })
@@ -340,14 +702,18 @@
   function selectSlot(start, end, dateObj) {
     selectedStart = start
     selectedEnd   = end
-    document.getElementById("input-start").value = start
-    document.getElementById("input-end").value   = end
+    noDateMode    = null
+    slotConfirmed = true
+    document.getElementById('input-start').value = start
+    document.getElementById('input-end').value   = end
     const dayFull = dateObj.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long' })
-    document.getElementById("recap-selection").innerHTML =
-      `<strong style="color:#fff;">📅 ${dayFull.charAt(0).toUpperCase() + dayFull.slice(1)}</strong>
-       &nbsp;·&nbsp; 🕐 <strong style="color:#F5C500;">${start} – ${end}</strong>`
+    const recap = document.getElementById('slot-recap')
+    recap.style.display = 'block'
+    recap.innerHTML = `<strong style="color:#fff;">📅 ${dayFull.charAt(0).toUpperCase() + dayFull.slice(1)}</strong>
+                       &nbsp;·&nbsp; 🕐 <strong style="color:#F5C500;">${start} – ${end}</strong>`
     renderSlots(dateObj)
-    goToStep(3)
+    showSubstep('day')
+    unlockNextStep2(true)
   }
 
   function requestWithoutDate(mode) {
@@ -355,62 +721,31 @@
     selectedDate  = null
     selectedStart = null
     selectedEnd   = null
-    document.getElementById("input-date").value  = ""
-    document.getElementById("input-start").value = ""
-    document.getElementById("input-end").value   = ""
-
+    slotConfirmed = true
+    document.getElementById('input-date').value  = ''
+    document.getElementById('input-start').value = ''
+    document.getElementById('input-end').value   = ''
     const labels = {
-      soon:     "⚡ Dès que possible — le tatoueur vous proposera un créneau",
-      flexible: "📅 Date flexible — à définir ensemble"
+      soon:     '⚡ Dès que possible',
+      flexible: '📅 Date flexible — à définir ensemble'
     }
-    document.getElementById("recap-selection").innerHTML =
-      `<span style="color:#F5C500;">${labels[mode]}</span>`
-
-    // Masquer le bouton "← Changer de créneau" car on vient de l'étape 1
-    const back = document.getElementById("back-to-step2")
-    if (back) back.style.display = "none"
-
-    goToStep(3)
+    const recap = document.getElementById('slot-recap')
+    recap.style.display = 'block'
+    recap.innerHTML = `<span style="color:#F5C500;">${labels[mode]}</span>`
+    unlockNextStep2(true)
   }
 
-  function goToStep(n) {
-    [1, 2, 3].forEach(i => {
-      const el = document.getElementById(`step-${i}`)
-      if (el) el.style.display = i === n ? "block" : "none"
-
-      const circle = document.getElementById(`step-circle-${i}`)
-      const label  = document.getElementById(`step-label-${i}`)
-      if (circle && label) {
-        const active = i === n
-        const done   = i < n
-        circle.style.background  = active ? "#F5C500" : done ? "rgba(245,197,0,0.2)" : "#1a1a1a"
-        circle.style.color       = active ? "#000"    : done ? "#F5C500"             : "#555"
-        circle.style.borderColor = active || done ? "#F5C500" : "#2a2a2a"
-        circle.textContent       = done ? "✓" : i
-        label.style.color        = active || done ? "#F5C500" : "#555"
-      }
-    })
-
-    // Remettre le bouton retour si on revient à l'étape 3 normalement
-    if (n === 2) {
-      const back = document.getElementById("back-to-step2")
-      if (back) back.style.display = ""
-    }
-  }
-
-  document.getElementById("week-prev").addEventListener("click", () => {
+  document.getElementById('week-prev').addEventListener('click', () => {
     const prev = new Date(currentWeekStart)
     prev.setDate(prev.getDate() - 7)
     if (prev >= mondayOfWeek(new Date())) { currentWeekStart = prev; renderWeek() }
   })
-  document.getElementById("week-next").addEventListener("click", () => {
+  document.getElementById('week-next').addEventListener('click', () => {
     const next = new Date(currentWeekStart)
     next.setDate(next.getDate() + 7)
-    currentWeekStart = next
-    renderWeek()
+    currentWeekStart = next; renderWeek()
   })
 
-  renderWeek()
-
-  } // end _bookingFormInitialized
-</script>
+  // ── Onglets import / portfolio ───────────────────
+  function switchRefTab(tab) {
+    const tabs   = { upload: 'tab-upload',   portfolio: 'tab-portfolio'

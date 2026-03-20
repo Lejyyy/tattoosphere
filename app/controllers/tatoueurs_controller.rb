@@ -40,6 +40,14 @@ class TatoueursController < ApplicationController
     end.to_json
   end
 
+  def portfolio_images
+  @tatoueur = Tatoueur.find(params[:id])
+  images = @tatoueur.portfolio_images.map do |img|
+    { url: url_for(img), thumb: url_for(img) }
+  end
+  render json: images
+end
+
   # GET /tatoueurs/:id
   def show
     authorize @tatoueur
@@ -133,6 +141,17 @@ class TatoueursController < ApplicationController
     else
       render :verification, status: :unprocessable_entity
     end
+  end
+
+  def availabilities_and_bookings
+  @tatoueur    = Tatoueur.find(params[:id])
+  avail_by_day = @tatoueur.availabilities.group_by(&:day_of_week)
+    .transform_values { |avs| avs.map { |a| { start: a.start_time.strftime("%H:%M"), end: a.end_time.strftime("%H:%M") } } }
+  booked = @tatoueur.bookings.where(status: %w[pending confirmed])
+    .where(date: Date.today..Date.today + 90.days)
+    .pluck(:date, :start_time, :end_time)
+    .map { |date, st, et| { date: date.to_s, start: st&.strftime("%H:%M"), end: et&.strftime("%H:%M") } }
+  render json: { avail_by_day: avail_by_day, booked: booked }
   end
 
   # PATCH /tatoueurs/:id/update_photos

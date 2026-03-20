@@ -135,9 +135,11 @@ end
   end
 
   def booking_params
-    params.require(:booking).permit(
-      :tatoueur_id, :date, :description,
-      :price_estimated, :start_time, :end_time
-    )
-  end
+  params.require(:booking).permit(
+    :tatoueur_id, :date, :start_time, :description,
+    :price_estimated, :project_name,
+    :reference_image,      # Active Storage
+    :reference_image_url   # URL Cloudinary depuis portfolio
+  )
+end
 end

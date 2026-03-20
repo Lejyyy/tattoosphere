@@ -11,6 +11,8 @@ Rails.application.routes.draw do
   get "/faq", to: "pages#faq"
   get "/mentions-legales", to: "pages#mentions_legales"
   get "/cgu", to: "pages#cgu"
+  get "tatoueurs/:id/portfolio_images", to: "tatoueurs#portfolio_images", as: :tatoueur_portfolio_images
+  get "tatoueurs/:id/availabilities_and_bookings", to: "tatoueurs#availabilities_and_bookings"
 
   # ================================
   # AUTHENTIFICATION

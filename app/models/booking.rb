@@ -4,6 +4,8 @@ class Booking < ApplicationRecord
   belongs_to :tatoueur
   has_one    :review
   has_one    :payment
+  has_one_attached :reference_image
+
 
   STATUSES        = %w[pending confirmed done cancelled].freeze
   PAYMENT_METHODS = %w[bank_transfer paypal].freeze
