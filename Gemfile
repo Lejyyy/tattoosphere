@@ -98,4 +98,4 @@ gem "whenever", "~> 1.1"
 gem "letter_opener", "~> 1.10"
 gem "matrix"
 
-gem "stripe", "~> 18.4"
+gem "stripe", "~> 19.0"
